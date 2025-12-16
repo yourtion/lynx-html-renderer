@@ -1,0 +1,40 @@
+{
+  "name": "lynx-html-renderer",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "check": "biome check --write",
+    "dev": "cd example && rspeedy dev",
+    "format": "biome format --write",
+    "preview": "cd example && rspeedy preview",
+    "test": "vitest run"
+  },
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "@lynx-js/react": "^0.115.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.3",
+    "@lynx-js/preact-devtools": "^5.0.1-cf9aef5",
+    "@lynx-js/qrcode-rsbuild-plugin": "^0.4.3",
+    "@lynx-js/react": "^0.115.1",
+    "@lynx-js/react-rsbuild-plugin": "^0.12.1",
+    "@lynx-js/rspeedy": "^0.12.2",
+    "@lynx-js/types": "3.4.11",
+    "@rsbuild/plugin-type-check": "1.3.1",
+    "@testing-library/jest-dom": "^6.9.0",
+    "@types/react": "^18.3.25",
+    "jsdom": "^26.1.0",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true,
+  "dependencies": {
+    "parse5": "^8.0.0"
+  }
+}
