@@ -5,6 +5,9 @@ import arrow from './assets/arrow.png'
 import lynxLogo from './assets/lynx-logo.png'
 import reactLynxLogo from './assets/react-logo.png'
 
+import {  HTMLRenderer } from '../../src/index'
+
+
 export function App(props: {
   onRender?: () => void
 }) {
@@ -47,6 +50,7 @@ export function App(props: {
             </text>
             to see updates!
           </text>
+          <HTMLRenderer html='<text>Hello, ReactLynx!</text>' />
         </view>
         <view style={{ flex: 1 }} />
       </view>

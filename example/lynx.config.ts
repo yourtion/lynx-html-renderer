@@ -5,6 +5,11 @@ import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin'
 import { pluginTypeCheck } from '@rsbuild/plugin-type-check'
 
 export default defineConfig({
+  source: {
+    entry: {
+      index: './src/index.tsx',
+    },
+  },
   plugins: [
     pluginQRCode({
       schema(url) {

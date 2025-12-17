@@ -8,6 +8,8 @@
     "skipLibCheck": true,
 
     "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@lynx-js/react",
   },
   "references": [
     { "path": "./tsconfig.node.json" },
