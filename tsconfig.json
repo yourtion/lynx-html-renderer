@@ -9,10 +9,8 @@
 
     "noEmit": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "@lynx-js/react",
+    "jsxImportSource": "@lynx-js/react"
   },
-  "references": [
-    { "path": "./tsconfig.node.json" },
-  ],
-  "files": [],
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "files": []
 }

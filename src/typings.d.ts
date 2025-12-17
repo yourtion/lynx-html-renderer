@@ -1,3 +1,5 @@
+export type LynxNode = LynxElementNode | LynxTextNode;
+
 export interface LynxElementNode {
   kind: 'element';
 
@@ -12,7 +14,7 @@ export interface LynxElementNode {
 
   /** 调试 / 扩展用（MVP 可选） */
   meta?: {
-    sourceTag?: string;   // 原 HTML tag
+    sourceTag?: string; // 原 HTML tag
     sourceAttrs?: Record<string, string>;
   };
 }

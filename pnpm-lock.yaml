@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@lynx-js/react':
-        specifier: ^0.115.1
-        version: 0.115.1(@lynx-js/types@3.4.11)(@types/react@18.3.27)
+      htmlparser2:
+        specifier: ^10.0.0
+        version: 10.0.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.3
@@ -21,6 +21,9 @@ importers:
       '@lynx-js/qrcode-rsbuild-plugin':
         specifier: ^0.4.3
         version: 0.4.3
+      '@lynx-js/react':
+        specifier: ^0.115.1
+        version: 0.115.1(@lynx-js/types@3.4.11)(@types/react@18.3.27)
       '@lynx-js/react-rsbuild-plugin':
         specifier: ^0.12.1
         version: 0.12.1(@lynx-js/react@0.115.1(@lynx-js/types@3.4.11)(@types/react@18.3.27))(webpack@5.104.0)
