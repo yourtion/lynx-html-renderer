@@ -52,4 +52,8 @@ Code quality is maintained with Biome:
 
 Type checking is configured with TypeScript using strict settings.
 
-Write tests for each transformation case to ensure correctness.
+## Important Notes
+
+- Write tests for each transformation case to ensure correctness.
+- Don't use `any` on typescript code, use `unknown` or generic types instead.
+- Run `pnpm run check` before committing to ensure code quality.
