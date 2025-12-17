@@ -7,13 +7,16 @@
     "module": "node16",
     "moduleResolution": "node16",
     "erasableSyntaxOnly": true,
-    "allowImportingTsExtensions": true,
 
     // Node.js 18+
     "lib": ["es2023"],
     "target": "es2022",
 
-    "noEmit": true
+    "noEmit": true,
   },
-  "include": ["example/lynx.config.ts", "src/**/*", "./vitest.config.ts"]
+  "include": [
+    "example/lynx.config.ts",
+    "src/**/*",
+    "./vitest.config.ts",
+  ],
 }
