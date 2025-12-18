@@ -6,6 +6,9 @@
 
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2022",
 
     "noEmit": true,
     "jsx": "react-jsx",

@@ -67,7 +67,7 @@ export interface LynxTextNode extends LynxBaseNode {
 }
 
 export type LynxProps = {
-  style?: LynxStyle;
+  style?: CSSProperties;
   className?: string;
 
   // image
@@ -87,34 +87,8 @@ export type LynxProps = {
     | Record<string, unknown>;
 };
 
-export type LynxStyle = {
-  // layout
-  display?: 'flex' | 'none';
-  flexDirection?: 'row' | 'column';
-  justifyContent?: string;
-  alignItems?: string;
-  flex?: number;
-
-  // box
-  width?: number | string;
-  height?: number | string;
-  margin?: number | string;
-  padding?: number | string;
-
-  // background
-  backgroundColor?: string;
-
-  // border
-  borderRadius?: number | string;
-
-  // misc
-  opacity?: number;
-
-  [key: string]: string | number | undefined;
-};
-
 // 定义渲染结果类型
-export type RenderResult = any; // Lynx 组件类型，实际为内部类型
+export type RenderResult = unknown; // Lynx 组件类型，实际为内部类型
 
 // 渲染适配器接口
 export interface LynxRenderAdapter {

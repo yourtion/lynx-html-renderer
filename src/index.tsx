@@ -147,6 +147,7 @@ function renderNode(node: LynxNode): RenderResult {
   return adapter.render(node, ctx);
 }
 
-export function HTMLRenderer(props: { nodes: LynxNode[] }) {
-  return props.nodes.map(renderNode);
+export function HTMLRenderer(props: { html: string }) {
+  const nodes = transformHTML(props.html);
+  return nodes.map(renderNode); 
 }

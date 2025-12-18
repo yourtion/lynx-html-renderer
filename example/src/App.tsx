@@ -1,9 +1,6 @@
-import { useEffect, useMemo } from '@lynx-js/react';
-
+import { useEffect } from '@lynx-js/react';
 import './App.css';
-
 import { HTMLRenderer } from '../../src/index';
-import { transformHTML } from '../../src/html-parser';
 
 const html = `
 <div style="padding: 20px; max-width: 800px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
@@ -74,8 +71,8 @@ const html = `
     
     <h3 style="font-size: 18px; color: #495057; margin-bottom: 15px;">3. 图片展示</h3>
     <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-      <img src="https://placehold.co/150" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px;" />
-      <img src="https://placehold.co/200" style="width: 200px; height: 100px; object-fit: cover; border-radius: 8px;" />
+      <img src="https://placehold.co/150x100/png" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px;" />
+      <img src="https://placehold.co/200x100/png" style="width: 200px; height: 100px; object-fit: cover; border-radius: 8px;" />
     </div>
     
     <h3 style="font-size: 18px; color: #495057; margin-bottom: 15px;">4. 嵌套结构</h3>
@@ -110,7 +107,6 @@ const html = `
 `;
 
 export function App(props: { onRender?: () => void }) {
-  const nodes = useMemo(() => transformHTML(html), [html]);
   useEffect(() => {
     console.info('Hello, ReactLynx');
   }, []);
@@ -118,7 +114,7 @@ export function App(props: { onRender?: () => void }) {
 
   return (
     <scroll-view scroll-orientation="vertical" class="container">
-      <HTMLRenderer nodes={nodes} />
+      <HTMLRenderer html={html} />
     </scroll-view>
   );
 }
