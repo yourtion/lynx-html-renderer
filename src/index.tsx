@@ -149,5 +149,5 @@ function renderNode(node: LynxNode): RenderResult {
 
 export function HTMLRenderer(props: { html: string }) {
   const nodes = transformHTML(props.html);
-  return nodes.map(renderNode); 
+  return nodes.map(renderNode);
 }
