@@ -5,11 +5,11 @@ import type {
   HtmlTransformProcessor,
   NodePostProcessor,
   NodeTransformProcessor,
+  ProcessorBase,
   StyleHandler,
   TagHandler,
   TopLevelMergeProcessor,
   TransformContext,
-  ProcessorBase,
 } from './typings';
 
 /**
@@ -21,23 +21,30 @@ interface HandlerRegistryEntry<T> {
   priority?: number;
 }
 
+// 定义所有处理器类别
+const PROCESSOR_CATEGORIES = {
+  TAG_PROCESSOR: 'tagProcessor',
+  STYLE_PROCESSOR: 'styleProcessor',
+  NODE_POST_PROCESSOR: 'nodePostProcessor',
+  HTML_TRANSFORM_PROCESSOR: 'htmlTransformProcessor',
+  CHILDREN_TRANSFORM_PROCESSOR: 'childrenTransformProcessor',
+  NODE_TRANSFORM_PROCESSOR: 'nodeTransformProcessor',
+  TOP_LEVEL_MERGE_PROCESSOR: 'topLevelMergeProcessor',
+} as const;
+
 class PluginManager {
   private plugins: HtmlToLynxPlugin[] = [];
-  private tagHandlers: Map<string, HandlerRegistryEntry<TagHandler>[]> =
+  // 统一的处理器注册表
+  // 外层 Map 的 key 是处理器类别，内层 Map 的 key 是标签名（对于标签处理器）或 'global'（对于全局处理器）
+  private processors: Map<string, Map<string, HandlerRegistryEntry<any>[]>> =
     new Map();
-  private styleHandlers: HandlerRegistryEntry<StyleHandler>[] = [];
-  private nodePostProcessors: HandlerRegistryEntry<NodePostProcessor>[] = [];
-  private htmlTransformProcessors: HandlerRegistryEntry<HtmlTransformProcessor>[] =
-    [];
-  private childrenTransformProcessors: HandlerRegistryEntry<ChildrenTransformProcessor>[] =
-    [];
-  private nodeTransformProcessors: HandlerRegistryEntry<NodeTransformProcessor>[] =
-    [];
-  private topLevelMergeProcessors: HandlerRegistryEntry<TopLevelMergeProcessor>[] =
-    [];
   private disabledProcessorTypes: Set<string> = new Set();
 
   constructor() {
+    // 初始化所有处理器类别
+    Object.values(PROCESSOR_CATEGORIES).forEach((category) => {
+      this.processors.set(category, new Map());
+    });
     this.registerBuiltinPlugins();
   }
 
@@ -51,106 +58,167 @@ class PluginManager {
     this.setupPlugin(plugin);
   }
 
+  /**
+   * 通用处理器注册方法
+   */
+  private registerProcessor<T>(category: string, key: string, handler: T) {
+    const taggedHandler = handler as T & Partial<ProcessorBase>;
+    const entry: HandlerRegistryEntry<T> = {
+      handler,
+      type: taggedHandler.type,
+      priority: taggedHandler.priority ?? 0,
+    };
+
+    const categoryMap = this.processors.get(category);
+    if (!categoryMap) return;
+
+    const handlers = categoryMap.get(key) || [];
+    handlers.push(entry as HandlerRegistryEntry<any>);
+
+    // 按优先级排序
+    handlers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
+    categoryMap.set(key, handlers);
+  }
+
+  /**
+   * 在指定类型的处理器之前插入自定义处理器
+   */
+  private insertBefore<T>(
+    category: string,
+    type: string,
+    handler: T,
+    tagOrKey?: string,
+  ): void {
+    const taggedHandler = handler as T & Partial<ProcessorBase>;
+    const insertEntry = {
+      handler,
+      type: taggedHandler.type,
+      priority: taggedHandler.priority ?? 0,
+    };
+
+    const categoryMap = this.processors.get(category);
+    if (!categoryMap) return;
+
+    // 确定键名 - 对于标签处理器使用标签名，其他使用 'global'
+    const key =
+      category === PROCESSOR_CATEGORIES.TAG_PROCESSOR && tagOrKey
+        ? tagOrKey
+        : 'global';
+
+    const handlers = categoryMap.get(key) || [];
+    const index = handlers.findIndex((entry) => entry.type === type);
+    if (index !== -1) {
+      handlers.splice(index, 0, insertEntry as HandlerRegistryEntry<any>);
+    } else {
+      handlers.push(insertEntry as HandlerRegistryEntry<any>);
+    }
+    categoryMap.set(key, handlers);
+  }
+
+  /**
+   * 在指定类型的处理器之后插入自定义处理器
+   */
+  private insertAfter<T>(
+    category: string,
+    type: string,
+    handler: T,
+    tagOrKey?: string,
+  ): void {
+    const taggedHandler = handler as T & Partial<ProcessorBase>;
+    const insertEntry = {
+      handler,
+      type: taggedHandler.type,
+      priority: taggedHandler.priority ?? 0,
+    };
+
+    const categoryMap = this.processors.get(category);
+    if (!categoryMap) return;
+
+    // 确定键名 - 对于标签处理器使用标签名，其他使用 'global'
+    const key =
+      category === PROCESSOR_CATEGORIES.TAG_PROCESSOR && tagOrKey
+        ? tagOrKey
+        : 'global';
+
+    const handlers = categoryMap.get(key) || [];
+    const index = handlers.findIndex((entry) => entry.type === type);
+    if (index !== -1) {
+      handlers.splice(index + 1, 0, insertEntry as HandlerRegistryEntry<any>);
+    } else {
+      handlers.push(insertEntry as HandlerRegistryEntry<any>);
+    }
+    categoryMap.set(key, handlers);
+  }
+
+  /**
+   * 通用处理器获取方法
+   */
+  private getProcessors<T>(category: string, tagOrKey?: string): T[] {
+    const categoryMap = this.processors.get(category);
+    if (!categoryMap) return [];
+
+    // 确定键名 - 对于标签处理器使用标签名，其他使用 'global'
+    const key =
+      category === PROCESSOR_CATEGORIES.TAG_PROCESSOR && tagOrKey
+        ? tagOrKey
+        : 'global';
+
+    const handlers = categoryMap.get(key) || [];
+    return handlers
+      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
+      .map((entry) => entry.handler);
+  }
+
   private setupPlugin(plugin: HtmlToLynxPlugin) {
     const ctx: TransformContext = {
       registerTagHandler: (tag, handler) => {
-        if (!this.tagHandlers.has(tag)) {
-          this.tagHandlers.set(tag, []);
-        }
-
-        const taggedHandler = handler as TagHandler & Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<TagHandler> = {
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.TAG_PROCESSOR,
+          tag,
           handler,
-          type: taggedHandler.type,
-          priority: taggedHandler.priority ?? 0,
-        };
-
-        this.tagHandlers.get(tag)?.push(entry);
-        this.tagHandlers
-          .get(tag)
-          ?.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+        );
       },
       registerStyleHandler: (handler) => {
-        const taggedHandler = handler as StyleHandler & Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<StyleHandler> = {
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.STYLE_PROCESSOR,
+          'global',
           handler,
-          type: taggedHandler.type,
-          priority: taggedHandler.priority ?? 0,
-        };
-
-        this.styleHandlers.push(entry);
-        this.styleHandlers.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
         );
       },
       registerNodePostProcessor: (processor) => {
-        const taggedProcessor = processor as NodePostProcessor &
-          Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<NodePostProcessor> = {
-          handler: processor,
-          type: taggedProcessor.type,
-          priority: taggedProcessor.priority ?? 0,
-        };
-
-        this.nodePostProcessors.push(entry);
-        this.nodePostProcessors.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.NODE_POST_PROCESSOR,
+          'global',
+          processor,
         );
       },
       registerHtmlTransformProcessor: (processor) => {
-        const taggedProcessor = processor as HtmlTransformProcessor &
-          Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<HtmlTransformProcessor> = {
-          handler: processor,
-          type: taggedProcessor.type,
-          priority: taggedProcessor.priority ?? 0,
-        };
-
-        this.htmlTransformProcessors.push(entry);
-        this.htmlTransformProcessors.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.HTML_TRANSFORM_PROCESSOR,
+          'global',
+          processor,
         );
       },
       registerChildrenTransformProcessor: (processor) => {
-        const taggedProcessor = processor as ChildrenTransformProcessor &
-          Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<ChildrenTransformProcessor> = {
-          handler: processor,
-          type: taggedProcessor.type,
-          priority: taggedProcessor.priority ?? 0,
-        };
-
-        this.childrenTransformProcessors.push(entry);
-        this.childrenTransformProcessors.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.CHILDREN_TRANSFORM_PROCESSOR,
+          'global',
+          processor,
         );
       },
       registerNodeTransformProcessor: (processor) => {
-        const taggedProcessor = processor as NodeTransformProcessor &
-          Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<NodeTransformProcessor> = {
-          handler: processor,
-          type: taggedProcessor.type,
-          priority: taggedProcessor.priority ?? 0,
-        };
-
-        this.nodeTransformProcessors.push(entry);
-        this.nodeTransformProcessors.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.NODE_TRANSFORM_PROCESSOR,
+          'global',
+          processor,
         );
       },
       registerTopLevelMergeProcessor: (processor) => {
-        const taggedProcessor = processor as TopLevelMergeProcessor &
-          Partial<ProcessorBase>;
-        const entry: HandlerRegistryEntry<TopLevelMergeProcessor> = {
-          handler: processor,
-          type: taggedProcessor.type,
-          priority: taggedProcessor.priority ?? 0,
-        };
-
-        this.topLevelMergeProcessors.push(entry);
-        this.topLevelMergeProcessors.sort(
-          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        this.registerProcessor(
+          PROCESSOR_CATEGORIES.TOP_LEVEL_MERGE_PROCESSOR,
+          'global',
+          processor,
         );
       },
     };
@@ -162,64 +230,64 @@ class PluginManager {
    * 获取指定标签的处理器列表（过滤掉已禁用的处理器）
    */
   getTagHandlers(tag: string): TagHandler[] {
-    const handlers = this.tagHandlers.get(tag) || [];
-    return handlers
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<TagHandler>(
+      PROCESSOR_CATEGORIES.TAG_PROCESSOR,
+      tag,
+    );
   }
 
   /**
    * 获取样式处理器列表（过滤掉已禁用的处理器）
    */
   getStyleHandlers(): StyleHandler[] {
-    return this.styleHandlers
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<StyleHandler>(
+      PROCESSOR_CATEGORIES.STYLE_PROCESSOR,
+    );
   }
 
   /**
    * 获取节点后处理器列表（过滤掉已禁用的处理器）
    */
   getNodePostProcessors(): NodePostProcessor[] {
-    return this.nodePostProcessors
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<NodePostProcessor>(
+      PROCESSOR_CATEGORIES.NODE_POST_PROCESSOR,
+    );
   }
 
   /**
    * 获取HTML转换处理器列表（过滤掉已禁用的处理器）
    */
   getHtmlTransformProcessors(): HtmlTransformProcessor[] {
-    return this.htmlTransformProcessors
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<HtmlTransformProcessor>(
+      PROCESSOR_CATEGORIES.HTML_TRANSFORM_PROCESSOR,
+    );
   }
 
   /**
    * 获取子节点转换处理器列表（过滤掉已禁用的处理器）
    */
   getChildrenTransformProcessors(): ChildrenTransformProcessor[] {
-    return this.childrenTransformProcessors
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<ChildrenTransformProcessor>(
+      PROCESSOR_CATEGORIES.CHILDREN_TRANSFORM_PROCESSOR,
+    );
   }
 
   /**
    * 获取节点转换处理器列表（过滤掉已禁用的处理器）
    */
   getNodeTransformProcessors(): NodeTransformProcessor[] {
-    return this.nodeTransformProcessors
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<NodeTransformProcessor>(
+      PROCESSOR_CATEGORIES.NODE_TRANSFORM_PROCESSOR,
+    );
   }
 
   /**
    * 获取顶层节点合并处理器列表（过滤掉已禁用的处理器）
    */
   getTopLevelMergeProcessors(): TopLevelMergeProcessor[] {
-    return this.topLevelMergeProcessors
-      .filter((entry) => !this.disabledProcessorTypes.has(entry.type || ''))
-      .map((entry) => entry.handler);
+    return this.getProcessors<TopLevelMergeProcessor>(
+      PROCESSOR_CATEGORIES.TOP_LEVEL_MERGE_PROCESSOR,
+    );
   }
 
   /**
@@ -244,279 +312,181 @@ class PluginManager {
   }
 
   /**
-   * 在指定类型的处理器之前插入自定义处理器
+   * 在指定类型的标签处理器之前插入自定义处理器
    */
-  insertBefore<
-    T extends
-      | TagHandler
-      | StyleHandler
-      | NodePostProcessor
-      | HtmlTransformProcessor
-      | ChildrenTransformProcessor
-      | NodeTransformProcessor
-      | TopLevelMergeProcessor,
-  >(
+  insertBeforeTagHandler<T extends TagHandler>(
     type: string,
     handler: T,
-    targetType:
-      | 'tag'
-      | 'style'
-      | 'postProcessor'
-      | 'htmlTransform'
-      | 'childrenTransform'
-      | 'nodeTransform'
-      | 'topLevelMerge',
-    tag?: string,
+    tag: string,
   ): void {
-    const taggedHandler = handler as T & Partial<ProcessorBase>;
-    const insertEntry = {
-      handler,
-      type: taggedHandler.type,
-      priority: taggedHandler.priority ?? 0,
-    };
-
-    if (targetType === 'tag' && tag) {
-      const handlers = this.tagHandlers.get(tag) || [];
-      const index = handlers.findIndex((entry) => entry.type === type);
-      if (index !== -1) {
-        handlers.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<TagHandler>,
-        );
-      } else {
-        handlers.push(insertEntry as HandlerRegistryEntry<TagHandler>);
-      }
-      this.tagHandlers.set(tag, handlers);
-    } else if (targetType === 'style') {
-      const index = this.styleHandlers.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.styleHandlers.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<StyleHandler>,
-        );
-      } else {
-        this.styleHandlers.push(
-          insertEntry as HandlerRegistryEntry<StyleHandler>,
-        );
-      }
-    } else if (targetType === 'postProcessor') {
-      const index = this.nodePostProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.nodePostProcessors.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<NodePostProcessor>,
-        );
-      } else {
-        this.nodePostProcessors.push(
-          insertEntry as HandlerRegistryEntry<NodePostProcessor>,
-        );
-      }
-    } else if (targetType === 'htmlTransform') {
-      const index = this.htmlTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.htmlTransformProcessors.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<HtmlTransformProcessor>,
-        );
-      } else {
-        this.htmlTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<HtmlTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'childrenTransform') {
-      const index = this.childrenTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.childrenTransformProcessors.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<ChildrenTransformProcessor>,
-        );
-      } else {
-        this.childrenTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<ChildrenTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'nodeTransform') {
-      const index = this.nodeTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.nodeTransformProcessors.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<NodeTransformProcessor>,
-        );
-      } else {
-        this.nodeTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<NodeTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'topLevelMerge') {
-      const index = this.topLevelMergeProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.topLevelMergeProcessors.splice(
-          index,
-          0,
-          insertEntry as HandlerRegistryEntry<TopLevelMergeProcessor>,
-        );
-      } else {
-        this.topLevelMergeProcessors.push(
-          insertEntry as HandlerRegistryEntry<TopLevelMergeProcessor>,
-        );
-      }
-    }
+    this.insertBefore(PROCESSOR_CATEGORIES.TAG_PROCESSOR, type, handler, tag);
   }
 
   /**
-   * 在指定类型的处理器之后插入自定义处理器
+   * 在指定类型的样式处理器之前插入自定义处理器
    */
-  insertAfter<
-    T extends
-      | TagHandler
-      | StyleHandler
-      | NodePostProcessor
-      | HtmlTransformProcessor
-      | ChildrenTransformProcessor
-      | NodeTransformProcessor
-      | TopLevelMergeProcessor,
-  >(
+  insertBeforeStyleHandler<T extends StyleHandler>(
     type: string,
     handler: T,
-    targetType:
-      | 'tag'
-      | 'style'
-      | 'postProcessor'
-      | 'htmlTransform'
-      | 'childrenTransform'
-      | 'nodeTransform'
-      | 'topLevelMerge',
-    tag?: string,
   ): void {
-    const taggedHandler = handler as T & Partial<ProcessorBase>;
-    const insertEntry = {
-      handler,
-      type: taggedHandler.type,
-      priority: taggedHandler.priority ?? 0,
-    };
+    this.insertBefore(PROCESSOR_CATEGORIES.STYLE_PROCESSOR, type, handler);
+  }
 
-    if (targetType === 'tag' && tag) {
-      const handlers = this.tagHandlers.get(tag) || [];
-      const index = handlers.findIndex((entry) => entry.type === type);
-      if (index !== -1) {
-        handlers.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<TagHandler>,
-        );
-      } else {
-        handlers.push(insertEntry as HandlerRegistryEntry<TagHandler>);
-      }
-      this.tagHandlers.set(tag, handlers);
-    } else if (targetType === 'style') {
-      const index = this.styleHandlers.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.styleHandlers.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<StyleHandler>,
-        );
-      } else {
-        this.styleHandlers.push(
-          insertEntry as HandlerRegistryEntry<StyleHandler>,
-        );
-      }
-    } else if (targetType === 'postProcessor') {
-      const index = this.nodePostProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.nodePostProcessors.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<NodePostProcessor>,
-        );
-      } else {
-        this.nodePostProcessors.push(
-          insertEntry as HandlerRegistryEntry<NodePostProcessor>,
-        );
-      }
-    } else if (targetType === 'htmlTransform') {
-      const index = this.htmlTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.htmlTransformProcessors.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<HtmlTransformProcessor>,
-        );
-      } else {
-        this.htmlTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<HtmlTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'childrenTransform') {
-      const index = this.childrenTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.childrenTransformProcessors.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<ChildrenTransformProcessor>,
-        );
-      } else {
-        this.childrenTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<ChildrenTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'nodeTransform') {
-      const index = this.nodeTransformProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.nodeTransformProcessors.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<NodeTransformProcessor>,
-        );
-      } else {
-        this.nodeTransformProcessors.push(
-          insertEntry as HandlerRegistryEntry<NodeTransformProcessor>,
-        );
-      }
-    } else if (targetType === 'topLevelMerge') {
-      const index = this.topLevelMergeProcessors.findIndex(
-        (entry) => entry.type === type,
-      );
-      if (index !== -1) {
-        this.topLevelMergeProcessors.splice(
-          index + 1,
-          0,
-          insertEntry as HandlerRegistryEntry<TopLevelMergeProcessor>,
-        );
-      } else {
-        this.topLevelMergeProcessors.push(
-          insertEntry as HandlerRegistryEntry<TopLevelMergeProcessor>,
-        );
-      }
-    }
+  /**
+   * 在指定类型的节点后处理器之前插入自定义处理器
+   */
+  insertBeforeNodePostProcessor<T extends NodePostProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertBefore(
+      PROCESSOR_CATEGORIES.NODE_POST_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的HTML转换处理器之前插入自定义处理器
+   */
+  insertBeforeHtmlTransformProcessor<T extends HtmlTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertBefore(
+      PROCESSOR_CATEGORIES.HTML_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的子节点转换处理器之前插入自定义处理器
+   */
+  insertBeforeChildrenTransformProcessor<T extends ChildrenTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertBefore(
+      PROCESSOR_CATEGORIES.CHILDREN_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的节点转换处理器之前插入自定义处理器
+   */
+  insertBeforeNodeTransformProcessor<T extends NodeTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertBefore(
+      PROCESSOR_CATEGORIES.NODE_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的顶层节点合并处理器之前插入自定义处理器
+   */
+  insertBeforeTopLevelMergeProcessor<T extends TopLevelMergeProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertBefore(
+      PROCESSOR_CATEGORIES.TOP_LEVEL_MERGE_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的标签处理器之后插入自定义处理器
+   */
+  insertAfterTagHandler<T extends TagHandler>(
+    type: string,
+    handler: T,
+    tag: string,
+  ): void {
+    this.insertAfter(PROCESSOR_CATEGORIES.TAG_PROCESSOR, type, handler, tag);
+  }
+
+  /**
+   * 在指定类型的样式处理器之后插入自定义处理器
+   */
+  insertAfterStyleHandler<T extends StyleHandler>(
+    type: string,
+    handler: T,
+  ): void {
+    this.insertAfter(PROCESSOR_CATEGORIES.STYLE_PROCESSOR, type, handler);
+  }
+
+  /**
+   * 在指定类型的节点后处理器之后插入自定义处理器
+   */
+  insertAfterNodePostProcessor<T extends NodePostProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertAfter(PROCESSOR_CATEGORIES.NODE_POST_PROCESSOR, type, processor);
+  }
+
+  /**
+   * 在指定类型的HTML转换处理器之后插入自定义处理器
+   */
+  insertAfterHtmlTransformProcessor<T extends HtmlTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertAfter(
+      PROCESSOR_CATEGORIES.HTML_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的子节点转换处理器之后插入自定义处理器
+   */
+  insertAfterChildrenTransformProcessor<T extends ChildrenTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertAfter(
+      PROCESSOR_CATEGORIES.CHILDREN_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的节点转换处理器之后插入自定义处理器
+   */
+  insertAfterNodeTransformProcessor<T extends NodeTransformProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertAfter(
+      PROCESSOR_CATEGORIES.NODE_TRANSFORM_PROCESSOR,
+      type,
+      processor,
+    );
+  }
+
+  /**
+   * 在指定类型的顶层节点合并处理器之后插入自定义处理器
+   */
+  insertAfterTopLevelMergeProcessor<T extends TopLevelMergeProcessor>(
+    type: string,
+    processor: T,
+  ): void {
+    this.insertAfter(
+      PROCESSOR_CATEGORIES.TOP_LEVEL_MERGE_PROCESSOR,
+      type,
+      processor,
+    );
   }
 }
 
