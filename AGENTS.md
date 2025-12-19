@@ -13,10 +13,11 @@ This is a Lynx HTML Renderer library that transforms HTML strings into LynxNodes
 
 ## Development Commands
 
-- `pnpm run dev` - Run the example application in development mode
-- `pnpm run test` - Run the test suite with Vitest
-- `pnpm run check` - Run Biome code quality checks
-- `pnpm run format` - Format code with Biome
+- `pnpm dev` - Run the example application in development mode
+- `pnpm test` - Run the test suite with Vitest
+- `pnpm check` - Run Biome code quality checks
+- `pnpm format` - Format code with Biome
+- `pnpm coverage` - Run code coverage report with Vitest
 
 ## Architecture
 
@@ -42,13 +43,13 @@ Tests are written with Vitest and cover:
 - Nested structures
 - Edge cases (empty HTML, whitespace-only content)
 
-Run tests with: `pnpm run test`
+Run tests with: `pnpm test`
 
 ## Code Quality
 
 Code quality is maintained with Biome:
-- Run checks: `pnpm run check`
-- Format code: `pnpm run format`
+- Run checks: `pnpm check`
+- Format code: `pnpm format`
 
 Type checking is configured with TypeScript using strict settings.
 
