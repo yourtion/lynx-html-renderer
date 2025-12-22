@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build-example": "cd example && rspeedy build",
     "check": "biome check --write",
     "dev": "cd example && rspeedy dev",
     "format": "biome format --write",
     "preview": "cd example && rspeedy preview",
     "test": "vitest run",
-    "coverage": "vitest run --coverage --coverage.include='src/**'"
+    "coverage": "vitest run --coverage --coverage.include='src/**'",
+    "docs:dev": "rspress dev",
+    "docs:build": "rspress build"
   },
   "files": [
     "src"
@@ -29,6 +32,7 @@
     "@types/react": "^18.3.25",
     "@vitest/coverage-v8": "3.2.4",
     "jsdom": "^26.1.0",
+    "rspress": "^1.47.0",
     "typescript": "~5.9.3",
     "vitest": "^3.2.4"
   },
