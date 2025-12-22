@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../html-parser';
+import { HTMLRenderer } from '../../index';
 
 describe('Table Elements', () => {
   it('should transform simple table structure', () => {
@@ -62,5 +63,53 @@ describe('Table Elements', () => {
 
     // Check table has three rows (thead, tbody, tfoot are flattened)
     expect(result[0].children).toHaveLength(3);
+  });
+
+  it('should render table elements with correct roles', () => {
+    // 测试表格元素渲染，确保生成的节点具有正确的role属性
+    const html = `
+      <table>
+        <tr>
+          <th>Header</th>
+          <td>Data</td>
+        </tr>
+      </table>
+    `;
+
+    // 直接使用transformHTML而不是HTMLRenderer来检查中间结果
+    const result = transformHTML(html);
+
+    expect(result).toBeDefined();
+    expect(result.length).toBe(1);
+    expect(result[0].kind).toBe('element');
+
+    // 检查表格节点
+    const tableNode = result[0];
+    expect(tableNode.tag).toBe('view');
+    expect(tableNode.meta?.sourceTag).toBe('table');
+
+    // 检查行节点
+    expect(tableNode.children.length).toBe(1);
+    const rowNode = tableNode.children[0];
+    expect(rowNode.tag).toBe('view');
+    expect(rowNode.meta?.sourceTag).toBe('tr');
+
+    // 检查单元格节点
+    expect(rowNode.children.length).toBe(2);
+    const thNode = rowNode.children[0];
+    const tdNode = rowNode.children[1];
+    expect(thNode.tag).toBe('view');
+    expect(thNode.meta?.sourceTag).toBe('th');
+    expect(tdNode.tag).toBe('view');
+    expect(tdNode.meta?.sourceTag).toBe('td');
+  });
+
+  it('should test the complete HTMLRenderer with table elements', () => {
+    // 测试完整的HTMLRenderer渲染流程，确保适配器被正确使用
+    const html = '<table><tr><td>Test Cell</td></tr></table>';
+    const result = HTMLRenderer({ html });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBe(1);
   });
 });

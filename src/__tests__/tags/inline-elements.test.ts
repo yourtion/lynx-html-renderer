@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../html-parser';
+import { HTMLRenderer } from '../../index';
 
 describe('Inline Elements', () => {
   it('should transform span to text', () => {
@@ -105,5 +106,33 @@ describe('Inline Elements', () => {
         meta: { sourceTag: 'code' },
       },
     ]);
+  });
+
+  it('should test all text formatting options with HTMLRenderer', () => {
+    // 测试所有文本格式选项，确保renderNode函数的样式处理被覆盖
+    const html = `
+      <div>
+        <strong>Bold</strong>
+        <em>Italic</em>
+        <u>Underline</u>
+        <code>Code</code>
+        <b>Bold 2</b>
+        <i>Italic 2</i>
+      </div>
+    `;
+
+    const result = HTMLRenderer({ html });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBe(1);
+  });
+
+  it('should test nested text formatting with HTMLRenderer', () => {
+    // 测试嵌套文本格式，确保标记合并逻辑被覆盖
+    const html = '<div><strong>Bold <em>and Italic</em></strong></div>';
+    const result = HTMLRenderer({ html });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBe(1);
   });
 });

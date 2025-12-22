@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../html-parser.js';
-import { pluginManager } from '../../plugin-system.js';
-import { BuiltinProcessorType } from '../../plugins/builtin.js';
+import {
+  BuiltinProcessorType,
+  createTextHandler,
+  defaultStyleHandler,
+  mergeAdjacentTextNodes,
+} from '../../plugins/builtin.js';
+import type { HtmlParserNode, LynxNode, LynxTextNode } from '../../typings.js';
 
 describe('Plugin System - Builtin Plugin', () => {
   it('should have all builtin processor types defined', () => {
@@ -19,5 +24,80 @@ describe('Plugin System - Builtin Plugin', () => {
     const result = transformHTML(html);
     expect(result).toBeDefined();
     expect(result[0].children[0].props?.style?.fontWeight).toBe('bold');
+  });
+});
+
+describe('Builtin Processors', () => {
+  it('should test defaultStyleHandler function', () => {
+    // Test defaultStyleHandler function
+    const inputStyle = { color: 'red', fontSize: '12px' };
+    const result = defaultStyleHandler(inputStyle);
+    expect(result).toEqual(inputStyle);
+
+    // Test with empty style object
+    expect(defaultStyleHandler({})).toEqual({});
+  });
+
+  it('should test createTextHandler function', () => {
+    // Test createTextHandler function
+    const textHandler = createTextHandler();
+    const textNode: HtmlParserNode = {
+      type: 'text',
+      data: 'Test text content',
+    };
+
+    const result = textHandler(textNode);
+    expect(result).toBeDefined();
+    expect(result?.kind).toBe('text');
+    expect(result?.content).toBe('Test text content');
+
+    // Test with empty text
+    const emptyTextNode: HtmlParserNode = {
+      type: 'text',
+      data: '   \n   ',
+    };
+
+    const emptyResult = textHandler(emptyTextNode);
+    expect(emptyResult).toBe(null);
+  });
+
+  it('should test mergeAdjacentTextNodes function', () => {
+    // Test mergeAdjacentTextNodes function
+    const inputNode: LynxNode = {
+      kind: 'element',
+      tag: 'view',
+      props: {},
+      children: [
+        { kind: 'text', content: 'Hello ' },
+        { kind: 'text', content: 'World' },
+        {
+          kind: 'element',
+          tag: 'text',
+          props: {},
+          children: [{ kind: 'text', content: 'test' }],
+        },
+        { kind: 'text', content: 'foo' },
+        { kind: 'text', content: 'bar' },
+      ],
+    };
+
+    const result = mergeAdjacentTextNodes(inputNode);
+    expect(result).toBeDefined();
+    expect(result.kind).toBe('element');
+    expect(result.children).toHaveLength(3);
+    expect(result.children[0].kind).toBe('text');
+    expect((result.children[0] as LynxTextNode).content).toBe('Hello World');
+    expect(result.children[2].kind).toBe('text');
+    expect((result.children[2] as LynxTextNode).content).toBe('foobar');
+  });
+
+  it('should test childrenTransformProcessor indirectly through transformHTML', () => {
+    // Test childrenTransformProcessor by rendering nested HTML
+    const html =
+      '<div><p>Paragraph <strong>with</strong> <em>formatting</em></p></div>';
+    const result = transformHTML(html);
+    expect(result).toBeDefined();
+    expect(result[0].children).toHaveLength(1);
+    expect(result[0].children[0].children).toHaveLength(3);
   });
 });
