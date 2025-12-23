@@ -34,6 +34,76 @@ interface ExtendedHtmlParserNode extends HtmlParserNode {
   children?: ExtendedHtmlParserNode[];
 }
 
+// 定义共享配置对象以减少冗余
+const BLOCK_ELEMENT_CONFIG = {
+  lynxTag: 'view',
+  role: 'block',
+  capabilities: { layout: 'flex', isVoid: false },
+  defaultStyle: { flexDirection: 'column' },
+};
+
+const INLINE_TEXT_CONFIG = {
+  lynxTag: 'text',
+  role: 'inline',
+  capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+};
+
+const TEXT_CONTAINER_CONFIG = {
+  lynxTag: 'text',
+  role: 'textContainer',
+  capabilities: { layout: 'block', textContainer: true, isVoid: false },
+};
+
+const PRE_ELEMENT_CONFIG = {
+  lynxTag: 'text',
+  role: 'block',
+  capabilities: { layout: 'block', textContainer: true, isVoid: false },
+};
+
+const LINK_CONFIG = {
+  lynxTag: 'text',
+  role: 'inline',
+  capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+};
+
+const HEADING_CONFIG = {
+  lynxTag: 'text',
+  role: 'textContainer',
+  capabilities: { layout: 'block', textContainer: true, isVoid: false },
+};
+
+const LIST_ELEMENT_CONFIG = {
+  lynxTag: 'view',
+  role: 'block',
+  capabilities: { layout: 'flex', isVoid: false },
+  defaultStyle: { flexDirection: 'column', paddingLeft: '40px' },
+};
+
+const TABLE_ELEMENT_CONFIG = {
+  lynxTag: 'view',
+  role: 'block',
+  capabilities: { layout: 'flex', isVoid: false },
+};
+
+const TABLE_CELL_CONFIG = {
+  lynxTag: 'view',
+  role: 'cell',
+  capabilities: { layout: 'flex', isVoid: false },
+};
+
+const BLOCK_QUOTE_CONFIG = {
+  lynxTag: 'view',
+  role: 'block',
+  capabilities: { layout: 'flex', isVoid: false },
+  defaultStyle: {
+    flexDirection: 'column',
+    marginLeft: '40px',
+    marginRight: '40px',
+    paddingLeft: '16px',
+    borderLeft: '4px solid #ddd',
+  },
+};
+
 // 标签映射配置
 export const TAG_MAP: Record<
   string,
@@ -44,99 +114,83 @@ export const TAG_MAP: Record<
     defaultStyle?: Record<string, string | number>;
   }
 > = {
-  // Block elements
-  div: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  section: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  article: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  header: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  footer: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  nav: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
-  aside: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { flexDirection: 'column' },
-  },
+  // Block elements (使用共享配置)
+  div: BLOCK_ELEMENT_CONFIG,
+  section: BLOCK_ELEMENT_CONFIG,
+  article: BLOCK_ELEMENT_CONFIG,
+  header: BLOCK_ELEMENT_CONFIG,
+  footer: BLOCK_ELEMENT_CONFIG,
+  nav: BLOCK_ELEMENT_CONFIG,
+  aside: BLOCK_ELEMENT_CONFIG,
 
   // Text elements
-  p: {
-    lynxTag: 'text',
-    role: 'textContainer',
-    capabilities: { layout: 'block', textContainer: true, isVoid: false },
-    defaultStyle: { marginBottom: '1em' },
-  },
-  span: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
-  },
+  p: { ...TEXT_CONTAINER_CONFIG, defaultStyle: { marginBottom: '1em' } },
+  span: INLINE_TEXT_CONFIG,
 
-  // Text formatting
+  // Heading elements (h1-h6)
+  h1: { ...HEADING_CONFIG, defaultStyle: { fontSize: '2em', fontWeight: 'bold', margin: '0.67em 0' } },
+  h2: { ...HEADING_CONFIG, defaultStyle: { fontSize: '1.5em', fontWeight: 'bold', margin: '0.83em 0' } },
+  h3: { ...HEADING_CONFIG, defaultStyle: { fontSize: '1.17em', fontWeight: 'bold', margin: '1em 0' } },
+  h4: { ...HEADING_CONFIG, defaultStyle: { fontSize: '1em', fontWeight: 'bold', margin: '1.33em 0' } },
+  h5: { ...HEADING_CONFIG, defaultStyle: { fontSize: '0.83em', fontWeight: 'bold', margin: '1.67em 0' } },
+  h6: { ...HEADING_CONFIG, defaultStyle: { fontSize: '0.67em', fontWeight: 'bold', margin: '2.33em 0' } },
+
+  // Text formatting (简化重复配置)
   strong: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { fontWeight: 'bold' },
   },
   b: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { fontWeight: 'bold' },
   },
   em: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { fontStyle: 'italic' },
   },
   i: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { fontStyle: 'italic' },
   },
   u: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { textDecoration: 'underline' },
   },
   code: {
-    lynxTag: 'text',
-    role: 'inline',
-    capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+    ...INLINE_TEXT_CONFIG,
     defaultStyle: { fontFamily: 'monospace' },
+  },
+
+  // List elements
+  ul: LIST_ELEMENT_CONFIG,
+  ol: LIST_ELEMENT_CONFIG,
+  li: {
+    lynxTag: 'view',
+    role: 'block',
+    capabilities: { layout: 'flex', isVoid: false },
+    defaultStyle: { display: 'list-item' },
+  },
+
+  // Other common elements
+  a: {
+    ...LINK_CONFIG,
+    defaultStyle: { color: 'blue', textDecoration: 'underline' },
+  },
+  hr: {
+    lynxTag: 'view',
+    role: 'block',
+    capabilities: { layout: 'block', isVoid: true },
+    defaultStyle: { height: '1px', backgroundColor: '#ccc', margin: '1em 0' },
+  },
+  blockquote: BLOCK_QUOTE_CONFIG,
+  pre: {
+    ...PRE_ELEMENT_CONFIG,
+    defaultStyle: {
+      fontFamily: 'monospace',
+      backgroundColor: '#f5f5f5',
+      padding: '16px',
+      overflow: 'auto',
+    },
   },
 
   // Image
@@ -159,36 +213,16 @@ export const TAG_MAP: Record<
     role: 'table',
     capabilities: { layout: 'flex', isVoid: false },
   },
-  thead: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-  },
-  tbody: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-  },
-  tfoot: {
-    lynxTag: 'view',
-    role: 'block',
-    capabilities: { layout: 'flex', isVoid: false },
-  },
+  thead: TABLE_ELEMENT_CONFIG,
+  tbody: TABLE_ELEMENT_CONFIG,
+  tfoot: TABLE_ELEMENT_CONFIG,
   tr: {
     lynxTag: 'view',
     role: 'row',
     capabilities: { layout: 'flex', isVoid: false },
   },
-  th: {
-    lynxTag: 'view',
-    role: 'cell',
-    capabilities: { layout: 'flex', isVoid: false },
-  },
-  td: {
-    lynxTag: 'view',
-    role: 'cell',
-    capabilities: { layout: 'flex', isVoid: false },
-  },
+  th: TABLE_CELL_CONFIG,
+  td: TABLE_CELL_CONFIG,
 };
 
 // 结构角色类型
