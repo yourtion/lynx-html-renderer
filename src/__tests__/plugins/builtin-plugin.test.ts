@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../html-parser.js';
-import {
-  BuiltinProcessorType,
-  createTextHandler,
-  defaultStyleHandler,
-  mergeAdjacentTextNodes,
-} from '../../plugins/builtin.js';
+import { BuiltinProcessorType } from '../../plugins/builtin.js';
+import { mergeAdjacentTextNodes } from '../../plugins/node-processors.js';
+import { defaultStyleHandler } from '../../plugins/style-handlers.js';
+import { createTextHandler } from '../../plugins/tag-handlers.js';
 import type { HtmlParserNode, LynxNode, LynxTextNode } from '../../typings.js';
 
 describe('Plugin System - Builtin Plugin', () => {
