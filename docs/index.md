@@ -4,8 +4,6 @@
 > 
 > A lightweight and extensible renderer that render HTML string on Lynx.
 
----
-
 ## ✨ 项目简介 | Introduction
 
 **HTML → Lynx Renderer** 通过解析 HTML 并转换为一棵中间语义树（LynxNode），最终渲染为 Lynx 原生组件。
@@ -25,7 +23,30 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 - Rich text rendering
 - Configuration-driven pages
 
----
+## 🚀 使用方法 | Usage
+
+### 安装 | Installation
+
+```bash
+npm install lynx-html-renderer
+```
+
+### 基本使用 | Basic Usage
+
+```typescript
+import { renderHtml } from 'lynx-html-renderer';
+
+const html = '<div>Hello <strong>world</strong></div>';
+const lynxNodes = renderHtml(html);
+```
+
+### 示例 Bundle | Example Bundle
+
+Scan the QR code below to access the example bundle:
+
+![QR Code for Example Bundle](./qrcode.png)
+
+The example bundle is available at `/example/dist/index.lynx.bundle`
 
 ## 🎯 设计目标 | Design Goals
 
@@ -34,7 +55,6 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 - ✅ 支持用户自定义标签与渲染组件
 - ✅ 架构可扩展、可长期维护
 
----
 
 ## 🚫 非目标 | Non-goals
 
@@ -42,8 +62,6 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 - ❌ 不执行 JavaScript（`script` / inline events）
 - ❌ 不追求浏览器级像素一致
 - ❌ 不做 DOM diff 或 hydration
-
----
 
 ## 🧠 核心思想 | Core Concepts
 
@@ -58,7 +76,6 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 - ✅ 用户自定义渲染组件
 - ✅ 插件化 Transform 机制（可选）
 
----
 
 ## 🧩 插件机制 | Plugin System
 
@@ -70,7 +87,6 @@ Transform 阶段支持插件，用于：
 
 插件以 **pipeline** 形式执行，不影响核心逻辑的稳定性。
 
----
 
 ## 🛠 使用场景 | Use Cases
 
@@ -78,7 +94,6 @@ Transform 阶段支持插件，用于：
 - 富文本展示（不依赖 WebView）
 - 多端统一内容渲染
 
----
 
 ## 🙌 贡献 | Contributing
 
