@@ -1,0 +1,924 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Snapshot Tests with Verification > All Heading Elements (h1-h6) > should match snapshot for all heading elements 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <text
+      style="font-size: 2em; font-weight: bold; margin: 0.67em 0px;"
+    >
+      <text>
+        Heading 1
+      </text>
+    </text>
+    <text
+      style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+    >
+      <text>
+        Heading 2
+      </text>
+    </text>
+    <text
+      style="font-size: 1.17em; font-weight: bold; margin: 1em 0px;"
+    >
+      <text>
+        Heading 3
+      </text>
+    </text>
+    <text
+      style="font-size: 1em; font-weight: bold; margin: 1.33em 0px;"
+    >
+      <text>
+        Heading 4
+      </text>
+    </text>
+    <text
+      style="font-size: 0.83em; font-weight: bold; margin: 1.67em 0px;"
+    >
+      <text>
+        Heading 5
+      </text>
+    </text>
+    <text
+      style="font-size: 0.67em; font-weight: bold; margin: 2.33em 0px;"
+    >
+      <text>
+        Heading 6
+      </text>
+    </text>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > All Table Elements > should match snapshot for complete table structure 1`] = `
+<page>
+  <view>
+    <view>
+      <view>
+        <view>
+          <text>
+            Header 1
+          </text>
+        </view>
+        <view>
+          <text>
+            Header 2
+          </text>
+        </view>
+        <view>
+          <text>
+            Header 3
+          </text>
+        </view>
+      </view>
+    </view>
+    <view>
+      <view>
+        <view>
+          <text>
+            Body 1-1
+          </text>
+        </view>
+        <view>
+          <text>
+            Body 1-2
+          </text>
+        </view>
+        <view>
+          <text>
+            Body 1-3
+          </text>
+        </view>
+      </view>
+      <view>
+        <view>
+          <text>
+            Body 2-1
+          </text>
+        </view>
+        <view>
+          <text>
+            Body 2-2
+          </text>
+        </view>
+        <view>
+          <text>
+            Body 2-3
+          </text>
+        </view>
+      </view>
+    </view>
+    <view>
+      <view>
+        <view>
+          <text>
+            Footer 1
+          </text>
+        </view>
+        <view>
+          <text>
+            Footer 2
+          </text>
+        </view>
+        <view>
+          <text>
+            Footer 3
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > All Text Formatting Elements > should match snapshot for all text formatting elements 1`] = `
+<page>
+  <text
+    style="margin-bottom: 1em;"
+  >
+    <text>
+      
+          Text with 
+    </text>
+    <text
+      style="font-weight: bold;"
+    >
+      bold
+    </text>
+    <text>
+      , 
+    </text>
+    <text
+      style="font-weight: bold;"
+    >
+      also bold
+    </text>
+    <text>
+      ,
+          
+    </text>
+    <text
+      style="font-style: italic;"
+    >
+      italic
+    </text>
+    <text>
+      , 
+    </text>
+    <text
+      style="font-style: italic;"
+    >
+      also italic
+    </text>
+    <text>
+      ,
+          
+    </text>
+    <text
+      style="text-decoration: underline;"
+    >
+      underlined
+    </text>
+    <text>
+      , and 
+    </text>
+    <text
+      style="font-family: monospace; background-color: rgb(240, 240, 240); padding: 2px 4px; border-radius: 3px;"
+    >
+      inline code
+    </text>
+    <text>
+      .
+          Combined: 
+    </text>
+    <text
+      style="font-weight: bold; text-decoration: underline;"
+    >
+      bold + underline
+    </text>
+  </text>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Complex Real-World Document > should match snapshot for complete HTML document 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 2em; font-weight: bold; margin: 0.67em 0px;"
+      >
+        <text>
+          Article Title
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          Published on 
+        </text>
+        <text>
+          <text>
+            2024-01-01
+          </text>
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Introduction
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          This is an introduction paragraph with 
+        </text>
+        <text
+          style="font-weight: bold;"
+        >
+          bold text
+        </text>
+        <text>
+           and 
+        </text>
+        <text
+          style="font-style: italic;"
+        >
+          italic text
+        </text>
+        <text>
+          .
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          It also contains a 
+        </text>
+        <text
+          style="color: blue; text-decoration: underline;"
+        >
+          <text>
+            link
+          </text>
+        </text>
+        <text>
+           and some 
+        </text>
+        <text
+          style="font-family: monospace; background-color: rgb(240, 240, 240); padding: 2px 4px; border-radius: 3px;"
+        >
+          inline code
+        </text>
+        <text>
+          .
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Features
+        </text>
+      </text>
+      <view
+        style="flex-direction: column; padding-left: 40px;"
+      >
+        <view
+          style="display: list-item;"
+        >
+          <text>
+            Feature 1 with 
+          </text>
+          <text
+            style="font-weight: bold;"
+          >
+            emphasis
+          </text>
+        </view>
+        <view
+          style="display: list-item;"
+        >
+          <text>
+            Feature 2
+          </text>
+        </view>
+        <view
+          style="display: list-item;"
+        >
+          <text>
+            
+                Feature 3 with nested list:
+                
+          </text>
+          <view
+            style="flex-direction: column; padding-left: 40px;"
+          >
+            <view
+              style="display: list-item;"
+            >
+              <text>
+                Sub-feature 3.1
+              </text>
+            </view>
+            <view
+              style="display: list-item;"
+            >
+              <text>
+                Sub-feature 3.2
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Data Table
+        </text>
+      </text>
+      <view>
+        <view>
+          <view>
+            <view>
+              <text>
+                Name
+              </text>
+            </view>
+            <view>
+              <text>
+                Type
+              </text>
+            </view>
+            <view>
+              <text>
+                Description
+              </text>
+            </view>
+          </view>
+        </view>
+        <view>
+          <view>
+            <view>
+              <text>
+                Item 1
+              </text>
+            </view>
+            <view>
+              <text>
+                Type A
+              </text>
+            </view>
+            <view>
+              <text>
+                Description 1
+              </text>
+            </view>
+          </view>
+          <view>
+            <view>
+              <text>
+                Item 2
+              </text>
+            </view>
+            <view>
+              <text>
+                Type B
+              </text>
+            </view>
+            <view>
+              <text>
+                Description 2
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Code Example
+        </text>
+      </text>
+      <text
+        style="font-family: monospace; background-color: rgb(245, 245, 245); padding: 16px; overflow: auto;"
+      >
+        <text>
+          function hello() {
+  console.log("Hello, World!");
+}
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          Line break example:
+First line
+Second line
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Quote
+        </text>
+      </text>
+      <view
+        style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid rgb(221, 221, 221);"
+      >
+        <text
+          style="margin-bottom: 1em;"
+        >
+          <text>
+            This is a blockquote containing important information.
+          </text>
+        </text>
+      </view>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <view
+        style="height: 1px; background-color: rgb(204, 204, 204); margin: 1em 0px;"
+      />
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          © 2024 Example. All rights reserved.
+        </text>
+      </text>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Deeply Nested Structure > should match snapshot for deeply nested elements 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <view
+      style="flex-direction: column;"
+    >
+      <view
+        style="flex-direction: column;"
+      >
+        <view
+          style="flex-direction: column;"
+        >
+          <view
+            style="flex-direction: column;"
+          >
+            <view
+              style="flex-direction: column;"
+            >
+              <text
+                style="margin-bottom: 1em;"
+              >
+                <text
+                  style="font-weight: bold;"
+                >
+                  Deep nested text
+                </text>
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Edge Cases and Special Characters > should match snapshot for edge cases 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Special characters: &lt; &gt; & " '
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Unicode: 中文 日本語 한국어 🎉
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Multiple spaces:     and    tabs
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Empty elements: 
+      </text>
+      <text />
+      <text>
+         and 
+      </text>
+    </text>
+    <view
+      style="flex-direction: column;"
+    />
+    <text
+      style="margin-bottom: 1em;"
+    />
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Element Attributes > should match snapshot for elements with common attributes 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Paragraph with id and class
+      </text>
+    </text>
+    <view
+      style="flex-direction: column;"
+    >
+      <text>
+        Div with data attribute
+      </text>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Image Element > should match snapshot for image with attributes 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <image
+      src="https://example.com/image.jpg"
+    />
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Text below image
+      </text>
+    </text>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Inline Elements > should match snapshot for various inline elements 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Link example: 
+      </text>
+      <text
+        style="color: blue; text-decoration: underline;"
+      >
+        <text>
+          Example Link
+        </text>
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Code block: 
+      </text>
+      <text
+        style="font-family: monospace; background-color: rgb(240, 240, 240); padding: 2px 4px; border-radius: 3px;"
+      >
+        console.log("hello")
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Span element: 
+      </text>
+      <text>
+        <text>
+          Inline span
+        </text>
+      </text>
+    </text>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Inline Styles > should match snapshot for elements with various inline styles 1`] = `
+<page>
+  <view
+    style="flex-direction: column; padding: 20px; background-color: rgb(245, 245, 245);"
+  >
+    <text
+      style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px 10px 0px; color: rgb(51, 51, 51);"
+    >
+      <text>
+        Styled Heading
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em; line-height: 1.6; color: rgb(102, 102, 102);"
+    >
+      <text>
+        
+            Paragraph with 
+      </text>
+      <text
+        style="color: red; font-weight: bold;"
+      >
+        <text>
+          styled span
+        </text>
+      </text>
+    </text>
+    <view
+      style="flex-direction: column; border: 1px solid rgb(204, 204, 204); padding: 10px; border-radius: 5px;"
+    >
+      <text>
+        
+            Nested styled div
+          
+      </text>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should match snapshot for list elements with nesting 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <view
+      style="flex-direction: column; padding-left: 40px;"
+    >
+      <view
+        style="display: list-item;"
+      >
+        <text>
+          Unordered item 1
+        </text>
+      </view>
+      <view
+        style="display: list-item;"
+      >
+        <text>
+          Unordered item 2
+        </text>
+      </view>
+      <view
+        style="display: list-item;"
+      >
+        <text>
+          Nested:
+              
+        </text>
+        <view
+          style="flex-direction: column; padding-left: 40px;"
+        >
+          <view
+            style="display: list-item;"
+          >
+            <text>
+              Nested item 1
+            </text>
+          </view>
+          <view
+            style="display: list-item;"
+          >
+            <text>
+              Nested item 2
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view
+      style="flex-direction: column; padding-left: 40px;"
+    >
+      <view
+        style="display: list-item;"
+      >
+        <text>
+          Ordered item 1
+        </text>
+      </view>
+      <view
+        style="display: list-item;"
+      >
+        <text>
+          Ordered item 2
+        </text>
+      </view>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Semantic Block Elements > should match snapshot for semantic HTML5 elements 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 2em; font-weight: bold; margin: 0.67em 0px;"
+      >
+        <text>
+          Article Header
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="font-size: 1.5em; font-weight: bold; margin: 0.83em 0px;"
+      >
+        <text>
+          Section Title
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          Section content.
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <view
+        style="flex-direction: column; padding-left: 40px;"
+      >
+        <view
+          style="display: list-item;"
+        >
+          <text
+            style="color: blue; text-decoration: underline;"
+          >
+            <text>
+              Link 1
+            </text>
+          </text>
+        </view>
+        <view
+          style="display: list-item;"
+        >
+          <text
+            style="color: blue; text-decoration: underline;"
+          >
+            <text>
+              Link 2
+            </text>
+          </text>
+        </view>
+      </view>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          Sidebar content.
+        </text>
+      </text>
+    </view>
+    <view
+      style="flex-direction: column;"
+    >
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          Article footer.
+        </text>
+      </text>
+    </view>
+  </view>
+</page>
+`;
+
+exports[`Snapshot Tests with Verification > Special Elements (hr, br, blockquote, pre) > should match snapshot for special elements 1`] = `
+<page>
+  <view
+    style="flex-direction: column;"
+  >
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Text before horizontal rule
+      </text>
+    </text>
+    <view
+      style="height: 1px; background-color: rgb(204, 204, 204); margin: 1em 0px;"
+    />
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Text after horizontal rule
+      </text>
+    </text>
+    <text
+      style="margin-bottom: 1em;"
+    >
+      <text>
+        Line 1
+Line 2
+Line 3
+      </text>
+    </text>
+    <view
+      style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid rgb(221, 221, 221);"
+    >
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          This is a blockquote with multiple lines.
+        </text>
+      </text>
+      <text
+        style="margin-bottom: 1em;"
+      >
+        <text>
+          It can contain paragraphs.
+        </text>
+      </text>
+    </view>
+    <text
+      style="font-family: monospace; background-color: rgb(245, 245, 245); padding: 16px; overflow: auto;"
+    >
+      <text>
+        const x = 1;
+const y = 2;
+console.log(x + y);
+      </text>
+    </text>
+  </view>
+</page>
+`;
