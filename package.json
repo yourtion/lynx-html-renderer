@@ -16,7 +16,7 @@
     "postpublish": "pnpm tag && git push && git push --tags"
   },
   "files": [
-    "src"
+    "src/**/*"
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.115.1"
@@ -41,7 +41,6 @@
   "engines": {
     "node": ">=18"
   },
-  "private": true,
   "dependencies": {
     "htmlparser2": "^10.0.0"
   }
