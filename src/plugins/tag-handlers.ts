@@ -1,5 +1,10 @@
 import { pluginManager } from '../plugin-system';
-import type { HtmlParserNode, TagHandler } from '../typings';
+import type {
+  Capabilities,
+  ElementRole,
+  HtmlParserNode,
+  TagHandler,
+} from '../typings';
 
 // Define htmlparser2 node type interface
 interface ExtendedHtmlParserNode extends HtmlParserNode {
@@ -77,23 +82,6 @@ const BLOCK_QUOTE_CONFIG = {
     borderLeft: '4px solid #ddd',
   },
 };
-
-// Structure role type
-export type ElementRole =
-  | 'block'
-  | 'inline'
-  | 'textContainer'
-  | 'image'
-  | 'table'
-  | 'row'
-  | 'cell';
-
-// Capabilities description interface
-export interface Capabilities {
-  layout?: 'block' | 'inline' | 'flex' | 'table';
-  isVoid?: boolean; // Like img / br
-  textContainer?: boolean; // Whether can only contain text
-}
 
 // Tag mapping configuration
 export const TAG_MAP: Record<

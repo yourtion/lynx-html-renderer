@@ -1,6 +1,6 @@
 {
   "name": "lynx-html-renderer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "build-example": "cd example && rspeedy build",
@@ -11,7 +11,9 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage --coverage.include='src/**'",
     "docs:dev": "rspress dev",
-    "docs:build": "rspress build"
+    "docs:build": "rspress build",
+    "tag": "git tag v`node -p 'require(\"./package\").version'`",
+    "postpublish": "pnpm tag && git push && git push --tags"
   },
   "files": [
     "src"

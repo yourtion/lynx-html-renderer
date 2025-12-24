@@ -21,6 +21,11 @@ interface HandlerRegistryEntry<T> {
   priority?: number;
 }
 
+/**
+ * 通用处理器注册表项（用于内部存储）
+ */
+type UniversalHandlerRegistryEntry = HandlerRegistryEntry<unknown>;
+
 // 定义所有处理器类别
 const PROCESSOR_CATEGORIES = {
   TAG_PROCESSOR: 'tagProcessor',
@@ -36,8 +41,10 @@ class PluginManager {
   private plugins: HtmlToLynxPlugin[] = [];
   // 统一的处理器注册表
   // 外层 Map 的 key 是处理器类别，内层 Map 的 key 是标签名（对于标签处理器）或 'global'（对于全局处理器）
-  private processors: Map<string, Map<string, HandlerRegistryEntry<any>[]>> =
-    new Map();
+  private processors: Map<
+    string,
+    Map<string, UniversalHandlerRegistryEntry[]>
+  > = new Map();
   private disabledProcessorTypes: Set<string> = new Set();
 
   constructor() {
@@ -73,7 +80,7 @@ class PluginManager {
     if (!categoryMap) return;
 
     const handlers = categoryMap.get(key) || [];
-    handlers.push(entry as HandlerRegistryEntry<any>);
+    handlers.push(entry as UniversalHandlerRegistryEntry);
 
     // 按优先级排序
     handlers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -109,9 +116,9 @@ class PluginManager {
     const handlers = categoryMap.get(key) || [];
     const index = handlers.findIndex((entry) => entry.type === type);
     if (index !== -1) {
-      handlers.splice(index, 0, insertEntry as HandlerRegistryEntry<any>);
+      handlers.splice(index, 0, insertEntry as UniversalHandlerRegistryEntry);
     } else {
-      handlers.push(insertEntry as HandlerRegistryEntry<any>);
+      handlers.push(insertEntry as UniversalHandlerRegistryEntry);
     }
     categoryMap.set(key, handlers);
   }
@@ -144,9 +151,13 @@ class PluginManager {
     const handlers = categoryMap.get(key) || [];
     const index = handlers.findIndex((entry) => entry.type === type);
     if (index !== -1) {
-      handlers.splice(index + 1, 0, insertEntry as HandlerRegistryEntry<any>);
+      handlers.splice(
+        index + 1,
+        0,
+        insertEntry as UniversalHandlerRegistryEntry,
+      );
     } else {
-      handlers.push(insertEntry as HandlerRegistryEntry<any>);
+      handlers.push(insertEntry as UniversalHandlerRegistryEntry);
     }
     categoryMap.set(key, handlers);
   }

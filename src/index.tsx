@@ -4,6 +4,7 @@ import type {
   LynxNode,
   LynxRenderAdapter,
   RenderContext,
+  RenderResult,
 } from './typings';
 
 // 内置适配器实现
@@ -108,9 +109,6 @@ function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
   // 默认使用 ViewAdapter
   return new ViewAdapter();
 }
-
-// 定义渲染结果类型
-type RenderResult = any; // Lynx 组件类型，实际为内部类型
 
 // 渲染上下文实现
 const createRenderContext = (

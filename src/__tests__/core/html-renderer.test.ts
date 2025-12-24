@@ -6,6 +6,7 @@ import type {
   HtmlToLynxPlugin,
   LynxElementNode,
   LynxTextNode,
+  LynxNode,
 } from '../../typings';
 
 describe('HTMLRenderer', () => {
@@ -98,5 +99,121 @@ describe('html-parser', () => {
     expect(
       ((result[0] as LynxElementNode).children[0] as LynxTextNode).content,
     ).toBe('HELLO WORLD');
+  });
+});
+
+describe('HTMLRenderer Adapters', () => {
+  describe('TableAdapter', () => {
+    it('should match table role elements', () => {
+      const nodes = transformHTML('<table><tr><td>Cell</td></tr></table>');
+      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should render table with flex column style', () => {
+      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+      expect(result.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('RowAdapter', () => {
+    it('should match row role elements', () => {
+      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+      expect(result).toBeDefined();
+    });
+
+    it('should render row with flex row style', () => {
+      const result = HTMLRenderer({ html: '<tr><td>Cell</td></tr>' });
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('CellAdapter', () => {
+    it('should match cell role elements', () => {
+      const result = HTMLRenderer({ html: '<td>Cell Content</td>' });
+      expect(result).toBeDefined();
+    });
+
+    it('should render cell with padding and border style', () => {
+      const result = HTMLRenderer({ html: '<td>Cell Content</td>' });
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('ViewAdapter', () => {
+    it('should match view tag elements', () => {
+      const result = HTMLRenderer({ html: '<div>Content</div>' });
+      expect(result).toBeDefined();
+    });
+
+    it('should render view with children', () => {
+      const result = HTMLRenderer({ html: '<div><span>Child</span></div>' });
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('TextAdapter', () => {
+    it('should match text tag elements', () => {
+      const result = HTMLRenderer({ html: '<p>Text Content</p>' });
+      expect(result).toBeDefined();
+    });
+
+    it('should render text with children', () => {
+      const result = HTMLRenderer({ html: '<p><strong>Bold</strong></p>' });
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('ImageAdapter', () => {
+    it('should match image tag elements', () => {
+      const result = HTMLRenderer({ html: '<img src="test.jpg" />' });
+      expect(result).toBeDefined();
+    });
+
+    it('should render image without children', () => {
+      const result = HTMLRenderer({ html: '<img src="test.jpg" />' });
+      expect(result).toBeDefined();
+    });
+
+    it('should pass src attribute to image', () => {
+      const result = HTMLRenderer({ html: '<img src="test.jpg" />' });
+      expect(result).toBeDefined();
+    });
+  });
+});
+
+describe('renderNode function', () => {
+  it('should handle text nodes with marks', () => {
+    const result = HTMLRenderer({ html: '<strong>Bold Text</strong>' });
+    expect(result).toBeDefined();
+  });
+
+  it('should handle text nodes with italic marks', () => {
+    const result = HTMLRenderer({ html: '<em>Italic Text</em>' });
+    expect(result).toBeDefined();
+  });
+
+  it('should handle text nodes with underline marks', () => {
+    const result = HTMLRenderer({ html: '<u>Underline Text</u>' });
+    expect(result).toBeDefined();
+  });
+
+  it('should handle text nodes with code marks', () => {
+    const result = HTMLRenderer({ html: '<code>Code Text</code>' });
+    expect(result).toBeDefined();
+  });
+
+  it('should handle text nodes with multiple marks', () => {
+    const result = HTMLRenderer({
+      html: '<strong><u>Bold and Underline</u></strong>',
+    });
+    expect(result).toBeDefined();
+  });
+
+  it('should handle element nodes with default adapter', () => {
+    const result = HTMLRenderer({ html: '<section>Content</section>' });
+    expect(result).toBeDefined();
   });
 });

@@ -4,6 +4,7 @@ import type {
   HtmlTransformProcessor,
   NodeTransformProcessor,
 } from '../typings';
+import { mergeAdjacentTextNodes } from '../utils/node-helpers';
 
 // HTML transformation processor
 export const htmlTransformProcessor: HtmlTransformProcessor = (
@@ -25,26 +26,7 @@ export const htmlTransformProcessor: HtmlTransformProcessor = (
   });
 
   // Merge top-level adjacent text nodes
-  const mergedNodes: LynxNode[] = [];
-  for (const node of nodes) {
-    const last = mergedNodes[mergedNodes.length - 1];
-    if (last?.kind === 'text' && node.kind === 'text') {
-      // Merge text content
-      last.content += node.content;
-
-      // Only merge and retain marks when marked
-      if (last.marks || node.marks) {
-        last.marks = {
-          ...last.marks,
-          ...node.marks,
-        };
-      }
-    } else {
-      mergedNodes.push(node);
-    }
-  }
-
-  return mergedNodes;
+  return mergeAdjacentTextNodes(nodes);
 };
 
 // Children transformation processor
