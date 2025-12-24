@@ -21,7 +21,10 @@ describe('Plugin System - Builtin Plugin', () => {
     const html = '<div><strong>Test</strong></div>';
     const result = transformHTML(html);
     expect(result).toBeDefined();
-    expect(result[0].children[0].props?.style?.fontWeight).toBe('bold');
+    // With marks system, strong tag creates text node with marks
+    const textChild = result[0].children[0];
+    expect(textChild?.kind).toBe('text');
+    expect(textChild?.marks?.bold).toBe(true);
   });
 });
 
@@ -96,6 +99,20 @@ describe('Builtin Processors', () => {
     const result = transformHTML(html);
     expect(result).toBeDefined();
     expect(result[0].children).toHaveLength(1);
-    expect(result[0].children[0].children).toHaveLength(3);
+
+    // With marks system, inline formatting tags don't create wrapper elements
+    // The <p> element has multiple text children with marks
+    const pChildren = result[0].children[0].children;
+    expect(pChildren.length).toBeGreaterThanOrEqual(1);
+
+    // Check that marks are properly applied
+    const hasBoldMark = pChildren.some(
+      (child: LynxNode) => child.kind === 'text' && (child as LynxTextNode).marks?.bold,
+    );
+    const hasItalicMark = pChildren.some(
+      (child: LynxNode) => child.kind === 'text' && (child as LynxTextNode).marks?.italic,
+    );
+    expect(hasBoldMark).toBe(true);
+    expect(hasItalicMark).toBe(true);
   });
 });

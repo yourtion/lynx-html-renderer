@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import type { LynxNode } from '../../typings';
 import {
   applyPostProcessors,
   hasMarks,
   isTextNode,
   mergeAdjacentTextNodes,
 } from '../../utils/node-helpers';
-import type { LynxNode } from '../../typings';
 
 describe('node-helpers', () => {
   describe('isTextNode', () => {
@@ -74,34 +74,40 @@ describe('node-helpers', () => {
       expect(result[0].content).toBe('First Second');
     });
 
-    it('should merge marks from both nodes', () => {
+    it('should not merge nodes with different marks', () => {
       const nodes: LynxNode[] = [
         { kind: 'text', content: 'Bold', marks: { bold: true } },
         { kind: 'text', content: 'Italic', marks: { italic: true } },
       ];
       const result = mergeAdjacentTextNodes(nodes);
-      expect(result).toHaveLength(1);
-      expect(result[0].marks).toEqual({ bold: true, italic: true });
+      // Should not merge because marks are different
+      expect(result).toHaveLength(2);
+      expect(result[0].marks).toEqual({ bold: true });
+      expect(result[1].marks).toEqual({ italic: true });
     });
 
-    it('should keep marks when only first node has marks', () => {
+    it('should not merge when only first node has marks', () => {
       const nodes: LynxNode[] = [
         { kind: 'text', content: 'Text', marks: { bold: true } },
         { kind: 'text', content: 'More' },
       ];
       const result = mergeAdjacentTextNodes(nodes);
-      expect(result).toHaveLength(1);
+      // Should not merge because marks are different ({bold: true} vs undefined)
+      expect(result).toHaveLength(2);
       expect(result[0].marks).toEqual({ bold: true });
+      expect(result[1].marks).toBeUndefined();
     });
 
-    it('should keep marks when only second node has marks', () => {
+    it('should not merge when only second node has marks', () => {
       const nodes: LynxNode[] = [
         { kind: 'text', content: 'Text' },
         { kind: 'text', content: 'More', marks: { italic: true } },
       ];
       const result = mergeAdjacentTextNodes(nodes);
-      expect(result).toHaveLength(1);
-      expect(result[0].marks).toEqual({ italic: true });
+      // Should not merge because marks are different (undefined vs {italic: true})
+      expect(result).toHaveLength(2);
+      expect(result[0].marks).toBeUndefined();
+      expect(result[1].marks).toEqual({ italic: true });
     });
 
     it('should not merge non-adjacent text nodes', () => {
@@ -140,6 +146,29 @@ describe('node-helpers', () => {
       const result = mergeAdjacentTextNodes(nodes);
       expect(result).toHaveLength(1);
       expect(result[0].content).toBe('One Two Three');
+    });
+
+    it('should merge nodes with identical marks', () => {
+      const nodes: LynxNode[] = [
+        { kind: 'text', content: 'Bold ', marks: { bold: true } },
+        { kind: 'text', content: 'text', marks: { bold: true } },
+      ];
+      const result = mergeAdjacentTextNodes(nodes);
+      expect(result).toHaveLength(1);
+      expect(result[0].content).toBe('Bold text');
+      expect(result[0].marks).toEqual({ bold: true });
+    });
+
+    it('should merge nodes with same complex marks', () => {
+      const nodes: LynxNode[] = [
+        { kind: 'text', content: 'Bold ', marks: { bold: true, italic: true } },
+        { kind: 'text', content: 'and ', marks: { bold: true, italic: true } },
+        { kind: 'text', content: 'italic', marks: { bold: true, italic: true } },
+      ];
+      const result = mergeAdjacentTextNodes(nodes);
+      expect(result).toHaveLength(1);
+      expect(result[0].content).toBe('Bold and italic');
+      expect(result[0].marks).toEqual({ bold: true, italic: true });
     });
   });
 

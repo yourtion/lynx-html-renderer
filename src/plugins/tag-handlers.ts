@@ -83,6 +83,16 @@ const BLOCK_QUOTE_CONFIG = {
   },
 };
 
+// Marks that specific tags contribute to text nodes
+export const TAG_MARKS: Record<string, { bold?: boolean; italic?: boolean; underline?: boolean; code?: boolean }> = {
+  strong: { bold: true },
+  b: { bold: true },
+  em: { italic: true },
+  i: { italic: true },
+  u: { underline: true },
+  code: { code: true },
+};
+
 // Tag mapping configuration
 export const TAG_MAP: Record<
   string,
@@ -265,6 +275,33 @@ export const createBaseTagHandler = (): TagHandler => {
         kind: 'text',
         content: '\n',
         meta: { source: 'br' },
+      };
+    }
+
+    // Special handling for inline text formatting tags (strong, b, em, i, u, code)
+    // These tags should NOT create wrapper elements - they just pass marks to children
+    const isInlineFormatting = TAG_MARKS[tag] !== undefined;
+    const hasInlineStyle = node.attribs?.style && Object.keys(parseStyleString(node.attribs.style)).length > 0;
+
+    if (isInlineFormatting && mapping.lynxTag === 'text' && !hasInlineStyle) {
+      // For inline formatting tags without inline styles,
+      // return the transformed children directly without wrapping
+      // The marks are passed to children via parentMarks in transformChildren
+      const children = context.transformChildren(node.children ?? []);
+
+      // If single child, return it directly (unwraps the wrapper)
+      if (children.length === 1) {
+        return children[0];
+      }
+
+      // If multiple children, this shouldn't happen for simple formatting tags
+      // but we need to return something valid
+      return {
+        kind: 'element',
+        tag: 'text',
+        props: {},
+        children,
+        meta: { sourceTag: tag },
       };
     }
 

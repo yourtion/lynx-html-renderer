@@ -24,11 +24,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { fontWeight: 'bold' } },
-        children: [{ kind: 'text', content: 'Bold Text' }],
-        meta: { sourceTag: 'strong' },
+        kind: 'text',
+        content: 'Bold Text',
+        marks: { bold: true },
       },
     ]);
   });
@@ -39,11 +37,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { fontWeight: 'bold' } },
-        children: [{ kind: 'text', content: 'Bold Text' }],
-        meta: { sourceTag: 'b' },
+        kind: 'text',
+        content: 'Bold Text',
+        marks: { bold: true },
       },
     ]);
   });
@@ -54,11 +50,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { fontStyle: 'italic' } },
-        children: [{ kind: 'text', content: 'Italic Text' }],
-        meta: { sourceTag: 'em' },
+        kind: 'text',
+        content: 'Italic Text',
+        marks: { italic: true },
       },
     ]);
   });
@@ -69,11 +63,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { fontStyle: 'italic' } },
-        children: [{ kind: 'text', content: 'Italic Text' }],
-        meta: { sourceTag: 'i' },
+        kind: 'text',
+        content: 'Italic Text',
+        marks: { italic: true },
       },
     ]);
   });
@@ -84,11 +76,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { textDecoration: 'underline' } },
-        children: [{ kind: 'text', content: 'Underlined Text' }],
-        meta: { sourceTag: 'u' },
+        kind: 'text',
+        content: 'Underlined Text',
+        marks: { underline: true },
       },
     ]);
   });
@@ -99,11 +89,9 @@ describe('Inline Elements', () => {
 
     expect(result).toEqual([
       {
-        kind: 'element',
-        tag: 'text',
-        props: { style: { fontFamily: 'monospace' } },
-        children: [{ kind: 'text', content: 'Code Text' }],
-        meta: { sourceTag: 'code' },
+        kind: 'text',
+        content: 'Code Text',
+        marks: { code: true },
       },
     ]);
   });

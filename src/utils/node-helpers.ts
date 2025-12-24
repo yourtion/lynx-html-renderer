@@ -2,6 +2,7 @@ import type { LynxNode, LynxTextNode } from '../typings';
 
 /**
  * 合并相邻文本节点
+ * Only merges text nodes that have the same marks (or both have no marks)
  */
 export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
   const merged: LynxNode[] = [];
@@ -9,20 +10,24 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
   for (const node of nodes) {
     const last = merged[merged.length - 1];
 
+    // Only merge if both are text nodes AND have the same marks
     if (last?.kind === 'text' && node.kind === 'text') {
-      // 合并文本内容
-      last.content += node.content;
+      const lastMarks = last.marks || {};
+      const nodeMarks = node.marks || {};
 
-      // 合并 marks
-      if (last.marks || node.marks) {
-        last.marks = {
-          ...last.marks,
-          ...node.marks,
-        };
+      // Check if marks are the same (compare keys and values)
+      const marksAreSame = JSON.stringify(lastMarks) === JSON.stringify(nodeMarks);
+
+      if (marksAreSame) {
+        // Merge text content
+        last.content += node.content;
+
+        // Marks are already the same, no need to merge
+        continue;
       }
-    } else {
-      merged.push(node);
     }
+
+    merged.push(node);
   }
 
   return merged;

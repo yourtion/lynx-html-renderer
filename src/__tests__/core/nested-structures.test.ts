@@ -30,6 +30,8 @@ describe('Nested Structures', () => {
       '<div><p>Paragraph <strong>with bold</strong> text</p><img src="test.jpg" /></div>';
     const result = transformHTML(html);
 
+    // With marks system, <strong> no longer creates a wrapper element
+    // It returns a text node with marks directly
     expect(result).toEqual([
       {
         kind: 'element',
@@ -42,13 +44,7 @@ describe('Nested Structures', () => {
             props: { style: { marginBottom: '1em' } },
             children: [
               { kind: 'text', content: 'Paragraph ' },
-              {
-                kind: 'element',
-                tag: 'text',
-                props: { style: { fontWeight: 'bold' } },
-                children: [{ kind: 'text', content: 'with bold' }],
-                meta: { sourceTag: 'strong' },
-              },
+              { kind: 'text', content: 'with bold', marks: { bold: true } },
               { kind: 'text', content: ' text' },
             ],
             meta: { sourceTag: 'p' },

@@ -1,4 +1,5 @@
 import { pluginManager } from '../plugin-system';
+import { TAG_MARKS } from './tag-handlers';
 import type {
   ChildrenTransformProcessor,
   HtmlTransformProcessor,
@@ -87,11 +88,15 @@ export const nodeTransformProcessor: NodeTransformProcessor = (
     // Get all processors for this tag
     const tagHandlers = getTagHandlers(tag);
 
+    // Accumulate marks from this tag
+    const tagMarks = TAG_MARKS[tag] || {};
+    const accumulatedMarks = { ...parentMarks, ...tagMarks };
+
     // Try using plugin processor
     for (const handler of tagHandlers) {
       const result = handler(node, {
         defaultTransform: () => null,
-        transformChildren: (nodes) => transformChildren(nodes, parentMarks),
+        transformChildren: (nodes) => transformChildren(nodes, accumulatedMarks),
       });
 
       if (result !== null) {

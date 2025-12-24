@@ -6,7 +6,6 @@ import type {
   HtmlToLynxPlugin,
   LynxElementNode,
   LynxTextNode,
-  LynxNode,
 } from '../../typings';
 
 describe('HTMLRenderer', () => {
@@ -105,22 +104,27 @@ describe('html-parser', () => {
 describe('HTMLRenderer Adapters', () => {
   describe('TableAdapter', () => {
     it('should match table role elements', () => {
-      const nodes = transformHTML('<table><tr><td>Cell</td></tr></table>');
-      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+      const result = HTMLRenderer({
+        html: '<table><tr><td>Cell</td></tr></table>',
+      });
 
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
     });
 
     it('should render table with flex column style', () => {
-      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+      const result = HTMLRenderer({
+        html: '<table><tr><td>Cell</td></tr></table>',
+      });
       expect(result.length).toBeGreaterThan(0);
     });
   });
 
   describe('RowAdapter', () => {
     it('should match row role elements', () => {
-      const result = HTMLRenderer({ html: '<table><tr><td>Cell</td></tr></table>' });
+      const result = HTMLRenderer({
+        html: '<table><tr><td>Cell</td></tr></table>',
+      });
       expect(result).toBeDefined();
     });
 
