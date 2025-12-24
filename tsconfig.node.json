@@ -11,5 +11,5 @@
 
     "noEmit": true
   },
-  "include": ["example/lynx.config.ts", "src/**/*", "./vitest.config.ts"]
+  "include": ["example/lynx.config.ts", "src/**/*", "tests/**/*", "./vitest.config.ts"]
 }

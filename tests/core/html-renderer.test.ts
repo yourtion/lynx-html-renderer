@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { transformHTML } from '../../html-parser';
-import { HTMLRenderer } from '../../index';
-import { pluginManager } from '../../plugin-system';
+import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { HTMLRenderer } from '@lynx-html-renderer/index';
+import { pluginManager } from '@lynx-html-renderer/plugin-system';
 import type {
   HtmlToLynxPlugin,
   LynxElementNode,
   LynxTextNode,
-} from '../../typings';
+} from '@lynx-html-renderer/typings';
 
 describe('HTMLRenderer', () => {
   it('should be defined and return an array', () => {

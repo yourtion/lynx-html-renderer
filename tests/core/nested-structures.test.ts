@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { transformHTML } from '../../html-parser';
+import { transformHTML } from '@lynx-html-renderer/html-parser';
 
 describe('Nested Structures', () => {
   it('should handle nested divs correctly', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PluginManager, pluginManager } from '../../plugin-system';
-import type { HtmlToLynxPlugin, TagHandler } from '../../typings';
+import { PluginManager, pluginManager } from '@lynx-html-renderer/plugin-system';
+import type { HtmlToLynxPlugin, TagHandler } from '@lynx-html-renderer/typings';
 
 describe('plugin-system', () => {
   let testPluginManager: PluginManager;

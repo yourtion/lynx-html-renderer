@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { transformHTML } from '../../html-parser.js';
-import { BuiltinProcessorType } from '../../plugins/builtin.js';
-import { mergeAdjacentTextNodes } from '../../plugins/node-processors.js';
-import { defaultStyleHandler } from '../../plugins/style-handlers.js';
-import { createTextHandler } from '../../plugins/tag-handlers.js';
-import type { HtmlParserNode, LynxNode, LynxTextNode } from '../../typings.js';
+import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { BuiltinProcessorType } from '@lynx-html-renderer/plugins/builtin.js';
+import { mergeAdjacentTextNodes } from '@lynx-html-renderer/plugins/node-processors.js';
+import { defaultStyleHandler } from '@lynx-html-renderer/plugins/style-handlers.js';
+import { createTextHandler } from '@lynx-html-renderer/plugins/tag-handlers.js';
+import type { HtmlParserNode, LynxNode, LynxTextNode } from '@lynx-html-renderer/typings';
 
 describe('Plugin System - Builtin Plugin', () => {
   it('should have all builtin processor types defined', () => {

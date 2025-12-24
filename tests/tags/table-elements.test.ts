@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { transformHTML } from '../../html-parser';
-import { HTMLRenderer } from '../../index';
+import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { HTMLRenderer } from '@lynx-html-renderer/index';
 
 describe('Table Elements', () => {
   it('should transform simple table structure', () => {

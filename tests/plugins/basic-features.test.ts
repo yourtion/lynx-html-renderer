@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { transformHTML } from '../../html-parser.js';
-import { pluginManager } from '../../plugin-system.js';
-import type { HtmlToLynxPlugin } from '../../typings.js';
+import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { pluginManager } from '@lynx-html-renderer/plugin-system';
+import type { HtmlToLynxPlugin } from '@lynx-html-renderer/typings';
 
 describe('Plugin System - Basic Features', () => {
   // Create a simple plugin to test custom tag handling

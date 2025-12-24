@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { LynxNode } from '../../typings';
+import type { LynxNode } from '@lynx-html-renderer/typings';
 import {
   applyPostProcessors,
   hasMarks,
   isTextNode,
   mergeAdjacentTextNodes,
-} from '../../utils/node-helpers';
+} from '@lynx-html-renderer/utils/node-helpers';
 
 describe('node-helpers', () => {
   describe('isTextNode', () => {
