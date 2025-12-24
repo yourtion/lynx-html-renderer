@@ -16,7 +16,8 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
       const nodeMarks = node.marks || {};
 
       // Check if marks are the same (compare keys and values)
-      const marksAreSame = JSON.stringify(lastMarks) === JSON.stringify(nodeMarks);
+      const marksAreSame =
+        JSON.stringify(lastMarks) === JSON.stringify(nodeMarks);
 
       if (marksAreSame) {
         // Merge text content

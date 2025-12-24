@@ -94,10 +94,10 @@ describe('Block Elements Integration Tests', () => {
       const text = container.querySelector('text');
       expect(text).toBeDefined();
       expect(text?.textContent).toBe('Heading 1');
-      // h1 should have fontSize: 2em
+      // h1 should have fontSize: 32px
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('2em');
+      expect(style).toContain('32px');
       expect(style).toContain('font-weight');
     });
 
@@ -109,7 +109,7 @@ describe('Block Elements Integration Tests', () => {
       expect(text?.textContent).toBe('Heading 2');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('1.5em');
+      expect(style).toContain('24px');
     });
 
     it('should render h3 element', () => {
@@ -120,7 +120,7 @@ describe('Block Elements Integration Tests', () => {
       expect(text?.textContent).toBe('Heading 3');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('1.17em');
+      expect(style).toContain('20px');
     });
 
     it('should render h4 element', () => {
@@ -131,7 +131,7 @@ describe('Block Elements Integration Tests', () => {
       expect(text?.textContent).toBe('Heading 4');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('1em');
+      expect(style).toContain('18px');
     });
 
     it('should render h5 element', () => {
@@ -142,7 +142,7 @@ describe('Block Elements Integration Tests', () => {
       expect(text?.textContent).toBe('Heading 5');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('0.83em');
+      expect(style).toContain('16px');
     });
 
     it('should render h6 element', () => {
@@ -153,7 +153,7 @@ describe('Block Elements Integration Tests', () => {
       expect(text?.textContent).toBe('Heading 6');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('0.67em');
+      expect(style).toContain('14px');
     });
 
     it('should render all headings in sequence', () => {

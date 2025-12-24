@@ -3,6 +3,7 @@ import type {
   Capabilities,
   ElementRole,
   HtmlParserNode,
+  LynxNode,
   TagHandler,
 } from '../typings';
 
@@ -55,7 +56,7 @@ const LIST_ELEMENT_CONFIG = {
   lynxTag: 'view',
   role: 'block',
   capabilities: { layout: 'flex', isVoid: false },
-  defaultStyle: { flexDirection: 'column', paddingLeft: '40px' },
+  defaultStyle: { flexDirection: 'column', paddingLeft: '5px' },
 };
 
 const TABLE_ELEMENT_CONFIG = {
@@ -64,7 +65,7 @@ const TABLE_ELEMENT_CONFIG = {
   capabilities: { layout: 'flex', isVoid: false },
 };
 
-const TABLE_CELL_CONFIG = {
+const _TABLE_CELL_CONFIG = {
   lynxTag: 'view',
   role: 'cell',
   capabilities: { layout: 'flex', isVoid: false },
@@ -84,7 +85,10 @@ const BLOCK_QUOTE_CONFIG = {
 };
 
 // Marks that specific tags contribute to text nodes
-export const TAG_MARKS: Record<string, { bold?: boolean; italic?: boolean; underline?: boolean; code?: boolean }> = {
+export const TAG_MARKS: Record<
+  string,
+  { bold?: boolean; italic?: boolean; underline?: boolean; code?: boolean }
+> = {
   strong: { bold: true },
   b: { bold: true },
   em: { italic: true },
@@ -119,34 +123,34 @@ export const TAG_MAP: Record<
   // Heading elements (h1-h6)
   h1: {
     ...HEADING_CONFIG,
-    defaultStyle: { fontSize: '2em', fontWeight: 'bold', margin: '0.67em 0' },
+    defaultStyle: { fontSize: '32px', fontWeight: 'bold', margin: '10px 0' },
   },
   h2: {
     ...HEADING_CONFIG,
-    defaultStyle: { fontSize: '1.5em', fontWeight: 'bold', margin: '0.83em 0' },
+    defaultStyle: { fontSize: '24px', fontWeight: 'bold', margin: '12px 0' },
   },
   h3: {
     ...HEADING_CONFIG,
-    defaultStyle: { fontSize: '1.17em', fontWeight: 'bold', margin: '1em 0' },
+    defaultStyle: { fontSize: '20px', fontWeight: 'bold', margin: '14px 0' },
   },
   h4: {
     ...HEADING_CONFIG,
-    defaultStyle: { fontSize: '1em', fontWeight: 'bold', margin: '1.33em 0' },
+    defaultStyle: { fontSize: '18px', fontWeight: 'bold', margin: '16px 0' },
   },
   h5: {
     ...HEADING_CONFIG,
     defaultStyle: {
-      fontSize: '0.83em',
+      fontSize: '16px',
       fontWeight: 'bold',
-      margin: '1.67em 0',
+      margin: '18px 0',
     },
   },
   h6: {
     ...HEADING_CONFIG,
     defaultStyle: {
-      fontSize: '0.67em',
+      fontSize: '14px',
       fontWeight: 'bold',
-      margin: '2.33em 0',
+      margin: '20px 0',
     },
   },
 
@@ -183,7 +187,9 @@ export const TAG_MAP: Record<
     lynxTag: 'view',
     role: 'block',
     capabilities: { layout: 'flex', isVoid: false },
-    defaultStyle: { display: 'list-item' },
+    defaultStyle: {
+      flexDirection: 'column',
+    },
   },
 
   // Other common elements
@@ -227,6 +233,13 @@ export const TAG_MAP: Record<
     lynxTag: 'view',
     role: 'table',
     capabilities: { layout: 'flex', isVoid: false },
+    defaultStyle: {
+      display: 'flex',
+      flexDirection: 'column',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#dee2e6',
+    },
   },
   thead: TABLE_ELEMENT_CONFIG,
   tbody: TABLE_ELEMENT_CONFIG,
@@ -235,9 +248,40 @@ export const TAG_MAP: Record<
     lynxTag: 'view',
     role: 'row',
     capabilities: { layout: 'flex', isVoid: false },
+    defaultStyle: { display: 'flex', flexDirection: 'row' },
   },
-  th: TABLE_CELL_CONFIG,
-  td: TABLE_CELL_CONFIG,
+  th: {
+    lynxTag: 'view',
+    role: 'cell',
+    capabilities: { layout: 'flex', isVoid: false },
+    defaultStyle: {
+      display: 'flex',
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      padding: '8px',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#dee2e6',
+      backgroundColor: '#f8f9fa',
+      fontWeight: 'bold',
+    },
+  },
+  td: {
+    lynxTag: 'view',
+    role: 'cell',
+    capabilities: { layout: 'flex', isVoid: false },
+    defaultStyle: {
+      display: 'flex',
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      padding: '8px',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#dee2e6',
+    },
+  },
 };
 
 // Parse style string to object
@@ -258,6 +302,9 @@ function parseStyleString(style?: string): Record<string, string | number> {
 
   return res;
 }
+
+// Use a WeakMap to track list item counters for ordered lists
+const _olCounters = new WeakMap<object, number>();
 
 // Base tag processor
 export const createBaseTagHandler = (): TagHandler => {
@@ -281,7 +328,9 @@ export const createBaseTagHandler = (): TagHandler => {
     // Special handling for inline text formatting tags (strong, b, em, i, u, code)
     // These tags should NOT create wrapper elements - they just pass marks to children
     const isInlineFormatting = TAG_MARKS[tag] !== undefined;
-    const hasInlineStyle = node.attribs?.style && Object.keys(parseStyleString(node.attribs.style)).length > 0;
+    const hasInlineStyle =
+      node.attribs?.style &&
+      Object.keys(parseStyleString(node.attribs.style)).length > 0;
 
     if (isInlineFormatting && mapping.lynxTag === 'text' && !hasInlineStyle) {
       // For inline formatting tags without inline styles,
@@ -332,14 +381,74 @@ export const createBaseTagHandler = (): TagHandler => {
       ...styleFromAttr,
     };
 
+    // Special handling for thead, tbody, tfoot - flatten them
+    // These tags should not create wrapper elements, just return their children
+    if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') {
+      const children = context.transformChildren(node.children ?? []);
+      // If only one child, return it directly
+      if (children.length === 1) {
+        return children[0];
+      }
+      // If multiple children (rare but possible), return a fragment-like structure
+      // Since we can't return multiple nodes, wrap in a transparent view
+      return {
+        kind: 'element',
+        tag: 'view',
+        props: {},
+        children,
+        meta: { sourceTag: tag },
+      };
+    }
+
+    // Transform children with special handling for ul/ol to add list markers
+    let children: LynxNode[];
+    if (tag === 'ul' || tag === 'ol') {
+      // For ul/ol, transform children and add list markers to li elements
+      const rawChildren = context.transformChildren(node.children ?? []);
+      let liCounter = 1;
+      children = rawChildren.map((child) => {
+        if (child.kind === 'element' && child.meta?.sourceTag === 'li') {
+          const marker = tag === 'ol' ? `${liCounter}. ` : '• ';
+          liCounter++;
+          // Try to merge marker with first text child
+          if (child.children.length > 0 && child.children[0].kind === 'text') {
+            const firstText = child.children[0];
+            return {
+              ...child,
+              children: [
+                {
+                  ...firstText,
+                  content: marker + firstText.content,
+                },
+                ...child.children.slice(1),
+              ],
+            };
+          }
+          // If no text child, add marker as text node
+          return {
+            ...child,
+            children: [
+              {
+                kind: 'text',
+                content: marker,
+                meta: { source: 'li-marker' },
+              },
+              ...child.children,
+            ],
+          };
+        }
+        return child;
+      });
+    } else {
+      children = context.transformChildren(node.children ?? []);
+    }
+
     // Basic element node structure
     const baseNode = {
       kind: 'element',
       tag: mapping.lynxTag,
       props: {},
-      children: mapping.capabilities.isVoid
-        ? []
-        : context.transformChildren(node.children ?? []),
+      children: mapping.capabilities.isVoid ? [] : children,
       meta: { sourceTag: tag },
     };
 

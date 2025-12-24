@@ -28,7 +28,11 @@ class TextAdapter implements LynxRenderAdapter {
     // These are created by inline formatting tags to avoid nested <text> elements
     if (hasTextChildWithMarks(node) && !node.props.style) {
       const innermostText = getInnermostTextWithMarks(node);
-      if (innermostText && innermostText.kind === 'text' && innermostText.marks) {
+      if (
+        innermostText &&
+        innermostText.kind === 'text' &&
+        innermostText.marks
+      ) {
         // Render the innermost text child directly with its marks converted to styles
         return renderNode(innermostText);
       }
@@ -56,9 +60,6 @@ class TableAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {
     const tableStyle = {
       ...node.props.style,
-      display: 'flex',
-      flexDirection: 'column',
-      borderCollapse: 'collapse',
     };
 
     return <view style={tableStyle}>{ctx.renderChildren(node)}</view>;
@@ -73,8 +74,6 @@ class RowAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {
     const rowStyle = {
       ...node.props.style,
-      display: 'flex',
-      flexDirection: 'row',
     };
 
     return <view style={rowStyle}>{ctx.renderChildren(node)}</view>;
@@ -89,9 +88,6 @@ class CellAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {
     const cellStyle = {
       ...node.props.style,
-      display: 'flex',
-      padding: '8px',
-      border: '1px solid #e0e0e0',
     };
 
     return <view style={cellStyle}>{ctx.renderChildren(node)}</view>;
@@ -159,10 +155,16 @@ function renderNode(node: LynxNode): RenderResult {
 function hasTextChildWithMarks(node: LynxElementNode): boolean {
   if (node.children.length === 1 && node.children[0].kind === 'text') {
     const textNode = node.children[0];
-    return textNode.marks !== undefined && Object.keys(textNode.marks).length > 0;
+    return (
+      textNode.marks !== undefined && Object.keys(textNode.marks).length > 0
+    );
   }
   // Also check if there's a single child which is another text wrapper (transparent wrapper from inline formatting)
-  if (node.children.length === 1 && node.children[0].kind === 'element' && node.children[0].tag === 'text') {
+  if (
+    node.children.length === 1 &&
+    node.children[0].kind === 'element' &&
+    node.children[0].tag === 'text'
+  ) {
     const childElement = node.children[0];
     // Check if this is a transparent wrapper (no props.style)
     if (!childElement.props.style && hasTextChildWithMarks(childElement)) {
@@ -177,11 +179,19 @@ function getInnermostTextWithMarks(node: LynxElementNode): LynxNode | null {
   if (node.children.length === 1) {
     const child = node.children[0];
     // Direct text child with marks
-    if (child.kind === 'text' && child.marks && Object.keys(child.marks).length > 0) {
+    if (
+      child.kind === 'text' &&
+      child.marks &&
+      Object.keys(child.marks).length > 0
+    ) {
       return child;
     }
     // Transparent wrapper (element with tag 'text', no style)
-    if (child.kind === 'element' && child.tag === 'text' && !child.props.style) {
+    if (
+      child.kind === 'element' &&
+      child.tag === 'text' &&
+      !child.props.style
+    ) {
       return getInnermostTextWithMarks(child);
     }
   }

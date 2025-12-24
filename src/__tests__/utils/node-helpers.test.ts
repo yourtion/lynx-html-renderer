@@ -163,7 +163,11 @@ describe('node-helpers', () => {
       const nodes: LynxNode[] = [
         { kind: 'text', content: 'Bold ', marks: { bold: true, italic: true } },
         { kind: 'text', content: 'and ', marks: { bold: true, italic: true } },
-        { kind: 'text', content: 'italic', marks: { bold: true, italic: true } },
+        {
+          kind: 'text',
+          content: 'italic',
+          marks: { bold: true, italic: true },
+        },
       ];
       const result = mergeAdjacentTextNodes(nodes);
       expect(result).toHaveLength(1);

@@ -107,10 +107,12 @@ describe('Builtin Processors', () => {
 
     // Check that marks are properly applied
     const hasBoldMark = pChildren.some(
-      (child: LynxNode) => child.kind === 'text' && (child as LynxTextNode).marks?.bold,
+      (child: LynxNode) =>
+        child.kind === 'text' && (child as LynxTextNode).marks?.bold,
     );
     const hasItalicMark = pChildren.some(
-      (child: LynxNode) => child.kind === 'text' && (child as LynxTextNode).marks?.italic,
+      (child: LynxNode) =>
+        child.kind === 'text' && (child as LynxTextNode).marks?.italic,
     );
     expect(hasBoldMark).toBe(true);
     expect(hasItalicMark).toBe(true);

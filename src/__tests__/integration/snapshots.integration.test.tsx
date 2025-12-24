@@ -38,7 +38,7 @@ describe('Snapshot Tests with Verification', () => {
       const texts = container.querySelectorAll('text');
       const h1Style = texts[0]?.getAttribute('style');
       expect(h1Style).toContain('font-size');
-      expect(h1Style).toContain('2em');
+      expect(h1Style).toContain('32px');
 
       expect(container).toMatchSnapshot();
     });
@@ -68,13 +68,13 @@ describe('Snapshot Tests with Verification', () => {
 
       // Verify text formatting styles are applied
       const texts = container.querySelectorAll('text');
-      const hasBoldStyle = Array.from(texts).some(
-        (t) => t.getAttribute('style')?.includes('font-weight'),
+      const hasBoldStyle = Array.from(texts).some((t) =>
+        t.getAttribute('style')?.includes('font-weight'),
       );
       expect(hasBoldStyle).toBe(true);
 
-      const hasItalicStyle = Array.from(texts).some(
-        (t) => t.getAttribute('style')?.includes('font-style'),
+      const hasItalicStyle = Array.from(texts).some((t) =>
+        t.getAttribute('style')?.includes('font-style'),
       );
       expect(hasItalicStyle).toBe(true);
 
@@ -279,15 +279,15 @@ console.log(x + y);</pre>
 
       // Verify blockquote has border style
       const views = container.querySelectorAll('view');
-      const blockquote = Array.from(views).find(
-        (v) => v.getAttribute('style')?.includes('border-left'),
+      const blockquote = Array.from(views).find((v) =>
+        v.getAttribute('style')?.includes('border-left'),
       );
       expect(blockquote).toBeDefined();
 
       // Verify pre has monospace font
       const texts = container.querySelectorAll('text');
-      const pre = Array.from(texts).find(
-        (t) => t.getAttribute('style')?.includes('monospace'),
+      const pre = Array.from(texts).find((t) =>
+        t.getAttribute('style')?.includes('monospace'),
       );
       expect(pre).toBeDefined();
 
@@ -342,8 +342,8 @@ console.log(x + y);</pre>
 
       // Verify styles are applied
       const views = container.querySelectorAll('view');
-      const hasBorderStyle = Array.from(views).some(
-        (v) => v.getAttribute('style')?.includes('border'),
+      const hasBorderStyle = Array.from(views).some((v) =>
+        v.getAttribute('style')?.includes('border'),
       );
       expect(hasBorderStyle).toBe(true);
 

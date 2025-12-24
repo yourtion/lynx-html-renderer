@@ -1,11 +1,11 @@
 import { pluginManager } from '../plugin-system';
-import { TAG_MARKS } from './tag-handlers';
 import type {
   ChildrenTransformProcessor,
   HtmlTransformProcessor,
   NodeTransformProcessor,
 } from '../typings';
 import { mergeAdjacentTextNodes } from '../utils/node-helpers';
+import { TAG_MARKS } from './tag-handlers';
 
 // HTML transformation processor
 export const htmlTransformProcessor: HtmlTransformProcessor = (
@@ -96,7 +96,8 @@ export const nodeTransformProcessor: NodeTransformProcessor = (
     for (const handler of tagHandlers) {
       const result = handler(node, {
         defaultTransform: () => null,
-        transformChildren: (nodes) => transformChildren(nodes, accumulatedMarks),
+        transformChildren: (nodes) =>
+          transformChildren(nodes, accumulatedMarks),
       });
 
       if (result !== null) {

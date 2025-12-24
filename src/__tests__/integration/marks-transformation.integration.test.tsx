@@ -114,8 +114,8 @@ describe('Marks to Style Transformation', () => {
       // Code should have these specific values from index.tsx
       // Note: colors may be converted to rgb format
       expect(style).toMatch(/rgb\(240,\s*240,\s*240\)|#f0f0f0/); // backgroundColor
-      expect(style).toContain('2px 4px');  // padding
-      expect(style).toContain('3px');       // borderRadius
+      expect(style).toContain('2px 4px'); // padding
+      expect(style).toContain('3px'); // borderRadius
     });
   });
 
@@ -170,8 +170,8 @@ describe('Marks to Style Transformation', () => {
 
       // Check that the text has bold styling
       const texts = container.querySelectorAll('text');
-      const hasBoldStyle = Array.from(texts).some(
-        (t) => t.getAttribute('style')?.includes('font-weight'),
+      const hasBoldStyle = Array.from(texts).some((t) =>
+        t.getAttribute('style')?.includes('font-weight'),
       );
       expect(hasBoldStyle).toBe(true);
     });
@@ -184,11 +184,11 @@ describe('Marks to Style Transformation', () => {
 
       // Check for presence of both styles
       const texts = container.querySelectorAll('text');
-      const hasBoldStyle = Array.from(texts).some(
-        (t) => t.getAttribute('style')?.includes('font-weight'),
+      const hasBoldStyle = Array.from(texts).some((t) =>
+        t.getAttribute('style')?.includes('font-weight'),
       );
-      const hasItalicStyle = Array.from(texts).some(
-        (t) => t.getAttribute('style')?.includes('font-style'),
+      const hasItalicStyle = Array.from(texts).some((t) =>
+        t.getAttribute('style')?.includes('font-style'),
       );
 
       expect(hasBoldStyle).toBe(true);

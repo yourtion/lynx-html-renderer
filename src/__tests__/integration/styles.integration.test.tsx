@@ -139,7 +139,8 @@ describe('Styles Integration Tests', () => {
 
   describe('Common CSS Values', () => {
     it('should handle color values', () => {
-      const html = '<div style="color: red; background-color: #fff;">Content</div>';
+      const html =
+        '<div style="color: red; background-color: #fff;">Content</div>';
       const { container } = render(<HTMLRenderer html={html} />);
 
       const view = container.querySelector('view');
@@ -206,7 +207,7 @@ describe('Styles Integration Tests', () => {
       const text = container.querySelector('text');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('2em');
+      expect(style).toContain('32px');
       expect(style).toContain('font-weight');
       expect(style).toContain('bold');
     });
@@ -218,7 +219,7 @@ describe('Styles Integration Tests', () => {
       const text = container.querySelector('text');
       const style = text?.getAttribute('style');
       expect(style).toContain('font-size');
-      expect(style).toContain('1.5em');
+      expect(style).toContain('24px');
     });
 
     it('should apply paragraph default margin', () => {
@@ -308,7 +309,8 @@ describe('Styles Integration Tests', () => {
     });
 
     it('should handle mixed case style properties', () => {
-      const html = '<div style="background-color: red; font-size: 16px;">Content</div>';
+      const html =
+        '<div style="background-color: red; font-size: 16px;">Content</div>';
       const { container } = render(<HTMLRenderer html={html} />);
 
       const view = container.querySelector('view');

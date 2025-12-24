@@ -61,7 +61,8 @@ describe('HTMLRenderer Integration Tests', () => {
     });
 
     it('should render mixed nested content', () => {
-      const html = '<div><h1>Title</h1><p>Paragraph with <strong>bold</strong> text</p></div>';
+      const html =
+        '<div><h1>Title</h1><p>Paragraph with <strong>bold</strong> text</p></div>';
       const { container } = render(<HTMLRenderer html={html} />);
 
       expect(container.textContent).toContain('Title');

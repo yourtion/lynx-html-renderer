@@ -16,10 +16,7 @@ interface HtmlParserNode {
  * 完全基于插件系统执行转换流程
  */
 export function transformHTML(html: string): LynxNode[] {
-  const document = parseDocument(html);
-
-  // 获取文档子节点
-  const rootNodes = document.children;
+  parseDocument(html);
 
   // 获取HTML转换处理器
   const htmlTransformProcessors = pluginManager.getHtmlTransformProcessors();
@@ -28,7 +25,10 @@ export function transformHTML(html: string): LynxNode[] {
     // 如果有注册的HTML转换处理器，使用第一个
     return htmlTransformProcessors[0](html, {
       parseDocument,
-      transformChildren: (nodes: HtmlParserNode[], parentMarks?: Record<string, boolean>) => transformChildren(nodes, parentMarks),
+      transformChildren: (
+        nodes: HtmlParserNode[],
+        parentMarks?: Record<string, boolean>,
+      ) => transformChildren(nodes, parentMarks),
     });
   }
 
@@ -45,12 +45,16 @@ function transformChildren(
   parentMarks: Record<string, boolean> = {},
 ): LynxNode[] {
   // 获取子节点转换处理器
-  const childrenTransformProcessors = pluginManager.getChildrenTransformProcessors();
+  const childrenTransformProcessors =
+    pluginManager.getChildrenTransformProcessors();
 
   if (childrenTransformProcessors.length > 0) {
     // 使用第一个子节点转换处理器
     return childrenTransformProcessors[0](nodes, parentMarks, {
-      transformNode: (node: HtmlParserNode, nodeParentMarks?: Record<string, boolean>) => transformNode(node, nodeParentMarks),
+      transformNode: (
+        node: HtmlParserNode,
+        nodeParentMarks?: Record<string, boolean>,
+      ) => transformNode(node, nodeParentMarks),
     });
   }
 
@@ -73,8 +77,12 @@ function transformNode(
     // 使用第一个节点转换处理器
     return nodeTransformProcessors[0](node, parentMarks, {
       getTagHandlers: pluginManager.getTagHandlers.bind(pluginManager),
-      getNodePostProcessors: pluginManager.getNodePostProcessors.bind(pluginManager),
-      transformChildren: (nodes: HtmlParserNode[], childrenParentMarks?: Record<string, boolean>) => transformChildren(nodes, childrenParentMarks),
+      getNodePostProcessors:
+        pluginManager.getNodePostProcessors.bind(pluginManager),
+      transformChildren: (
+        nodes: HtmlParserNode[],
+        childrenParentMarks?: Record<string, boolean>,
+      ) => transformChildren(nodes, childrenParentMarks),
     });
   }
 

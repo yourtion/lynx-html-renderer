@@ -133,21 +133,28 @@ describe('Inline Elements Integration Tests', () => {
     });
 
     it('should render multiple formatting combinations', () => {
-      const html = 'Text with <strong>bold</strong>, <em>italic</em>, and <u>underline</u>';
+      const html =
+        'Text with <strong>bold</strong>, <em>italic</em>, and <u>underline</u>';
       const { container } = render(<HTMLRenderer html={html} />);
 
-      expect(container.textContent).toBe('Text with bold, italic, and underline');
+      expect(container.textContent).toBe(
+        'Text with bold, italic, and underline',
+      );
     });
 
     it('should render nested formatting elements', () => {
-      const html = '<strong>Bold with <em>italic inside</em> and more bold</strong>';
+      const html =
+        '<strong>Bold with <em>italic inside</em> and more bold</strong>';
       const { container } = render(<HTMLRenderer html={html} />);
 
-      expect(container.textContent).toBe('Bold with italic inside and more bold');
+      expect(container.textContent).toBe(
+        'Bold with italic inside and more bold',
+      );
     });
 
     it('should render complex nested formatting', () => {
-      const html = '<strong>Bold <u>and underline <em>with italic</em></u></strong>';
+      const html =
+        '<strong>Bold <u>and underline <em>with italic</em></u></strong>';
       const { container } = render(<HTMLRenderer html={html} />);
 
       expect(container.textContent).toBe('Bold and underline with italic');
@@ -217,10 +224,13 @@ describe('Inline Elements Integration Tests', () => {
     });
 
     it('should render paragraph with multiple inline elements', () => {
-      const html = '<p>Start <strong>bold</strong> middle <em>italic</em> end <u>underline</u></p>';
+      const html =
+        '<p>Start <strong>bold</strong> middle <em>italic</em> end <u>underline</u></p>';
       const { container } = render(<HTMLRenderer html={html} />);
 
-      expect(container.textContent).toBe('Start bold middle italic end underline');
+      expect(container.textContent).toBe(
+        'Start bold middle italic end underline',
+      );
     });
 
     it('should render paragraph with code element', () => {
@@ -261,7 +271,8 @@ describe('Inline Elements Integration Tests', () => {
     });
 
     it('should render img with common attributes', () => {
-      const html = '<img src="photo.jpg" alt="Photo" width="200" height="100" />';
+      const html =
+        '<img src="photo.jpg" alt="Photo" width="200" height="100" />';
       const { container } = render(<HTMLRenderer html={html} />);
 
       const image = container.querySelector('image');
@@ -307,10 +318,13 @@ describe('Inline Elements Integration Tests', () => {
     });
 
     it('should render nested inline combinations', () => {
-      const html = '<strong>Bold with <em>italic <u>and underline</u> inside</em></strong>';
+      const html =
+        '<strong>Bold with <em>italic <u>and underline</u> inside</em></strong>';
       const { container } = render(<HTMLRenderer html={html} />);
 
-      expect(container.textContent).toBe('Bold with italic and underline inside');
+      expect(container.textContent).toBe(
+        'Bold with italic and underline inside',
+      );
     });
 
     it('should render content with inline elements and images', () => {
