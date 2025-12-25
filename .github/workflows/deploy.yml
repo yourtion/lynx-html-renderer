@@ -53,4 +53,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
-          cname: lynx-html.je.org
+          cname: lynx-html.js.org
