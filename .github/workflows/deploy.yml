@@ -53,5 +53,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
-          # 可选：设置自定义域名
-          # cname: example.com
+          cname: lynx-html.je.org
