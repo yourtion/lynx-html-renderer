@@ -10,6 +10,7 @@ import type {
   TagHandler,
   TopLevelMergeProcessor,
   TransformContext,
+  TransformOptions,
 } from './typings';
 
 /**
@@ -46,6 +47,11 @@ class PluginManager {
     Map<string, UniversalHandlerRegistryEntry[]>
   > = new Map();
   private disabledProcessorTypes: Set<string> = new Set();
+  // 当前转换选项（使用 AsyncLocalStorage 在异步调用中传递）
+  private currentOptions: TransformOptions = {
+    removeAllClass: true,
+    removeAllStyle: false,
+  };
 
   constructor() {
     // 初始化所有处理器类别
@@ -498,6 +504,33 @@ class PluginManager {
       type,
       processor,
     );
+  }
+
+  /**
+   * 设置当前转换选项
+   */
+  setTransformOptions(options: TransformOptions): void {
+    this.currentOptions = {
+      removeAllClass: options.removeAllClass ?? true,
+      removeAllStyle: options.removeAllStyle ?? false,
+    };
+  }
+
+  /**
+   * 获取当前转换选项
+   */
+  getTransformOptions(): TransformOptions {
+    return this.currentOptions;
+  }
+
+  /**
+   * 重置转换选项为默认值
+   */
+  resetTransformOptions(): void {
+    this.currentOptions = {
+      removeAllClass: true,
+      removeAllStyle: false,
+    };
   }
 }
 

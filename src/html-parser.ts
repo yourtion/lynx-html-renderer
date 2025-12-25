@@ -1,6 +1,6 @@
 import { parseDocument } from 'htmlparser2';
 import { pluginManager } from './plugin-system';
-import type { LynxNode } from './typings';
+import type { LynxNode, TransformOptions } from './typings';
 
 // 定义 htmlparser2 节点类型接口
 interface HtmlParserNode {
@@ -15,7 +15,17 @@ interface HtmlParserNode {
  * HTML转换主函数
  * 完全基于插件系统执行转换流程
  */
-export function transformHTML(html: string): LynxNode[] {
+export function transformHTML(
+  html: string,
+  options?: TransformOptions,
+): LynxNode[] {
+  // 设置转换选项
+  if (options) {
+    pluginManager.setTransformOptions(options);
+  } else {
+    pluginManager.resetTransformOptions();
+  }
+
   parseDocument(html);
 
   // 获取HTML转换处理器

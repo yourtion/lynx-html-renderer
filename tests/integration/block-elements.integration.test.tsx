@@ -9,9 +9,9 @@
  */
 
 import '@testing-library/jest-dom';
+import { HTMLRenderer } from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
 import { describe, expect, it } from 'vitest';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
 
 describe('Block Elements Integration Tests', () => {
   describe('Semantic Block Elements', () => {

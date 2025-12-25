@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { describe, expect, it } from 'vitest';
 
 describe('Core HTML Parsing', () => {
   describe('Basic Text Nodes', () => {

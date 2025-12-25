@@ -236,3 +236,13 @@ export type TaggedNodeTransformProcessor = NodeTransformProcessor &
   ProcessorBase;
 export type TaggedTopLevelMergeProcessor = TopLevelMergeProcessor &
   ProcessorBase;
+
+/**
+ * 转换配置选项
+ */
+export interface TransformOptions {
+  /** 是否删除所有 HTML 的 class 属性，默认为 true */
+  removeAllClass?: boolean;
+  /** 是否删除所有 HTML 的 style 属性，默认为 false */
+  removeAllStyle?: boolean;
+}

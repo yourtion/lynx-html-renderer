@@ -33,12 +33,50 @@ npm install lynx-html-renderer
 
 ### 基本使用 | Basic Usage
 
-```typescript
-import { renderHtml } from 'lynx-html-renderer';
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
 
-const html = '<div>Hello <strong>world</strong></div>';
-const lynxNodes = renderHtml(html);
+function App() {
+  const html = '<div>Hello <strong>world</strong></div>';
+
+  return <HTMLRenderer html={html} />;
+}
 ```
+
+### 转换选项 | Transform Options
+
+`HTMLRenderer` 组件支持通过 props 控制转换行为：
+
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
+
+function App() {
+  const html = '<div class="container" style="color: red;">Hello</div>';
+
+  return (
+    <HTMLRenderer
+      html={html}
+      removeAllClass={true}  // 删除所有 class 属性（默认：true）
+      removeAllStyle={false} // 删除所有 style 属性（默认：false）
+    />
+  );
+}
+```
+
+**可用选项：**
+
+| 选项 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `html` | `string` | - | 要渲染的 HTML 字符串（必填） |
+| `removeAllClass` | `boolean` | `true` | 是否删除所有 HTML 的 class 属性 |
+| `removeAllStyle` | `boolean` | `false` | 是否删除所有 HTML 的 style 属性 |
+
+**使用场景：**
+
+- **`removeAllClass: true`**（默认）：适合不需要 CSS class 的场景，避免引入外部样式依赖
+- **`removeAllClass: false`**：保留 class 属性，可用于基于 class 的自定义样式处理
+- **`removeAllStyle: true`**：移除所有内联样式，使用统一的主题样式
+- **`removeAllStyle: false`**（默认）：保留内联样式，保持 HTML 原始样式
 
 ### 示例 Bundle | Example Bundle
 

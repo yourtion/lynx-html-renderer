@@ -355,7 +355,12 @@ export const createBaseTagHandler = (): TagHandler => {
     }
 
     // Parse inline style string to object
-    let styleFromAttr = parseStyleString(node.attribs?.style);
+    // 获取转换选项，决定是否删除 style
+    const transformOptions = pluginManager.getTransformOptions();
+    let styleFromAttr =
+      transformOptions.removeAllStyle === true
+        ? {}
+        : parseStyleString(node.attribs?.style);
 
     // Apply global style processor
     const styleHandlers = pluginManager.getStyleHandlers();
@@ -460,6 +465,11 @@ export const createBaseTagHandler = (): TagHandler => {
     // Other elements only add style when style object has properties
     else if (Object.keys(style).length > 0) {
       baseNode.props.style = style;
+    }
+
+    // Process className based on removeAllClass option
+    if (transformOptions.removeAllClass !== true && node.attribs?.class) {
+      baseNode.props.className = node.attribs.class;
     }
 
     // Process other void elements

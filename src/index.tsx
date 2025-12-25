@@ -198,7 +198,12 @@ function getInnermostTextWithMarks(node: LynxElementNode): LynxNode | null {
   return null;
 }
 
-export function HTMLRenderer(props: { html: string }) {
-  const nodes = transformHTML(props.html);
+export function HTMLRenderer(props: {
+  html: string;
+  removeAllClass?: boolean;
+  removeAllStyle?: boolean;
+}) {
+  const { html, removeAllClass = true, removeAllStyle = false } = props;
+  const nodes = transformHTML(html, { removeAllClass, removeAllStyle });
   return nodes.map(renderNode);
 }

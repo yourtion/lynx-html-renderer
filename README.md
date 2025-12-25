@@ -36,6 +36,55 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 
 ---
 
+## 🚀 快速开始 | Quick Start
+
+### 安装 | Installation
+
+```bash
+npm install lynx-html-renderer
+# 或
+pnpm install lynx-html-renderer
+```
+
+### 基本使用 | Basic Usage
+
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
+
+function App() {
+  const html = '<div>Hello <strong>world</strong></div>';
+
+  return <HTMLRenderer html={html} />;
+}
+```
+
+### 转换选项 | Transform Options
+
+`HTMLRenderer` 组件支持以下可选属性来控制 HTML 转换行为：
+
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
+
+function App() {
+  const html = '<div class="container" style="color: red;">Hello</div>';
+
+  return (
+    <HTMLRenderer
+      html={html}
+      removeAllClass={true}  // 删除所有 HTML 的 class 属性（默认：true）
+      removeAllStyle={false} // 删除所有 HTML 的 style 属性（默认：false）
+    />
+  );
+}
+```
+
+**选项说明：**
+
+- `removeAllClass?: boolean` - 是否删除所有 HTML 的 class 属性，默认为 `true`
+  - 设置为 `false` 可保留 HTML 中的 class 属性
+- `removeAllStyle?: boolean` - 是否删除所有 HTML 的 style 属性，默认为 `false`
+  - 设置为 `true` 可移除所有内联样式
+
 ## 🚫 非目标 | Non-goals
 
 - ❌ 不实现完整 HTML/CSS 规范
@@ -69,6 +118,31 @@ Transform 阶段支持插件，用于：
 - 扩展样式或结构处理逻辑
 
 插件以 **pipeline** 形式执行，不影响核心逻辑的稳定性。
+
+## 📖 API 文档 | API Reference
+
+### HTMLRenderer Component
+
+主渲染组件，用于将 HTML 字符串渲染为 Lynx 组件。
+
+```tsx
+interface HTMLRendererProps {
+  html: string;              // 要渲染的 HTML 字符串
+  removeAllClass?: boolean;  // 是否删除所有 class 属性（默认：true）
+  removeAllStyle?: boolean;  // 是否删除所有 style 属性（默认：false）
+}
+```
+
+### TransformOptions
+
+HTML 转换选项，用于控制转换行为。
+
+```tsx
+interface TransformOptions {
+  removeAllClass?: boolean;   // 是否删除所有 HTML 的 class 属性，默认为 true
+  removeAllStyle?: boolean;   // 是否删除所有 HTML 的 style 属性，默认为 false
+}
+```
 
 ---
 

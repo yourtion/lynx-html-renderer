@@ -161,6 +161,24 @@ interface LynxTextNode extends LynxBaseNode {
 - 样式解析（style string → style object）
 - 结构规整（尤其是 table）
 - 生成 LynxNode（不涉及渲染）
+- **应用转换选项**（TransformOptions）
+
+#### TransformOptions 配置
+
+Transform 阶段支持通过 `TransformOptions` 控制转换行为：
+
+```ts
+interface TransformOptions {
+  /** 是否删除所有 HTML 的 class 属性，默认为 true */
+  removeAllClass?: boolean;
+  /** 是否删除所有 HTML 的 style 属性，默认为 false */
+  removeAllStyle?: boolean;
+}
+```
+
+这些选项在 HTML 属性处理阶段应用：
+- `removeAllClass: true` 时，跳过所有 `class` 属性的收集
+- `removeAllStyle: true` 时，跳过 `style` 属性的解析和转换
 
 ---
 

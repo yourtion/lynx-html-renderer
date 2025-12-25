@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { describe, expect, it } from 'vitest';
 
 describe('Error Handling Tests', () => {
   describe('Malformed HTML', () => {

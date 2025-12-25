@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import type { LynxNode } from '@lynx-html-renderer/typings';
 import {
   applyPostProcessors,
@@ -6,6 +5,7 @@ import {
   isTextNode,
   mergeAdjacentTextNodes,
 } from '@lynx-html-renderer/utils/node-helpers';
+import { describe, expect, it } from 'vitest';
 
 describe('node-helpers', () => {
   describe('isTextNode', () => {

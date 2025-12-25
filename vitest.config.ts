@@ -1,7 +1,7 @@
-import { createVitestConfig } from '@lynx-js/react/testing-library/vitest-config';
-import { defineConfig, mergeConfig } from 'vitest/config';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createVitestConfig } from '@lynx-js/react/testing-library/vitest-config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 

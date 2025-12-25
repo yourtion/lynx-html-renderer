@@ -6,9 +6,9 @@
  */
 
 import '@testing-library/jest-dom';
+import { HTMLRenderer } from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
 import { describe, expect, it } from 'vitest';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
 
 describe('HTMLRenderer Integration Tests', () => {
   describe('Basic Rendering', () => {

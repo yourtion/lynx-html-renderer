@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest';
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { BuiltinProcessorType } from '@lynx-html-renderer/plugins/builtin.js';
 import { mergeAdjacentTextNodes } from '@lynx-html-renderer/plugins/node-processors.js';
 import { defaultStyleHandler } from '@lynx-html-renderer/plugins/style-handlers.js';
 import { createTextHandler } from '@lynx-html-renderer/plugins/tag-handlers.js';
-import type { HtmlParserNode, LynxNode, LynxTextNode } from '@lynx-html-renderer/typings';
+import type {
+  HtmlParserNode,
+  LynxNode,
+  LynxTextNode,
+} from '@lynx-html-renderer/typings';
+import { describe, expect, it } from 'vitest';
 
 describe('Plugin System - Builtin Plugin', () => {
   it('should have all builtin processor types defined', () => {

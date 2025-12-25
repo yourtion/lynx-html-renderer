@@ -1,4 +1,4 @@
-import { useEffect } from '@lynx-js/react';
+import { useEffect, useState } from '@lynx-js/react';
 import './App.css';
 import { HTMLRenderer } from '../../src/index';
 
@@ -107,14 +107,43 @@ const html = `
 `;
 
 export function App(props: { onRender?: () => void }) {
+  const [removeAllStyle, setRemoveAllStyle] = useState(false);
+
   useEffect(() => {
     console.info('Hello, ReactLynx');
   }, []);
   props.onRender?.();
 
+  const toggleStyle = () => {
+    setRemoveAllStyle(!removeAllStyle);
+  };
+
   return (
     <scroll-view scroll-orientation="vertical" class="container">
-      <HTMLRenderer html={html} />
+      <HTMLRenderer html={html} removeAllStyle={removeAllStyle} />
+      <view
+        style={{
+          position: 'fixed',
+          bottom: '50px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: removeAllStyle ? '#28a745' : '#007bff',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          shadow: '0 4px 12px rgba(0,0,0,0.15)',
+        }}
+        bindtap={toggleStyle}
+      >
+        <text
+          style={{
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: 'bold',
+          }}
+        >
+          {removeAllStyle ? '✓ 已移除样式' : '切换纯文本模式'}
+        </text>
+      </view>
     </scroll-view>
   );
 }

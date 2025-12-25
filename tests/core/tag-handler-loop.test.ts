@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { pluginManager } from '@lynx-html-renderer/plugin-system';
 import type { HtmlToLynxPlugin } from '@lynx-html-renderer/typings';
+import { describe, expect, it } from 'vitest';
 
 describe('html-parser tag handler loop', () => {
   // 保存原始插件，以便测试后恢复
