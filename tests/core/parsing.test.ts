@@ -11,6 +11,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'text',
           content: 'Hello World',
+          meta: { source: 'text' },
         },
       ]);
     });
@@ -23,17 +24,20 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'text',
           content: 'Hello ',
+          meta: { source: 'text' },
         },
         {
           kind: 'element',
           tag: 'text',
           props: {},
           children: [],
-          meta: { sourceTag: 'span' },
+          capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+          meta: { sourceTag: 'span', sourceAttrs: {} },
         },
         {
           kind: 'text',
           content: ' World',
+          meta: { source: 'text' },
         },
       ]);
     });
@@ -47,15 +51,17 @@ describe('Core HTML Parsing', () => {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: 'Text 1' }],
-          meta: { sourceTag: 'div' },
+          children: [{ kind: 'text', content: 'Text 1', meta: { source: 'text' } }],
+          capabilities: { isVoid: false, layout: 'flex' },
+          meta: { sourceTag: 'div', sourceAttrs: {} },
         },
         {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: 'Text 2' }],
-          meta: { sourceTag: 'div' },
+          children: [{ kind: 'text', content: 'Text 2', meta: { source: 'text' } }],
+          capabilities: { isVoid: false, layout: 'flex' },
+          meta: { sourceTag: 'div', sourceAttrs: {} },
         },
       ]);
     });
@@ -88,15 +94,16 @@ describe('Core HTML Parsing', () => {
       const result = transformHTML(html);
 
       expect(result).toEqual([
-        { kind: 'text', content: '  Text 1  ' },
+        { kind: 'text', content: '  Text 1  ', meta: { source: 'text' } },
         {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: '  Text 2  ' }],
-          meta: { sourceTag: 'div' },
+          children: [{ kind: 'text', content: '  Text 2  ', meta: { source: 'text' } }],
+          capabilities: { isVoid: false, layout: 'flex' },
+          meta: { sourceTag: 'div', sourceAttrs: {} },
         },
-        { kind: 'text', content: '  Text 3  ' },
+        { kind: 'text', content: '  Text 3  ', meta: { source: 'text' } },
       ]);
     });
   });

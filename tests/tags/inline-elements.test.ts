@@ -12,8 +12,9 @@ describe('Inline Elements', () => {
         kind: 'element',
         tag: 'text',
         props: {},
-        children: [{ kind: 'text', content: 'Span Text' }],
-        meta: { sourceTag: 'span' },
+        children: [{ kind: 'text', content: 'Span Text', meta: { source: 'text' } }],
+        capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+        meta: { sourceTag: 'span', sourceAttrs: {} },
       },
     ]);
   });
@@ -27,6 +28,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Bold Text',
         marks: { bold: true },
+        meta: { source: 'text' },
       },
     ]);
   });
@@ -40,6 +42,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Bold Text',
         marks: { bold: true },
+        meta: { source: 'text' },
       },
     ]);
   });
@@ -53,6 +56,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Italic Text',
         marks: { italic: true },
+        meta: { source: 'text' },
       },
     ]);
   });
@@ -66,6 +70,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Italic Text',
         marks: { italic: true },
+        meta: { source: 'text' },
       },
     ]);
   });
@@ -79,6 +84,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Underlined Text',
         marks: { underline: true },
+        meta: { source: 'text' },
       },
     ]);
   });
@@ -92,6 +98,7 @@ describe('Inline Elements', () => {
         kind: 'text',
         content: 'Code Text',
         marks: { code: true },
+        meta: { source: 'text' },
       },
     ]);
   });

@@ -655,6 +655,7 @@ exports[`Snapshot Tests with Verification > Image Element > should match snapsho
   >
     <image
       src="https://example.com/image.jpg"
+      style="width: 100%; height: auto;"
     />
     <text
       style="margin-bottom: 1em;"

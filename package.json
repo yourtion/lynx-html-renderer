@@ -2,6 +2,23 @@
   "name": "lynx-html-renderer",
   "version": "0.2.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.tsx",
+      "import": "./src/index.tsx",
+      "default": "./src/index.tsx"
+    },
+    "./html-parser": {
+      "types": "./src/html-parser.ts",
+      "import": "./src/html-parser.ts",
+      "default": "./src/html-parser.ts"
+    },
+    "./transform": {
+      "types": "./src/transform/types.ts",
+      "import": "./src/transform/types.ts",
+      "default": "./src/transform/types.ts"
+    }
+  },
   "scripts": {
     "build-example": "cd example && rspeedy build",
     "check": "biome check --write",

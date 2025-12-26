@@ -17,8 +17,9 @@ describe('Style Parsing', () => {
             fontSize: '16px',
           },
         },
-        children: [{ kind: 'text', content: 'Styled Text' }],
-        meta: { sourceTag: 'div' },
+        children: [{ kind: 'text', content: 'Styled Text', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'div', sourceAttrs: { style: 'color: red; font-size: 16px;' } },
       },
     ]);
   });
@@ -37,8 +38,9 @@ describe('Style Parsing', () => {
             color: 'blue',
           },
         },
-        children: [{ kind: 'text', content: 'Styled Paragraph' }],
-        meta: { sourceTag: 'p' },
+        children: [{ kind: 'text', content: 'Styled Paragraph', meta: { source: 'text' } }],
+        capabilities: { layout: 'block', textContainer: true, isVoid: false },
+        meta: { sourceTag: 'p', sourceAttrs: { style: 'color: blue;' } },
       },
     ]);
   });
@@ -59,8 +61,9 @@ describe('Style Parsing', () => {
             borderRadius: '4px',
           },
         },
-        children: [{ kind: 'text', content: 'Styled Div' }],
-        meta: { sourceTag: 'div' },
+        children: [{ kind: 'text', content: 'Styled Div', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'div', sourceAttrs: { style: 'background-color: #fff; border-radius: 4px;' } },
       },
     ]);
   });
