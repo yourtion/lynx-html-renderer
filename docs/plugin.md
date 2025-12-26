@@ -1,4 +1,4 @@
-# 插件系统详细设计文档 Plugin System Documentation
+# LynxHTMLRenderer 插件系统
 
 ## 1. 设计目标（Design Goals）
 

@@ -1,15 +1,35 @@
 // rspress.config.ts
 export default {
-  root: 'docs',
-  title: 'Lynx HTML Renderer',
+  root: "docs",
+  title: "Lynx HTML Renderer",
   description:
-    'A lightweight and extensible renderer that renders HTML string on Lynx',
+    "A lightweight and extensible renderer that renders HTML string on Lynx",
   themeConfig: {
-    logo: '/logo.png',
+    logo: "/logo.png",
     socialLinks: [
       {
-        icon: 'github',
-        link: 'https://github.com/yourtion/lynx-html-renderer',
+        icon: "github",
+        content: "https://github.com/yourtion/lynx-html-renderer",
+      },
+    ],
+    nav: [
+      {
+        text: "Home",
+        link: "/",
+      },
+      {
+        text: "Design",
+        items: [
+          {
+            text: "Architecture",
+            link: "/architecture",
+          },
+          {
+            text: "Plugin",
+            link: "/plugin",
+          },
+        ],
+        position: "right",
       },
     ],
   },
@@ -18,10 +38,4 @@ export default {
       level: [2, 3],
     },
   },
-  navs: [
-    {
-      text: 'Architecture',
-      link: '/architecture',
-    },
-  ],
 };
