@@ -12,10 +12,11 @@ describe('Void Elements', () => {
         tag: 'image',
         props: {
           src: 'test.jpg',
-          style: {},
+          style: { width: '100%', height: 'auto' },
         },
         children: [],
-        meta: { sourceTag: 'img' },
+        capabilities: { isVoid: true, layout: 'flex' },
+        meta: { sourceTag: 'img', sourceAttrs: { src: 'test.jpg', alt: 'Test Image' } },
       },
     ]);
   });

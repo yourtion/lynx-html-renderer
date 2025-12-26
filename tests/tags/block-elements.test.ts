@@ -11,8 +11,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'view',
         props: { style: { flexDirection: 'column' } },
-        children: [{ kind: 'text', content: 'Content' }],
-        meta: { sourceTag: 'div' },
+        children: [{ kind: 'text', content: 'Content', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'div', sourceAttrs: {} },
       },
     ]);
   });
@@ -26,8 +27,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'view',
         props: { style: { flexDirection: 'column' } },
-        children: [{ kind: 'text', content: 'Section Content' }],
-        meta: { sourceTag: 'section' },
+        children: [{ kind: 'text', content: 'Section Content', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'section', sourceAttrs: {} },
       },
     ]);
   });
@@ -41,8 +43,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'view',
         props: { style: { flexDirection: 'column' } },
-        children: [{ kind: 'text', content: 'Article Content' }],
-        meta: { sourceTag: 'article' },
+        children: [{ kind: 'text', content: 'Article Content', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'article', sourceAttrs: {} },
       },
     ]);
   });
@@ -56,8 +59,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'view',
         props: { style: { flexDirection: 'column' } },
-        children: [{ kind: 'text', content: 'Header Content' }],
-        meta: { sourceTag: 'header' },
+        children: [{ kind: 'text', content: 'Header Content', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'header', sourceAttrs: {} },
       },
     ]);
   });
@@ -71,8 +75,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'view',
         props: { style: { flexDirection: 'column' } },
-        children: [{ kind: 'text', content: 'Footer Content' }],
-        meta: { sourceTag: 'footer' },
+        children: [{ kind: 'text', content: 'Footer Content', meta: { source: 'text' } }],
+        capabilities: { isVoid: false, layout: 'flex' },
+        meta: { sourceTag: 'footer', sourceAttrs: {} },
       },
     ]);
   });
@@ -86,8 +91,9 @@ describe('Block Elements', () => {
         kind: 'element',
         tag: 'text',
         props: { style: { marginBottom: '1em' } },
-        children: [{ kind: 'text', content: 'Paragraph' }],
-        meta: { sourceTag: 'p' },
+        children: [{ kind: 'text', content: 'Paragraph', meta: { source: 'text' } }],
+        capabilities: { layout: 'block', textContainer: true, isVoid: false },
+        meta: { sourceTag: 'p', sourceAttrs: {} },
       },
     ]);
   });

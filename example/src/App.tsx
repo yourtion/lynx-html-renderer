@@ -1,6 +1,6 @@
 import { useEffect, useState } from '@lynx-js/react';
 import './App.css';
-import { HTMLRenderer } from '../../src/index';
+import { HTMLRenderer } from 'lynx-html-renderer';
 
 const html = `
 <div style="padding: 20px; max-width: 800px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
