@@ -1,6 +1,10 @@
-import type { HtmlAstNode, LynxNode, TransformContext as ITransformContext } from './types';
 import { walkAst } from '../ast/walkers';
 import { createLynxNode, replaceLynxNode } from '../lynx/factory';
+import type {
+  HtmlAstNode,
+  TransformContext as ITransformContext,
+  LynxNode,
+} from './types';
 
 /**
  * TransformContext 实现

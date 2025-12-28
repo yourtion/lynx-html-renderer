@@ -31,7 +31,11 @@ describe('Core HTML Parsing', () => {
           tag: 'text',
           props: {},
           children: [],
-          capabilities: { layout: 'inline', textContainer: true, isVoid: false },
+          capabilities: {
+            layout: 'inline',
+            textContainer: true,
+            isVoid: false,
+          },
           meta: { sourceTag: 'span', sourceAttrs: {} },
         },
         {
@@ -51,7 +55,9 @@ describe('Core HTML Parsing', () => {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: 'Text 1', meta: { source: 'text' } }],
+          children: [
+            { kind: 'text', content: 'Text 1', meta: { source: 'text' } },
+          ],
           capabilities: { isVoid: false, layout: 'flex' },
           meta: { sourceTag: 'div', sourceAttrs: {} },
         },
@@ -59,7 +65,9 @@ describe('Core HTML Parsing', () => {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: 'Text 2', meta: { source: 'text' } }],
+          children: [
+            { kind: 'text', content: 'Text 2', meta: { source: 'text' } },
+          ],
           capabilities: { isVoid: false, layout: 'flex' },
           meta: { sourceTag: 'div', sourceAttrs: {} },
         },
@@ -99,7 +107,9 @@ describe('Core HTML Parsing', () => {
           kind: 'element',
           tag: 'view',
           props: { style: { flexDirection: 'column' } },
-          children: [{ kind: 'text', content: '  Text 2  ', meta: { source: 'text' } }],
+          children: [
+            { kind: 'text', content: '  Text 2  ', meta: { source: 'text' } },
+          ],
           capabilities: { isVoid: false, layout: 'flex' },
           meta: { sourceTag: 'div', sourceAttrs: {} },
         },

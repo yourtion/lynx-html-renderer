@@ -1,5 +1,5 @@
-import type { TransformPlugin, LynxNode } from '../../types';
 import { mergeAllTextNodes } from '../../../lynx/utils';
+import type { LynxNode, TransformPlugin } from '../../types';
 
 /**
  * 文本合并插件

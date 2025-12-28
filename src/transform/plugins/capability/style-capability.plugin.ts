@@ -1,8 +1,8 @@
 import type {
-  TransformPlugin,
-  LynxNode,
-  LynxElementNode,
   CSSProperties,
+  LynxElementNode,
+  LynxNode,
+  TransformPlugin,
 } from '../../types';
 
 /**
@@ -15,8 +15,8 @@ export const styleCapabilityPlugin: TransformPlugin = {
   order: 10,
 
   apply(ctx) {
-    const removeAllStyle = ctx.metadata.removeAllStyle as boolean ?? false;
-    const removeAllClass = ctx.metadata.removeAllClass as boolean ?? true;
+    const removeAllStyle = (ctx.metadata.removeAllStyle as boolean) ?? false;
+    const removeAllClass = (ctx.metadata.removeAllClass as boolean) ?? true;
 
     // 遍历所有节点，处理样式
     processStyles(ctx.root, { removeAllStyle, removeAllClass });
@@ -32,7 +32,9 @@ function processStyles(
 ): void {
   if (lynxNode.kind === 'element') {
     const element = lynxNode as LynxElementNode;
-    const sourceAttrs = element.meta?.sourceAttrs as Record<string, string> | undefined;
+    const sourceAttrs = element.meta?.sourceAttrs as
+      | Record<string, string>
+      | undefined;
 
     // 处理 style 属性
     if (!options.removeAllStyle && sourceAttrs?.style) {

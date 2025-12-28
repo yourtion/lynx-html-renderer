@@ -12,13 +12,13 @@ import type { HtmlAstNode } from '../ast/types';
 
 // 从 lynx/types 导入所有 LynxNode 相关类型
 import type {
-  LynxNode,
-  LynxElementNode,
-  LynxTextNode,
-  LynxProps,
+  Capabilities,
   CSSProperties,
   ElementRole,
-  Capabilities,
+  LynxElementNode,
+  LynxNode,
+  LynxProps,
+  LynxTextNode,
 } from '../lynx/types';
 
 // 重新导出类型
@@ -77,6 +77,14 @@ export interface TransformContext {
 
   /** 插件间传递元数据 */
   metadata: Record<string, unknown>;
+
+  /** 性能指标收集（可选） */
+  metrics?: {
+    /** 插件执行时间（毫秒） */
+    pluginTimings: Map<string, number>;
+    /** 节点计数 */
+    nodeCount: number;
+  };
 }
 
 /**
@@ -105,4 +113,7 @@ export interface TransformOptions {
 
   /** 新增：插件配置 */
   plugins?: PluginConfig;
+
+  /** 启用调试模式（输出插件执行日志和性能指标） */
+  debug?: boolean;
 }

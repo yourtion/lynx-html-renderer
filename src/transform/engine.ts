@@ -1,18 +1,23 @@
 import { parseDocument } from 'htmlparser2';
+import { createRootNode } from '../lynx/factory';
+import { createTransformContext } from './context';
+import { TransformPluginResolver } from './resolver';
 import type {
   HtmlAstNode,
   LynxNode,
   TransformOptions,
   TransformPhase,
 } from './types';
-import { TransformPluginResolver } from './resolver';
-import { createTransformContext } from './context';
-import { createRootNode } from '../lynx/factory';
 
 /**
  * 转换阶段执行顺序
  */
-const PHASES: TransformPhase[] = ['normalize', 'structure', 'capability', 'finalize'];
+const PHASES: TransformPhase[] = [
+  'normalize',
+  'structure',
+  'capability',
+  'finalize',
+];
 
 /**
  * transformHTML 主函数

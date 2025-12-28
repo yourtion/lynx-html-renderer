@@ -1,118 +1,45 @@
-// 结构角色类型
-export type ElementRole =
-  | 'block'
-  | 'inline'
-  | 'textContainer'
-  | 'image'
-  | 'table'
-  | 'row'
-  | 'cell';
+/**
+ * Type definitions re-exports
+ *
+ * This file re-exports all public types from their source modules
+ * to provide a unified import interface and maintain backward compatibility.
+ */
 
-// 能力描述接口
-export interface Capabilities {
-  layout?: 'block' | 'inline' | 'flex' | 'table';
-  isVoid?: boolean; // 如 img / br
-  textContainer?: boolean; // 是否只能包含 text
-}
+// LynxNode types - re-export from core types
+export type {
+  LynxNode,
+  LynxElementNode,
+  LynxTextNode,
+  LynxProps,
+  CSSProperties,
+  ElementRole,
+  Capabilities,
+} from './lynx/types';
 
-export type LynxNode = LynxElementNode | LynxTextNode;
+// Transform types - re-export from transform system
+export type {
+  HtmlAstNode,
+  TransformPlugin,
+  TransformContext,
+  TransformOptions,
+  PluginConfig,
+  TransformPhase,
+} from './transform/types';
 
-export interface LynxBaseNode {
-  kind: string;
-  meta?: Record<string, unknown>; // 调试、插件扩展、来源信息
-}
+// Renderer types - re-export from render layer
+export type {
+  RenderResult,
+  LynxRenderAdapter,
+  RenderContext,
+} from './render/types';
 
-export interface LynxElementNode extends LynxBaseNode {
-  kind: 'element';
-
-  /** Lynx 原生标签名 */
-  tag: 'view' | 'text' | 'image' | 'frame' | string;
-
-  /** Lynx props（已归一化） */
-  props: LynxProps;
-
-  /** 子节点 */
-  children: LynxNode[];
-
-  /** 结构语义 */
-  role?: ElementRole;
-
-  /** 能力描述 */
-  capabilities?: Capabilities;
-
-  /** 调试 / 扩展用 */
-  meta?: {
-    sourceTag?: string; // 原 HTML tag
-    sourceAttrs?: Record<string, string>;
-  };
-}
-
-export interface LynxTextNode extends LynxBaseNode {
-  kind: 'text';
-
-  /** 文本内容 */
-  content: string;
-
-  /** 文本标记（bold, italic, underline, code） */
-  marks?: {
-    bold?: boolean;
-    italic?: boolean;
-    underline?: boolean;
-    code?: boolean;
-  };
-
-  meta?: {
-    source?: 'text' | 'br';
-  };
-}
-
-export type LynxProps = {
-  style?: CSSProperties;
-  className?: string;
-
-  // image
-  src?: string;
-
-  // frame
-  url?: string;
-
-  // 事件（MVP 可不支持）
-  onTap?: () => void;
-
-  [key: string]:
-    | string
-    | number
-    | boolean
-    | undefined
-    | Record<string, unknown>;
-};
-
-// 定义渲染结果类型
-export type RenderResult = unknown; // Lynx 组件类型，实际为内部类型
-
-// 渲染适配器接口
-export interface LynxRenderAdapter {
-  match(node: LynxElementNode): boolean;
-  render(node: LynxElementNode, ctx: RenderContext): RenderResult;
-}
-
-// 渲染上下文接口
-export interface RenderContext {
-  renderChildren(node: LynxElementNode): RenderResult[];
-}
-
-// 插件系统类型定义
+// Legacy types - kept for backward compatibility
+// These will be deprecated in future versions
 
 export interface HtmlToLynxPlugin {
   name: string;
   priority?: number;
   setup(ctx: TransformContext): void;
-}
-
-export interface TransformContext {
-  registerTagHandler(tag: string, handler: TagHandler): void;
-  registerStyleHandler(handler: StyleHandler): void;
-  registerNodePostProcessor(processor: NodePostProcessor): void;
 }
 
 // 定义 htmlparser2 节点类型
@@ -137,8 +64,9 @@ export interface ProcessorBase {
 
 /**
  * HTML转换上下文接口
+ * @deprecated Use TransformContext from './transform/types' instead
  */
-export interface TransformContext {
+export interface LegacyTransformContext {
   /** 注册标签处理器 */
   registerTagHandler: (tag: string, handler: TagHandler) => void;
   /** 注册样式处理器 */
@@ -236,13 +164,3 @@ export type TaggedNodeTransformProcessor = NodeTransformProcessor &
   ProcessorBase;
 export type TaggedTopLevelMergeProcessor = TopLevelMergeProcessor &
   ProcessorBase;
-
-/**
- * 转换配置选项
- */
-export interface TransformOptions {
-  /** 是否删除所有 HTML 的 class 属性，默认为 true */
-  removeAllClass?: boolean;
-  /** 是否删除所有 HTML 的 style 属性，默认为 false */
-  removeAllStyle?: boolean;
-}

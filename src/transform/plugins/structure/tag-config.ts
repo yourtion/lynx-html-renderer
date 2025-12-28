@@ -1,4 +1,4 @@
-import type { ElementRole, Capabilities } from '../../../lynx/types';
+import type { Capabilities, ElementRole } from '../../../lynx/types';
 
 /**
  * 标签映射配置

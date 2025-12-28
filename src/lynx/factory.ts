@@ -1,8 +1,4 @@
-import type {
-  LynxElementNode,
-  LynxNode,
-  LynxTextNode,
-} from './types';
+import type { LynxElementNode, LynxNode, LynxTextNode } from './types';
 
 /**
  * 创建根节点容器
@@ -25,7 +21,10 @@ export function createRootNode(): LynxElementNode {
 export function createLynxNode(
   partial: Partial<LynxElementNode | LynxTextNode>,
 ): LynxNode {
-  if (partial.kind === 'text' || (!partial.kind && partial.content !== undefined)) {
+  if (
+    partial.kind === 'text' ||
+    (!partial.kind && partial.content !== undefined)
+  ) {
     // 文本节点
     const textNode: LynxTextNode = {
       kind: 'text',

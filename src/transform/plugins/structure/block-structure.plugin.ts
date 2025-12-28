@@ -1,12 +1,12 @@
-import type {
-  TransformPlugin,
-  HtmlAstNode,
-  LynxNode,
-  Capabilities,
-} from '../../types';
-import { BLOCK_TAG_MAP } from './tag-config';
 import { createLynxNode } from '../../../lynx/factory';
 import { mergeAllTextNodes } from '../../../lynx/utils';
+import type {
+  Capabilities,
+  HtmlAstNode,
+  LynxNode,
+  TransformPlugin,
+} from '../../types';
+import { BLOCK_TAG_MAP } from './tag-config';
 
 /**
  * 块级结构插件
@@ -77,8 +77,12 @@ function convertAstNode(
 
     // 处理内联格式化标签（strong、em、u、code）
     const isInlineFormatting =
-      tag === 'strong' || tag === 'b' || tag === 'em' || tag === 'i' ||
-      tag === 'u' || tag === 'code';
+      tag === 'strong' ||
+      tag === 'b' ||
+      tag === 'em' ||
+      tag === 'i' ||
+      tag === 'u' ||
+      tag === 'code';
 
     if (isInlineFormatting && mapping.lynxTag === 'text') {
       // 内联格式化标签不创建包装元素，只传递 marks
@@ -145,9 +149,7 @@ function convertAstNode(
 /**
  * 获取标签对应的 marks
  */
-function getTagMarks(
-  tag: string,
-): Record<string, boolean> | undefined {
+function getTagMarks(tag: string): Record<string, boolean> | undefined {
   const marks: Record<string, Record<string, boolean>> = {
     strong: { bold: true },
     b: { bold: true },

@@ -1,8 +1,4 @@
-import type {
-  TransformPlugin,
-  LynxNode,
-  LynxElementNode,
-} from '../../types';
+import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 /**
  * 媒体能力插件
@@ -25,7 +21,9 @@ export const mediaCapabilityPlugin: TransformPlugin = {
 function processMediaElements(lynxNode: LynxNode): void {
   if (lynxNode.kind === 'element') {
     const element = lynxNode as LynxElementNode;
-    const sourceAttrs = element.meta?.sourceAttrs as Record<string, string> | undefined;
+    const sourceAttrs = element.meta?.sourceAttrs as
+      | Record<string, string>
+      | undefined;
 
     // 处理 img 元素
     if (element.meta?.sourceTag === 'img' && sourceAttrs?.src) {

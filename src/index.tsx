@@ -1,11 +1,13 @@
+import { memo, useCallback, useMemo } from 'react';
 import { transformHTML } from './html-parser';
+import { AdapterRegistry } from './render/adapter-registry';
 import type {
   LynxElementNode,
   LynxNode,
   LynxRenderAdapter,
   RenderContext,
   RenderResult,
-} from './typings';
+} from './render/types';
 
 // 内置适配器实现
 class ViewAdapter implements LynxRenderAdapter {
@@ -94,38 +96,37 @@ class CellAdapter implements LynxRenderAdapter {
   }
 }
 
-// 适配器映射
-const builtinAdapters: LynxRenderAdapter[] = [
-  new TableAdapter(),
-  new RowAdapter(),
-  new CellAdapter(),
-  new ViewAdapter(),
-  new TextAdapter(),
-  new ImageAdapter(),
-];
+// 适配器注册表 - O(1) 查找性能
+const adapterRegistry = new AdapterRegistry(new ViewAdapter());
 
-// 适配器解析函数
+// 注册所有内置适配器
+adapterRegistry.registerByTag('view', new ViewAdapter());
+adapterRegistry.registerByTag('text', new TextAdapter());
+adapterRegistry.registerByTag('image', new ImageAdapter());
+adapterRegistry.registerByRole('table', new TableAdapter());
+adapterRegistry.registerByRole('row', new RowAdapter());
+adapterRegistry.registerByRole('cell', new CellAdapter());
+
+// 适配器解析函数 - 使用注册表实现 O(1) 查找
 function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
-  // 查找匹配的适配器
-  for (const adapter of builtinAdapters) {
-    if (adapter.match(node)) {
-      return adapter;
-    }
-  }
-  // 默认使用 ViewAdapter
-  return new ViewAdapter();
+  return adapterRegistry.resolve(node);
 }
 
-// 渲染上下文实现
-const createRenderContext = (
-  renderNode: (node: LynxNode) => RenderResult,
-): RenderContext => {
-  return {
-    renderChildren(node: LynxElementNode) {
-      return node.children.map(renderNode);
-    },
-  };
-};
+// 渲染上下文 - 模块级别单例，减少对象创建
+let cachedContext: RenderContext | null = null;
+
+function getRenderContext(
+  renderNodeFn: (node: LynxNode) => RenderResult,
+): RenderContext {
+  if (!cachedContext) {
+    cachedContext = {
+      renderChildren(node: LynxElementNode) {
+        return node.children.map(renderNodeFn);
+      },
+    };
+  }
+  return cachedContext;
+}
 
 // 主渲染函数
 function renderNode(node: LynxNode): RenderResult {
@@ -147,7 +148,7 @@ function renderNode(node: LynxNode): RenderResult {
 
   // 处理元素节点
   const adapter = resolveAdapter(node);
-  const ctx = createRenderContext(renderNode);
+  const ctx = getRenderContext(renderNode);
   return adapter.render(node, ctx);
 }
 
@@ -198,12 +199,22 @@ function getInnermostTextWithMarks(node: LynxElementNode): LynxNode | null {
   return null;
 }
 
-export function HTMLRenderer(props: {
+export const HTMLRenderer = memo(function HTMLRenderer(props: {
   html: string;
   removeAllClass?: boolean;
   removeAllStyle?: boolean;
 }) {
   const { html, removeAllClass = true, removeAllStyle = false } = props;
-  const nodes = transformHTML(html, { removeAllClass, removeAllStyle });
-  return nodes.map(renderNode);
-}
+
+  // Cache the transformed nodes to avoid re-parsing HTML on every render
+  const nodes = useMemo(
+    () => transformHTML(html, { removeAllClass, removeAllStyle }),
+    [html, removeAllClass, removeAllStyle],
+  );
+
+  // Cache the renderNode function to maintain stable references
+  // Note: renderNode is defined below and contains the rendering logic
+  const memoizedRenderNode = useCallback(renderNode, []);
+
+  return nodes.map(memoizedRenderNode);
+});

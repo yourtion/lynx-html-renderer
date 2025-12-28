@@ -1,8 +1,8 @@
 import type {
-  TransformPlugin,
-  LynxNode,
   LynxElementNode,
+  LynxNode,
   LynxTextNode,
+  TransformPlugin,
 } from '../../types';
 
 /**
@@ -56,7 +56,10 @@ function addListMarkers(listElement: LynxElementNode): void {
       counter++;
 
       // 尝试合并标记与第一个文本子节点
-      if (liElement.children.length > 0 && liElement.children[0].kind === 'text') {
+      if (
+        liElement.children.length > 0 &&
+        liElement.children[0].kind === 'text'
+      ) {
         const firstText = liElement.children[0] as LynxTextNode;
         return {
           ...liElement,

@@ -16,7 +16,10 @@ describe('Void Elements', () => {
         },
         children: [],
         capabilities: { isVoid: true, layout: 'flex' },
-        meta: { sourceTag: 'img', sourceAttrs: { src: 'test.jpg', alt: 'Test Image' } },
+        meta: {
+          sourceTag: 'img',
+          sourceAttrs: { src: 'test.jpg', alt: 'Test Image' },
+        },
       },
     ]);
   });

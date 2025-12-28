@@ -1,5 +1,5 @@
-import type { TransformPlugin, PluginConfig, TransformPhase } from './types';
 import { builtinPlugins } from './plugins';
+import type { PluginConfig, TransformPhase, TransformPlugin } from './types';
 
 /**
  * 插件解析器

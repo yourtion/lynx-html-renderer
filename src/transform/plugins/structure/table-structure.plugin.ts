@@ -1,8 +1,4 @@
-import type {
-  TransformPlugin,
-  LynxNode,
-  LynxElementNode,
-} from '../../types';
+import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 /**
  * 表格结构插件
@@ -52,7 +48,11 @@ function flattenTableChildren(children: LynxNode[]): LynxNode[] {
       const sourceTag = childElement.meta?.sourceTag;
 
       // 如果是 thead/tbody/tfoot，只保留单个子节点或保留包装器
-      if (sourceTag === 'thead' || sourceTag === 'tbody' || sourceTag === 'tfoot') {
+      if (
+        sourceTag === 'thead' ||
+        sourceTag === 'tbody' ||
+        sourceTag === 'tfoot'
+      ) {
         const sectionChildren = childElement.children;
         // 如果只有一个子节点，直接返回（展开）
         if (sectionChildren.length === 1) {

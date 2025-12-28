@@ -16,7 +16,13 @@ describe('Nested Structures', () => {
             kind: 'element',
             tag: 'view',
             props: { style: { flexDirection: 'column' } },
-            children: [{ kind: 'text', content: 'Inner Content', meta: { source: 'text' } }],
+            children: [
+              {
+                kind: 'text',
+                content: 'Inner Content',
+                meta: { source: 'text' },
+              },
+            ],
             capabilities: { isVoid: false, layout: 'flex' },
             meta: { sourceTag: 'div', sourceAttrs: {} },
           },
@@ -46,10 +52,19 @@ describe('Nested Structures', () => {
             props: { style: { marginBottom: '1em' } },
             children: [
               { kind: 'text', content: 'Paragraph ', meta: { source: 'text' } },
-              { kind: 'text', content: 'with bold', marks: { bold: true }, meta: { source: 'text' } },
+              {
+                kind: 'text',
+                content: 'with bold',
+                marks: { bold: true },
+                meta: { source: 'text' },
+              },
               { kind: 'text', content: ' text', meta: { source: 'text' } },
             ],
-            capabilities: { layout: 'block', textContainer: true, isVoid: false },
+            capabilities: {
+              layout: 'block',
+              textContainer: true,
+              isVoid: false,
+            },
             meta: { sourceTag: 'p', sourceAttrs: {} },
           },
           {

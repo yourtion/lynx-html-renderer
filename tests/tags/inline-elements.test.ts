@@ -12,7 +12,9 @@ describe('Inline Elements', () => {
         kind: 'element',
         tag: 'text',
         props: {},
-        children: [{ kind: 'text', content: 'Span Text', meta: { source: 'text' } }],
+        children: [
+          { kind: 'text', content: 'Span Text', meta: { source: 'text' } },
+        ],
         capabilities: { layout: 'inline', textContainer: true, isVoid: false },
         meta: { sourceTag: 'span', sourceAttrs: {} },
       },

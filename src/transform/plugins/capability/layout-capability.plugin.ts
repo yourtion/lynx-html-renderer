@@ -1,8 +1,4 @@
-import type {
-  TransformPlugin,
-  LynxNode,
-  LynxElementNode,
-} from '../../types';
+import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 /**
  * 布局能力插件

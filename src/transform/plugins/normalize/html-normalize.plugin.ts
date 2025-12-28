@@ -1,4 +1,4 @@
-import type { TransformPlugin, HtmlAstNode } from '../../types';
+import type { HtmlAstNode, TransformPlugin } from '../../types';
 
 /**
  * HTML 归一化插件
