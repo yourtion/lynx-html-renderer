@@ -17,9 +17,11 @@ export const styleCapabilityPlugin: TransformPlugin = {
   apply(ctx) {
     const removeAllStyle = (ctx.metadata.removeAllStyle as boolean) ?? false;
     const removeAllClass = (ctx.metadata.removeAllClass as boolean) ?? true;
+    const styleMode =
+      (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
 
     // 遍历所有节点，处理样式
-    processStyles(ctx.root, { removeAllStyle, removeAllClass });
+    processStyles(ctx.root, { removeAllStyle, removeAllClass, styleMode });
   },
 };
 
@@ -28,7 +30,11 @@ export const styleCapabilityPlugin: TransformPlugin = {
  */
 function processStyles(
   lynxNode: LynxNode,
-  options: { removeAllStyle: boolean; removeAllClass: boolean },
+  options: {
+    removeAllStyle: boolean;
+    removeAllClass: boolean;
+    styleMode: 'inline' | 'css-class';
+  },
 ): void {
   if (lynxNode.kind === 'element') {
     const element = lynxNode as LynxElementNode;
@@ -48,7 +54,15 @@ function processStyles(
 
     // 处理 class 属性
     if (!options.removeAllClass && sourceAttrs?.class) {
-      element.props.className = sourceAttrs.class;
+      // 如果已经有className（来自defaultStyle的CSS类），需要合并
+      const existingClass = (element.props as { className?: string }).className;
+      if (existingClass) {
+        // 合并defaultStyle的className和HTML的class属性
+        (element.props as { className: string }).className =
+          `${existingClass} ${sourceAttrs.class}`;
+      } else {
+        (element.props as { className: string }).className = sourceAttrs.class;
+      }
     }
 
     // 递归处理子节点

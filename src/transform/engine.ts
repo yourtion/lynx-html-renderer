@@ -43,6 +43,8 @@ export function transformHTML(
   if (options) {
     ctx.metadata.removeAllClass = options.removeAllClass ?? true;
     ctx.metadata.removeAllStyle = options.removeAllStyle ?? false;
+    ctx.metadata.styleMode = options.styleMode ?? 'inline';
+    ctx.metadata.rootClassName = options.rootClassName ?? 'lynx-html-renderer';
   }
 
   // 6. 按阶段执行插件

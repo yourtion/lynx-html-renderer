@@ -35,7 +35,7 @@ export const blockStructurePlugin: TransformPlugin = {
  */
 function convertAstNode(
   astNode: HtmlAstNode,
-  ctx: { utils: unknown },
+  ctx: { metadata: Record<string, unknown> },
   parentMarks?: Record<string, boolean>,
 ): LynxNode | null {
   // 处理文本节点
@@ -130,8 +130,21 @@ function convertAstNode(
 
     // 添加 defaultStyle
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      (lynxNode as LynxNode & { props: Record<string, unknown> }).props.style =
-        { ...mapping.defaultStyle };
+      const styleMode =
+        (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
+
+      if (styleMode === 'css-class') {
+        // CSS类模式：添加className
+        const className = `lhr-${tag}`;
+        (
+          lynxNode as LynxNode & { props: Record<string, unknown> }
+        ).props.className = className;
+      } else {
+        // 内联样式模式：添加inline style（保持原有行为）
+        (
+          lynxNode as LynxNode & { props: Record<string, unknown> }
+        ).props.style = { ...mapping.defaultStyle };
+      }
     }
 
     // 添加 capabilities

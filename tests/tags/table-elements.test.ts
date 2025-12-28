@@ -1,5 +1,5 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
+import { renderHTMLDirect } from '@lynx-html-renderer/index';
 import { describe, expect, it } from 'vitest';
 
 describe('Table Elements', () => {
@@ -107,7 +107,7 @@ describe('Table Elements', () => {
   it('should test the complete HTMLRenderer with table elements', () => {
     // 测试完整的HTMLRenderer渲染流程，确保适配器被正确使用
     const html = '<table><tr><td>Test Cell</td></tr></table>';
-    const result = HTMLRenderer({ html });
+    const result = renderHTMLDirect({ html });
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBe(1);

@@ -111,6 +111,12 @@ export interface TransformOptions {
   /** 删除所有 HTML style 属性 */
   removeAllStyle?: boolean;
 
+  /** 样式模式：'inline'（默认）使用内联样式，'css-class' 使用CSS类 */
+  styleMode?: 'inline' | 'css-class';
+
+  /** CSS类模式下的根容器class名，默认 'lynx-html-renderer' */
+  rootClassName?: string;
+
   /** 新增：插件配置 */
   plugins?: PluginConfig;
 

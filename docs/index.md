@@ -43,6 +43,33 @@ function App() {
 }
 ```
 
+### CSS 类模式 | CSS Class Mode
+
+Lynx HTML Renderer 支持两种样式模式：
+
+#### 内联样式模式（默认）
+
+```tsx
+<HTMLRenderer html="<p>Hello</p>" />
+```
+
+#### CSS 类模式（推荐用于生产环境）
+
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
+import 'lynx-html-renderer/dist/styles.css';
+
+<HTMLRenderer html="<p>Hello</p>" styleMode="css-class" />
+```
+
+**优势：**
+- 🎨 样式可定制 - 通过覆盖 CSS 类来定制默认样式
+- 🚀 性能优化 - 减少重复的内联样式定义
+- 🔄 样式复用 - 多个实例共享同一份 CSS
+- 📦 主题切换 - 支持动态主题切换
+
+详细的 CSS 类模式文档请参考：[CSS 类模式指南](./css-class-mode.md)
+
 ### 转换选项 | Transform Options
 
 `HTMLRenderer` 组件支持通过 props 控制转换行为：
@@ -56,8 +83,10 @@ function App() {
   return (
     <HTMLRenderer
       html={html}
-      removeAllClass={true}  // 删除所有 class 属性（默认：true）
-      removeAllStyle={false} // 删除所有 style 属性（默认：false）
+      removeAllClass={true}      // 删除所有 class 属性（默认：true）
+      removeAllStyle={false}     // 删除所有 style 属性（默认：false）
+      styleMode="css-class"      // 使用 CSS 类模式（默认：'inline'）
+      rootClassName="my-app"     // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
     />
   );
 }
@@ -70,8 +99,20 @@ function App() {
 | `html` | `string` | - | 要渲染的 HTML 字符串（必填） |
 | `removeAllClass` | `boolean` | `true` | 是否删除所有 HTML 的 class 属性 |
 | `removeAllStyle` | `boolean` | `false` | 是否删除所有 HTML 的 style 属性 |
+| `styleMode` | `'inline' \| 'css-class'` | `'inline'` | 样式模式：内联样式或CSS类模式 |
+| `rootClassName` | `string` | `'lynx-html-renderer'` | CSS类模式下的根容器类名 |
 
 **使用场景：**
+
+- **内联样式模式（`styleMode="inline"`）**：
+  - 简单场景，无需额外 CSS
+  - 快速原型开发
+  - 默认模式，完全向后兼容
+
+- **CSS 类模式（`styleMode="css-class"`）**：
+  - 生产环境，需要样式定制
+  - 多个实例共享样式
+  - 需要主题切换功能
 
 - **`removeAllClass: true`**（默认）：适合不需要 CSS class 的场景，避免引入外部样式依赖
 - **`removeAllClass: false`**：保留 class 属性，可用于基于 class 的自定义样式处理

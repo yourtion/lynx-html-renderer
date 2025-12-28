@@ -85,6 +85,53 @@ function App() {
 - `removeAllStyle?: boolean` - 是否删除所有 HTML 的 style 属性，默认为 `false`
   - 设置为 `true` 可移除所有内联样式
 
+### CSS 类模式 | CSS Class Mode
+
+除了默认的内联样式模式，`HTMLRenderer` 还支持 **CSS 类模式**，通过预定义的 CSS 类来应用默认样式：
+
+```tsx
+import { HTMLRenderer } from 'lynx-html-renderer';
+import 'lynx-html-renderer/dist/styles.css';
+
+function App() {
+  const html = '<h1>Title</h1><p>Content</p>';
+
+  return <HTMLRenderer html={html} styleMode="css-class" />;
+}
+```
+
+**CSS 类模式的优势：**
+
+- 🎨 **样式可定制** - 通过覆盖 CSS 类来定制默认样式
+- 🚀 **性能优化** - 减少重复的内联样式定义
+- 🔄 **样式复用** - 多个实例共享同一份 CSS
+- 📦 **主题切换** - 支持动态主题切换
+
+**使用方式：**
+
+```tsx
+// 方式1：使用预生成 CSS（推荐）
+import { HTMLRenderer } from 'lynx-html-renderer';
+import 'lynx-html-renderer/dist/styles.css';
+
+<HTMLRenderer html={html} styleMode="css-class" />
+
+// 方式2：动态生成 CSS
+import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+
+const css = generateCSS('my-root-class');
+<style>{css}</style>
+<HTMLRenderer html={html} styleMode="css-class" rootClassName="my-root-class" />
+```
+
+**样式优先级（从高到低）：**
+
+1. HTML 的 `style` 属性（内联样式）
+2. HTML 的 `class` 属性
+3. TAG_MAP 的 `defaultStyle`（通过 `.lhr-{tag}` 类应用）
+
+详细的 CSS 类模式文档请参考：[CSS 类模式指南](./docs/css-class-mode.md)
+
 ## 🚫 非目标 | Non-goals
 
 - ❌ 不实现完整 HTML/CSS 规范
@@ -127,11 +174,18 @@ Transform 阶段支持插件，用于：
 
 ```tsx
 interface HTMLRendererProps {
-  html: string;              // 要渲染的 HTML 字符串
-  removeAllClass?: boolean;  // 是否删除所有 class 属性（默认：true）
-  removeAllStyle?: boolean;  // 是否删除所有 style 属性（默认：false）
+  html: string;                    // 要渲染的 HTML 字符串（必填）
+  removeAllClass?: boolean;         // 是否删除所有 class 属性（默认：true）
+  removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
+  styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
+  rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
 }
 ```
+
+**样式模式说明：**
+
+- `'inline'`（默认）- 所有样式作为内联样式应用
+- `'css-class'` - TAG_MAP 的 defaultStyle 通过 CSS 类应用，HTML 的 style 属性仍为内联样式
 
 ### TransformOptions
 
@@ -141,7 +195,38 @@ HTML 转换选项，用于控制转换行为。
 interface TransformOptions {
   removeAllClass?: boolean;   // 是否删除所有 HTML 的 class 属性，默认为 true
   removeAllStyle?: boolean;   // 是否删除所有 HTML 的 style 属性，默认为 false
+  styleMode?: 'inline' | 'css-class';  // 样式模式
+  rootClassName?: string;     // CSS类模式下的根容器类名
 }
+```
+
+### CSS 工具函数
+
+#### generateCSS
+
+生成完整的 CSS 字符串。
+
+```tsx
+import { generateCSS } from 'lynx-html-renderer';
+
+// 使用默认根类名
+const css = generateCSS();
+
+// 使用自定义根类名
+const customCSS = generateCSS('my-app');
+```
+
+#### getClassNameForTag
+
+获取 HTML 标签对应的 CSS 类名。
+
+```tsx
+import { getClassNameForTag } from 'lynx-html-renderer';
+
+getClassNameForTag('p');    // => 'lhr-p'
+getClassNameForTag('h1');   // => 'lhr-h1'
+getClassNameForTag('div');  // => 'lhr-div'
+getClassNameForTag('img');  // => null (无默认样式)
 ```
 
 ---

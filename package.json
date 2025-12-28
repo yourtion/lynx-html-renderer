@@ -17,10 +17,12 @@
       "types": "./src/transform/types.ts",
       "import": "./src/transform/types.ts",
       "default": "./src/transform/types.ts"
-    }
+    },
+    "./dist/styles.css": "./dist/styles.css",
+    "./dist/styles.min.css": "./dist/styles.min.css"
   },
   "scripts": {
-    "build-example": "cd example && rspeedy build",
+    "build-example": "pnpm generate:css && cd example && rspeedy build",
     "check": "biome check --write",
     "dev": "cd example && rspeedy dev",
     "format": "biome format --write",
@@ -30,10 +32,13 @@
     "docs:dev": "rspress dev",
     "docs:build": "rspress build",
     "tag": "git tag v`node -p 'require(\"./package\").version'`",
-    "postpublish": "pnpm tag && git push && git push --tags"
+    "postpublish": "pnpm tag && git push && git push --tags",
+    "prepublishOnly": "pnpm generate:css",
+    "generate:css": "ts-node --esm scripts/generate-css-simple.ts"
   },
   "files": [
-    "src"
+    "src",
+    "dist"
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.115.1"
@@ -52,11 +57,17 @@
     "@vitest/coverage-v8": "3.2.4",
     "jsdom": "^26.1.0",
     "rspress": "^1.47.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "0.18.20"
+    }
   },
   "dependencies": {
     "htmlparser2": "^10.0.0"

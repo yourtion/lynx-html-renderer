@@ -203,18 +203,67 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
   html: string;
   removeAllClass?: boolean;
   removeAllStyle?: boolean;
+  styleMode?: 'inline' | 'css-class';
+  rootClassName?: string;
 }) {
-  const { html, removeAllClass = true, removeAllStyle = false } = props;
+  const {
+    html,
+    removeAllClass = true,
+    removeAllStyle = false,
+    styleMode = 'inline',
+    rootClassName = 'lynx-html-renderer',
+  } = props;
 
   // Cache the transformed nodes to avoid re-parsing HTML on every render
   const nodes = useMemo(
-    () => transformHTML(html, { removeAllClass, removeAllStyle }),
-    [html, removeAllClass, removeAllStyle],
+    () => transformHTML(html, { removeAllClass, removeAllStyle, styleMode }),
+    [html, removeAllClass, removeAllStyle, styleMode],
   );
 
   // Cache the renderNode function to maintain stable references
   // Note: renderNode is defined below and contains the rendering logic
   const memoizedRenderNode = useCallback(renderNode, []);
 
+  // CSS类模式：添加根容器
+  if (styleMode === 'css-class') {
+    return (
+      <view className={rootClassName}>{nodes.map(memoizedRenderNode)}</view>
+    );
+  }
+
+  // 内联样式模式：直接返回节点数组（保持向后兼容）
   return nodes.map(memoizedRenderNode);
 });
+
+/**
+ * 直接渲染HTML为React元素（用于测试和非React环境）
+ * 这是一个纯函数，不使用React hooks
+ */
+export function renderHTMLDirect(props: {
+  html: string;
+  removeAllClass?: boolean;
+  removeAllStyle?: boolean;
+  styleMode?: 'inline' | 'css-class';
+}) {
+  const {
+    html,
+    removeAllClass = true,
+    removeAllStyle = false,
+    styleMode = 'inline',
+  } = props;
+
+  const nodes = transformHTML(html, {
+    removeAllClass,
+    removeAllStyle,
+    styleMode,
+  });
+
+  return nodes.map(renderNode);
+}
+// 为向后兼容，将HTMLRenderer也作为函数导出（允许直接调用）
+// @ts-expect-error - 将组件作为函数导出用于测试
+(
+  HTMLRenderer as typeof HTMLRenderer & {
+    __callAsFunction?: typeof renderHTMLDirect;
+  }
+).__callAsFunction = renderHTMLDirect;

@@ -1,5 +1,5 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
+import { renderHTMLDirect } from '@lynx-html-renderer/index';
 import { describe, expect, it } from 'vitest';
 
 describe('Inline Elements', () => {
@@ -118,7 +118,7 @@ describe('Inline Elements', () => {
       </div>
     `;
 
-    const result = HTMLRenderer({ html });
+    const result = renderHTMLDirect({ html });
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBe(1);
@@ -127,7 +127,7 @@ describe('Inline Elements', () => {
   it('should test nested text formatting with HTMLRenderer', () => {
     // 测试嵌套文本格式，确保标记合并逻辑被覆盖
     const html = '<div><strong>Bold <em>and Italic</em></strong></div>';
-    const result = HTMLRenderer({ html });
+    const result = renderHTMLDirect({ html });
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBe(1);
