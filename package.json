@@ -34,7 +34,7 @@
     "tag": "git tag v`node -p 'require(\"./package\").version'`",
     "postpublish": "pnpm tag && git push && git push --tags",
     "prepublishOnly": "pnpm generate:css",
-    "generate:css": "ts-node --esm scripts/generate-css-simple.ts"
+    "generate:css": "tsx scripts/generate-css.ts"
   },
   "files": [
     "src",
