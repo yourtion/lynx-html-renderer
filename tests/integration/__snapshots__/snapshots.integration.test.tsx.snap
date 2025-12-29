@@ -54,27 +54,27 @@ exports[`Snapshot Tests with Verification > All Heading Elements (h1-h6) > shoul
 exports[`Snapshot Tests with Verification > All Table Elements > should match snapshot for complete table structure 1`] = `
 <page>
   <view
-    style="display: flex; flex-direction: column; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+    style="display: flex; flex-direction: column; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
   >
     <view
       style="display: flex; flex-direction: row;"
     >
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
       >
         <text>
           Header 1
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
       >
         <text>
           Header 2
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
       >
         <text>
           Header 3
@@ -86,21 +86,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
         style="display: flex; flex-direction: row;"
       >
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 1-1
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 1-2
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 1-3
@@ -111,21 +111,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
         style="display: flex; flex-direction: row;"
       >
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 2-1
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 2-2
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
         >
           <text>
             Body 2-3
@@ -137,21 +137,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
       style="display: flex; flex-direction: row;"
     >
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
       >
         <text>
           Footer 1
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
       >
         <text>
           Footer 2
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
       >
         <text>
           Footer 3
@@ -390,27 +390,27 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
         </text>
       </text>
       <view
-        style="display: flex; flex-direction: column; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+        style="display: flex; flex-direction: column; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
       >
         <view
           style="display: flex; flex-direction: row;"
         >
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
           >
             <text>
               Name
             </text>
           </view>
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
           >
             <text>
               Type
             </text>
           </view>
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230); background-color: rgb(248, 249, 250); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
           >
             <text>
               Description
@@ -422,21 +422,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="display: flex; flex-direction: row;"
           >
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Item 1
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Type A
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Description 1
@@ -447,21 +447,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="display: flex; flex-direction: row;"
           >
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Item 2
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Type B
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: rgb(222, 226, 230);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
             >
               <text>
                 Description 2
@@ -482,7 +482,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
         </text>
       </text>
       <text
-        style="font-family: monospace; background-color: rgb(245, 245, 245); padding: 16px; overflow: auto;"
+        style="font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
       >
         <text>
           function hello() {
@@ -511,7 +511,7 @@ Second line
         </text>
       </text>
       <view
-        style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid rgb(221, 221, 221);"
+        style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid var(--lhr-blockquote-border);"
       >
         <text
           style="margin-bottom: 1em;"
@@ -526,7 +526,7 @@ Second line
       style="flex-direction: column;"
     >
       <view
-        style="height: 1px; background-color: rgb(204, 204, 204); margin: 1em 0px;"
+        style="height: 1px; background-color: var(--lhr-divider-color); margin: 1em 0px;"
       />
       <text
         style="margin-bottom: 1em;"
@@ -935,7 +935,7 @@ exports[`Snapshot Tests with Verification > Special Elements (hr, br, blockquote
       </text>
     </text>
     <view
-      style="height: 1px; background-color: rgb(204, 204, 204); margin: 1em 0px;"
+      style="height: 1px; background-color: var(--lhr-divider-color); margin: 1em 0px;"
     />
     <text
       style="margin-bottom: 1em;"
@@ -954,7 +954,7 @@ Line 3
       </text>
     </text>
     <view
-      style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid rgb(221, 221, 221);"
+      style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid var(--lhr-blockquote-border);"
     >
       <text
         style="margin-bottom: 1em;"
@@ -972,7 +972,7 @@ Line 3
       </text>
     </view>
     <text
-      style="font-family: monospace; background-color: rgb(245, 245, 245); padding: 16px; overflow: auto;"
+      style="font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
     >
       <text>
         const x = 1;

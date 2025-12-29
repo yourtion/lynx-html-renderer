@@ -205,6 +205,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
   removeAllStyle?: boolean;
   styleMode?: 'inline' | 'css-class';
   rootClassName?: string;
+  darkMode?: boolean;
 }) {
   const {
     html,
@@ -212,6 +213,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
     removeAllStyle = false,
     styleMode = 'inline',
     rootClassName = 'lynx-html-renderer',
+    darkMode = false,
   } = props;
 
   // Cache the transformed nodes to avoid re-parsing HTML on every render
@@ -226,8 +228,11 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
 
   // CSS类模式：添加根容器
   if (styleMode === 'css-class') {
+    const containerClass = darkMode
+      ? `${rootClassName} lhr-dark`
+      : rootClassName;
     return (
-      <view className={rootClassName}>{nodes.map(memoizedRenderNode)}</view>
+      <view className={containerClass}>{nodes.map(memoizedRenderNode)}</view>
     );
   }
 
@@ -244,12 +249,16 @@ export function renderHTMLDirect(props: {
   removeAllClass?: boolean;
   removeAllStyle?: boolean;
   styleMode?: 'inline' | 'css-class';
+  rootClassName?: string;
+  darkMode?: boolean;
 }) {
   const {
     html,
     removeAllClass = true,
     removeAllStyle = false,
     styleMode = 'inline',
+    rootClassName = 'lynx-html-renderer',
+    darkMode = false,
   } = props;
 
   const nodes = transformHTML(html, {
@@ -257,6 +266,14 @@ export function renderHTMLDirect(props: {
     removeAllStyle,
     styleMode,
   });
+
+  // CSS类模式：添加根容器
+  if (styleMode === 'css-class') {
+    const containerClass = darkMode
+      ? `${rootClassName} lhr-dark`
+      : rootClassName;
+    return <view className={containerClass}>{nodes.map(renderNode)}</view>;
+  }
 
   return nodes.map(renderNode);
 }

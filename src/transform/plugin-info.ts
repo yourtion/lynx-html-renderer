@@ -3,7 +3,6 @@
  */
 
 import { getBuiltinPlugins } from './plugins';
-import type { TransformPlugin } from './types';
 
 /**
  * Get information about all builtin plugins

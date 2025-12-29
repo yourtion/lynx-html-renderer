@@ -3,9 +3,10 @@
  * 用于生成预编译的CSS文件
  */
 
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 import { generateCSS } from '../src/utils/css-generator.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +15,12 @@ const __dirname = dirname(__filename);
 async function generateCSSFiles() {
   const rootDir = join(__dirname, '..');
   const distDir = join(rootDir, 'dist');
+
+  // 确保 dist 目录存在
+  if (!existsSync(distDir)) {
+    await mkdir(distDir, { recursive: true });
+    console.log('✅ Created dist directory');
+  }
 
   // 生成完整版CSS
   const fullCSS = generateCSS();

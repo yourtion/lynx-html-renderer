@@ -1,5 +1,8 @@
+import '@testing-library/jest-dom';
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../src/html-parser';
+import { HTMLRenderer } from '../../src/index';
+import { render } from '@lynx-js/react/testing-library';
 
 describe('CSS Class Mode Integration', () => {
   describe('transformHTML with styleMode option', () => {
@@ -205,6 +208,63 @@ describe('CSS Class Mode Integration', () => {
       // removeAllStyle只移除HTML的style属性，defaultStyle仍然作为inline style存在
       expect(result2[0].props.style).toEqual({ marginBottom: '1em' });
       expect(result2[0].props.className).toBeUndefined();
+    });
+  });
+
+  describe('Dark Mode Support', () => {
+    it('HTMLRenderer should not add lhr-dark class when darkMode is false', () => {
+      const { container } = render(
+        <HTMLRenderer html="<p>Test</p>" styleMode="css-class" darkMode={false} />,
+      );
+
+      const root = container.querySelector('.lynx-html-renderer');
+      expect(root).toBeDefined();
+      expect(root?.classList.contains('lhr-dark')).toBe(false);
+    });
+
+    it('HTMLRenderer should add lhr-dark class when darkMode is true', () => {
+      const { container } = render(
+        <HTMLRenderer html="<p>Test</p>" styleMode="css-class" darkMode={true} />,
+      );
+
+      const root = container.querySelector('.lynx-html-renderer');
+      expect(root).toBeDefined();
+      expect(root?.classList.contains('lhr-dark')).toBe(true);
+    });
+
+    it('HTMLRenderer should apply both rootClassName and lhr-dark classes', () => {
+      const { container } = render(
+        <HTMLRenderer
+          html="<p>Test</p>"
+          styleMode="css-class"
+          rootClassName="my-custom-root"
+          darkMode={true}
+        />,
+      );
+
+      const root = container.querySelector('.my-custom-root');
+      expect(root).toBeDefined();
+      expect(root?.classList.contains('lhr-dark')).toBe(true);
+      expect(root?.classList.contains('my-custom-root')).toBe(true);
+    });
+
+    it('darkMode should not affect inline style mode', () => {
+      const { container } = render(
+        <HTMLRenderer html="<p>Test</p>" styleMode="inline" darkMode={true} />,
+      );
+
+      // In inline mode, there is no root wrapper
+      const root = container.querySelector('.lynx-html-renderer');
+      expect(root).toBeNull();
+    });
+
+    it('darkMode should default to false', () => {
+      const { container } = render(
+        <HTMLRenderer html="<p>Test</p>" styleMode="css-class" />,
+      );
+
+      const root = container.querySelector('.lynx-html-renderer');
+      expect(root?.classList.contains('lhr-dark')).toBe(false);
     });
   });
 });

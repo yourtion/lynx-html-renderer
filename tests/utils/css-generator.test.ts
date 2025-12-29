@@ -115,4 +115,77 @@ describe('CSS Generator', () => {
       expect(css).toContain('color: blue');
     });
   });
+
+  describe('Dark Mode CSS Variables', () => {
+    it('should generate CSS variables for light mode', () => {
+      const css = generateCSS();
+
+      expect(css).toContain('--lhr-border-color:');
+      expect(css).toContain('--lhr-bg-color-secondary:');
+      expect(css).toContain('--lhr-bg-color-tertiary:');
+      expect(css).toContain('--lhr-divider-color:');
+      expect(css).toContain('--lhr-blockquote-border:');
+    });
+
+    it('should generate CSS variables for dark mode', () => {
+      const css = generateCSS();
+
+      expect(css).toContain('.lynx-html-renderer.lhr-dark');
+      expect(css).toContain('--lhr-border-color:');
+      expect(css).toContain('--lhr-bg-color-secondary:');
+    });
+
+    it('should use CSS variables in styles', () => {
+      const css = generateCSS();
+
+      // CSS variables are defined in the root class
+      expect(css).toContain('--lhr-blockquote-border:');
+      expect(css).toContain('--lhr-divider-color:');
+      expect(css).toContain('--lhr-bg-color-tertiary:');
+      expect(css).toContain('--lhr-border-color:');
+
+      // Light mode: blockquote should have border-left with light color
+      expect(css).toContain('border-left: 4px solid #ddd');
+
+      // Light mode: hr should have background-color with light color
+      expect(css).toContain('.lynx-html-renderer .lhr-hr {');
+      expect(css).toContain('background-color: #ccc');
+
+      // Light mode: pre should have background-color with light tertiary color
+      expect(css).toContain('background-color: #f5f5f5');
+
+      // Light mode: table elements should have border-color with light border color
+      expect(css).toContain('border-color: #dee2e6');
+
+      // Dark mode: blockquote should have border-left with dark color
+      expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-blockquote');
+      expect(css).toContain('border-left: 4px solid #555');
+
+      // Dark mode: hr should have background-color with dark color
+      expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-hr');
+      expect(css).toContain('background-color: #3a3a3a');
+
+      // Dark mode: pre should have background-color with dark tertiary color
+      expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-pre');
+      expect(css).toContain('background-color: #1e1e1e');
+
+      // Dark mode: table elements should have border-color with dark border color
+      expect(css).toContain('border-color: #404040');
+    });
+
+    it('should include dark mode comment', () => {
+      const css = generateCSS();
+
+      expect(css).toContain('/* Dark Mode CSS Variables */');
+    });
+
+    it('should support custom root class in dark mode', () => {
+      const customRoot = 'my-root';
+      const css = generateCSS(customRoot);
+
+      expect(css).toContain(`.${customRoot} {`);
+      expect(css).toContain(`.${customRoot}.lhr-dark {`);
+      expect(css).toContain(`.${customRoot} .lhr-`);
+    });
+  });
 });

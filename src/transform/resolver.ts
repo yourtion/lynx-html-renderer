@@ -34,7 +34,7 @@ export class TransformPluginResolver {
     // 3. 替换同名插件
     if (config?.replace) {
       plugins = plugins.map((p) => {
-        const replacement = config.replace![p.name];
+        const replacement = config.replace?.[p.name];
         return replacement ? replacement : p;
       });
     }

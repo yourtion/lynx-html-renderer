@@ -1,4 +1,4 @@
-import { useEffect, useState } from '@lynx-js/react';
+import { useEffect, useMemo, useState } from '@lynx-js/react';
 import './App.css';
 import { HTMLRenderer } from 'lynx-html-renderer';
 
@@ -45,10 +45,10 @@ const html = `
       <p style="margin: 0; line-height: 1.6;">多种格式可以 <strong><em>组合使用</em></strong> 在同一个句子中。</p>
     </div>
     
-    <h3 style="font-size: 18px; color: #495057; margin-bottom: 15px;">2. 表格支持</h3>
+    <h3 style="font-size: 18px; color: #f8f9fa; margin-bottom: 15px;">2. 表格支持</h3>
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 3px; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
       <thead>
-        <tr style="background-color: #343a40; color: white;">
+        <tr style="background-color: #f8f9fa; color: white;">
           <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">功能</th>
           <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">支持情况</th>
         </tr>
@@ -109,8 +109,14 @@ const html = `
 export function App(props: { onRender?: () => void }) {
   const [removeAllStyle, setRemoveAllStyle] = useState(false);
 
+  // 从 globalProps 获取主题状态
+  const darkMode = useMemo(
+    () => lynx.__globalProps.theme === 'Dark',
+    [lynx.__globalProps.theme],
+  );
+
   useEffect(() => {
-    console.info('Hello, ReactLynx');
+    console.info('Hello, ReactLynx ' + JSON.stringify(lynx.__globalProps));
   }, []);
   props.onRender?.();
 
@@ -120,7 +126,14 @@ export function App(props: { onRender?: () => void }) {
 
   return (
     <scroll-view scroll-orientation="vertical" class="container">
-      <HTMLRenderer html={html} removeAllStyle={removeAllStyle} />
+      <HTMLRenderer
+        html={html}
+        styleMode="css-class"
+        removeAllStyle={removeAllStyle}
+        darkMode={darkMode}
+      />
+
+      {/* 控制面板 */}
       <view
         style={{
           position: 'fixed',

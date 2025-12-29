@@ -46,7 +46,7 @@ const BLOCK_QUOTE_CONFIG: TagMapping = {
     marginLeft: '40px',
     marginRight: '40px',
     paddingLeft: '16px',
-    borderLeft: '4px solid #ddd',
+    borderLeft: '4px solid var(--lhr-blockquote-border)',
   },
 };
 
@@ -56,7 +56,7 @@ const TABLE_ELEMENT_CONFIG: TagMapping = {
   capabilities: { layout: 'flex', isVoid: false },
 };
 
-const TABLE_CELL_CONFIG: TagMapping = {
+const _TABLE_CELL_CONFIG: TagMapping = {
   lynxTag: 'view',
   role: 'cell',
   capabilities: { layout: 'flex', isVoid: false },
@@ -152,7 +152,11 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
     lynxTag: 'view',
     role: 'block',
     capabilities: { layout: 'block', isVoid: true },
-    defaultStyle: { height: '1px', backgroundColor: '#ccc', margin: '1em 0' },
+    defaultStyle: {
+      height: '1px',
+      backgroundColor: 'var(--lhr-divider-color)',
+      margin: '1em 0',
+    },
   },
   blockquote: BLOCK_QUOTE_CONFIG,
   pre: {
@@ -161,7 +165,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
     capabilities: { layout: 'block', textContainer: true, isVoid: false },
     defaultStyle: {
       fontFamily: 'monospace',
-      backgroundColor: '#f5f5f5',
+      backgroundColor: 'var(--lhr-bg-color-tertiary)',
       padding: '16px',
       overflow: 'auto',
     },
@@ -203,7 +207,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       flexDirection: 'column',
       borderWidth: '1px',
       borderStyle: 'solid',
-      borderColor: '#dee2e6',
+      borderColor: 'var(--lhr-border-color)',
     },
   },
   thead: TABLE_ELEMENT_CONFIG,
@@ -227,8 +231,8 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       padding: '8px',
       borderWidth: '1px',
       borderStyle: 'solid',
-      borderColor: '#dee2e6',
-      backgroundColor: '#f8f9fa',
+      borderColor: 'var(--lhr-border-color)',
+      backgroundColor: 'var(--lhr-bg-color-secondary)',
       fontWeight: 'bold',
     },
   },
@@ -244,7 +248,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       padding: '8px',
       borderWidth: '1px',
       borderStyle: 'solid',
-      borderColor: '#dee2e6',
+      borderColor: 'var(--lhr-border-color)',
     },
   },
 };

@@ -1,3 +1,6 @@
+/* Import Lynx HTML Renderer CSS */
+@import "lynx-html-renderer/dist/styles.css";
+
 :root {
   background-color: #fff;
 }
