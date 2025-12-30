@@ -49,7 +49,9 @@ describe('Nested Structures', () => {
           {
             kind: 'element',
             tag: 'text',
-            props: { style: { marginBottom: '1em' } },
+            props: {
+              style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
+            },
             children: [
               { kind: 'text', content: 'Paragraph ', meta: { source: 'text' } },
               {

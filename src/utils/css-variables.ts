@@ -16,6 +16,9 @@ export interface CSSVariables {
  * Light mode CSS 变量（作为颜色值的参考）
  */
 export const LIGHT_MODE_VARS: CSSVariables = {
+  '--lhr-text-color': '#212529',
+  '--lhr-text-color-secondary': '#495057',
+  '--lhr-text-color-muted': '#6c757d',
   '--lhr-border-color': '#dee2e6',
   '--lhr-bg-color-secondary': '#f8f9fa',
   '--lhr-bg-color-tertiary': '#f5f5f5',
@@ -27,6 +30,9 @@ export const LIGHT_MODE_VARS: CSSVariables = {
  * Dark mode CSS 变量（作为颜色值的参考）
  */
 export const DARK_MODE_VARS: CSSVariables = {
+  '--lhr-text-color': '#e9ecef',
+  '--lhr-text-color-secondary': '#ced4da',
+  '--lhr-text-color-muted': '#adb5bd',
   '--lhr-border-color': '#404040',
   '--lhr-bg-color-secondary': '#2d2d2d',
   '--lhr-bg-color-tertiary': '#1e1e1e',
@@ -76,17 +82,14 @@ export function resolveCSSVariables(
   const mapping = getVariableMapping(mode);
 
   // 替换 var(--lhr-xxx) 为实际值
-  return cssValue.replace(
-    /var\(--lhr-[a-z-]+\)/g,
-    (match) => {
-      const key = match.match(/--lhr-[a-z-]+/)?.[0];
-      if (key) {
-        const value = mapping[key.replace(/^--/, '')];
-        return value ?? match;
-      }
-      return match;
-    },
-  );
+  return cssValue.replace(/var\(--lhr-[a-z-]+\)/g, (match) => {
+    const key = match.match(/--lhr-[a-z-]+/)?.[0];
+    if (key) {
+      const value = mapping[key.replace(/^--/, '')];
+      return value ?? match;
+    }
+    return match;
+  });
 }
 
 /**

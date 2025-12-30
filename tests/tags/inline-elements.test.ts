@@ -11,7 +11,7 @@ describe('Inline Elements', () => {
       {
         kind: 'element',
         tag: 'text',
-        props: {},
+        props: { style: { color: 'var(--lhr-text-color)' } },
         children: [
           { kind: 'text', content: 'Span Text', meta: { source: 'text' } },
         ],

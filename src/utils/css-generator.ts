@@ -1,9 +1,6 @@
 import type { CSSProperties } from '../lynx/types';
 import { BLOCK_TAG_MAP } from '../transform/plugins/structure/tag-config';
-import {
-  generateAllCSSVariables,
-  resolveCSSVariables,
-} from './css-variables';
+import { generateAllCSSVariables } from './css-variables';
 
 /**
  * 将camelCase转换为kebab-case
@@ -31,10 +28,7 @@ const UNITLESS_PROPERTIES = new Set([
  * 将CSS属性值转换为CSS字符串
  * 数字值添加px单位（除了某些特殊属性）
  */
-function styleValueToString(
-  value: string | number,
-  key: string,
-): string {
+function styleValueToString(value: string | number, key: string): string {
   if (typeof value === 'number') {
     // 检查属性是否需要单位
     if (UNITLESS_PROPERTIES.has(key)) {
@@ -48,20 +42,12 @@ function styleValueToString(
 /**
  * 将CSSProperties对象转换为CSS字符串
  * @param props - CSS属性对象
- * @param mode - 'light' 或 'dark'，用于解析 CSS 变量
  */
-function cssPropertiesToString(
-  props: CSSProperties,
-  mode: 'light' | 'dark' = 'light',
-): string {
+function cssPropertiesToString(props: CSSProperties): string {
   return Object.entries(props)
     .map(([key, value]) => {
       const cssKey = camelToKebab(key);
-      // 处理 CSS 变量
-      let cssValue = styleValueToString(value, key);
-      if (typeof cssValue === 'string' && cssValue.includes('var(')) {
-        cssValue = resolveCSSVariables(cssValue, mode);
-      }
+      const cssValue = styleValueToString(value, key);
       return `  ${cssKey}: ${cssValue};`;
     })
     .join('\n');
@@ -72,17 +58,15 @@ function cssPropertiesToString(
  * @param tag - HTML标签名
  * @param style - CSS样式对象
  * @param rootClass - 根容器class名
- * @param mode - 'light' 或 'dark'
  */
 function generateClassRule(
   tag: string,
   style: CSSProperties,
   rootClass: string,
-  mode: 'light' | 'dark' = 'light',
 ): string {
   const className = `lhr-${tag}`;
-  const styleString = cssPropertiesToString(style, mode);
-  return `.${rootClass}${mode === 'dark' ? '.lhr-dark' : ''} .${className} {\n${styleString}\n}`;
+  const styleString = cssPropertiesToString(style);
+  return `.${rootClass} .${className} {\n${styleString}\n}`;
 }
 
 /**
@@ -98,11 +82,15 @@ function generateClassRule(
  * //   --lhr-border-color: #dee2e6;
  * //   ...
  * // }
+ * // .lynx-html-renderer.lhr-dark {
+ * //   --lhr-border-color: #404040;
+ * //   ...
+ * // }
  * // .lynx-html-renderer .lhr-p {
  * //   margin-bottom: 1em;
  * // }
- * // .lynx-html-renderer.lhr-dark .lhr-p {
- * //   margin-bottom: 1em;
+ * // .lynx-html-renderer.lhr-dark .lhr-blockquote {
+ * //   border-left: 4px solid #555;
  * // }
  * // ...
  * ```
@@ -110,7 +98,7 @@ function generateClassRule(
 export function generateCSS(rootClass: string = 'lynx-html-renderer'): string {
   const rules: string[] = [];
 
-  // 添加 CSS 变量定义（保留用于参考）
+  // 添加 CSS 变量定义（包括 light 和 dark mode）
   rules.push(generateAllCSSVariables(rootClass));
 
   // 找出所有使用 CSS 变量的标签
@@ -124,20 +112,22 @@ export function generateCSS(rootClass: string = 'lynx-html-renderer'): string {
     }
   }
 
-  // 生成 light 模式规则
+  // 生成所有标签的样式规则
   for (const [tag, mapping] of Object.entries(BLOCK_TAG_MAP)) {
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      const rule = generateClassRule(tag, mapping.defaultStyle, rootClass, 'light');
+      const rule = generateClassRule(tag, mapping.defaultStyle, rootClass);
       rules.push(rule);
     }
   }
 
-  // 为使用 CSS 变量的标签生成 dark 模式规则
+  // 为使用 CSS 变量的标签生成暗黑模式的独立规则
+  // 这样可以确保 CSS 变量在暗黑模式下正确解析
   for (const tag of tagsWithVariables) {
     const mapping = BLOCK_TAG_MAP[tag];
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      const rule = generateClassRule(tag, mapping.defaultStyle, rootClass, 'dark');
-      rules.push(rule);
+      const className = `lhr-${tag}`;
+      const styleString = cssPropertiesToString(mapping.defaultStyle);
+      rules.push(`.${rootClass}.lhr-dark .${className} {\n${styleString}\n}`);
     }
   }
 
@@ -147,6 +137,9 @@ export function generateCSS(rootClass: string = 'lynx-html-renderer'): string {
  * Generated from TAG_MAP defaultStyle definitions
  * Root class: .${rootClass}
  * Dark mode class: .${rootClass}.lhr-dark
+ *
+ * Note: CSS variables are used for dark mode support.
+ * Toggle the root element's class to enable dark mode.
  */`;
 
   return `${header}\n\n${rules.join('\n\n')}\n`;

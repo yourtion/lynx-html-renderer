@@ -3,10 +3,10 @@
  * 用于生成预编译的CSS文件
  */
 
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
 import { generateCSS } from '../src/utils/css-generator.ts';
 
 const __filename = fileURLToPath(import.meta.url);

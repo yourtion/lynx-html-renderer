@@ -6,42 +6,42 @@ exports[`Snapshot Tests with Verification > All Heading Elements (h1-h6) > shoul
     style="flex-direction: column;"
   >
     <text
-      style="font-size: 32px; font-weight: bold; margin: 10px 0px;"
+      style="color: var(--lhr-text-color); font-size: 32px; font-weight: bold; margin: 10px 0px;"
     >
       <text>
         Heading 1
       </text>
     </text>
     <text
-      style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+      style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
     >
       <text>
         Heading 2
       </text>
     </text>
     <text
-      style="font-size: 20px; font-weight: bold; margin: 14px 0px;"
+      style="color: var(--lhr-text-color); font-size: 20px; font-weight: bold; margin: 14px 0px;"
     >
       <text>
         Heading 3
       </text>
     </text>
     <text
-      style="font-size: 18px; font-weight: bold; margin: 16px 0px;"
+      style="color: var(--lhr-text-color); font-size: 18px; font-weight: bold; margin: 16px 0px;"
     >
       <text>
         Heading 4
       </text>
     </text>
     <text
-      style="font-size: 16px; font-weight: bold; margin: 18px 0px;"
+      style="color: var(--lhr-text-color); font-size: 16px; font-weight: bold; margin: 18px 0px;"
     >
       <text>
         Heading 5
       </text>
     </text>
     <text
-      style="font-size: 14px; font-weight: bold; margin: 20px 0px;"
+      style="color: var(--lhr-text-color); font-size: 14px; font-weight: bold; margin: 20px 0px;"
     >
       <text>
         Heading 6
@@ -60,21 +60,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
       style="display: flex; flex-direction: row;"
     >
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
       >
         <text>
           Header 1
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
       >
         <text>
           Header 2
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
       >
         <text>
           Header 3
@@ -86,21 +86,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
         style="display: flex; flex-direction: row;"
       >
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 1-1
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 1-2
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 1-3
@@ -111,21 +111,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
         style="display: flex; flex-direction: row;"
       >
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 2-1
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 2-2
           </text>
         </view>
         <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
         >
           <text>
             Body 2-3
@@ -137,21 +137,21 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
       style="display: flex; flex-direction: row;"
     >
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
       >
         <text>
           Footer 1
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
       >
         <text>
           Footer 2
         </text>
       </view>
       <view
-        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
       >
         <text>
           Footer 3
@@ -165,7 +165,7 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
 exports[`Snapshot Tests with Verification > All Text Formatting Elements > should match snapshot for all text formatting elements 1`] = `
 <page>
   <text
-    style="margin-bottom: 1em;"
+    style="color: var(--lhr-text-color); margin-bottom: 1em;"
   >
     <text>
       
@@ -240,19 +240,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 32px; font-weight: bold; margin: 10px 0px;"
+        style="color: var(--lhr-text-color); font-size: 32px; font-weight: bold; margin: 10px 0px;"
       >
         <text>
           Article Title
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           Published on 
         </text>
-        <text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
           <text>
             2024-01-01
           </text>
@@ -263,14 +265,14 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Introduction
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           This is an introduction paragraph with 
@@ -293,7 +295,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           It also contains a 
@@ -322,7 +324,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Features
@@ -332,7 +334,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
         style="flex-direction: column; padding-left: 5px;"
       >
         <view
-          style="flex-direction: column;"
+          style="flex-direction: column; color: var(--lhr-text-color);"
         >
           <text>
             • Feature 1 with 
@@ -344,14 +346,14 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           </text>
         </view>
         <view
-          style="flex-direction: column;"
+          style="flex-direction: column; color: var(--lhr-text-color);"
         >
           <text>
             • Feature 2
           </text>
         </view>
         <view
-          style="flex-direction: column;"
+          style="flex-direction: column; color: var(--lhr-text-color);"
         >
           <text>
             • 
@@ -362,14 +364,14 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="flex-direction: column; padding-left: 5px;"
           >
             <view
-              style="flex-direction: column;"
+              style="flex-direction: column; color: var(--lhr-text-color);"
             >
               <text>
                 • Sub-feature 3.1
               </text>
             </view>
             <view
-              style="flex-direction: column;"
+              style="flex-direction: column; color: var(--lhr-text-color);"
             >
               <text>
                 • Sub-feature 3.2
@@ -383,7 +385,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Data Table
@@ -396,21 +398,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           style="display: flex; flex-direction: row;"
         >
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
           >
             <text>
               Name
             </text>
           </view>
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
           >
             <text>
               Type
             </text>
           </view>
           <view
-            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); background-color: var(--lhr-bg-color-secondary); font-weight: bold; color: var(--lhr-text-color);"
           >
             <text>
               Description
@@ -422,21 +424,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="display: flex; flex-direction: row;"
           >
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Item 1
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Type A
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Description 1
@@ -447,21 +449,21 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="display: flex; flex-direction: row;"
           >
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Item 2
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Type B
               </text>
             </view>
             <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color);"
+              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
             >
               <text>
                 Description 2
@@ -475,14 +477,14 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Code Example
         </text>
       </text>
       <text
-        style="font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
+        style="color: var(--lhr-text-color); font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
       >
         <text>
           function hello() {
@@ -491,7 +493,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           Line break example:
@@ -504,7 +506,7 @@ Second line
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Quote
@@ -514,7 +516,7 @@ Second line
         style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid var(--lhr-blockquote-border);"
       >
         <text
-          style="margin-bottom: 1em;"
+          style="color: var(--lhr-text-color); margin-bottom: 1em;"
         >
           <text>
             This is a blockquote containing important information.
@@ -529,7 +531,7 @@ Second line
         style="height: 1px; background-color: var(--lhr-divider-color); margin: 1em 0px;"
       />
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           © 2024 Example. All rights reserved.
@@ -561,12 +563,16 @@ exports[`Snapshot Tests with Verification > Deeply Nested Structure > should mat
               style="flex-direction: column;"
             >
               <text
-                style="margin-bottom: 1em;"
+                style="color: var(--lhr-text-color); margin-bottom: 1em;"
               >
                 <text
-                  style="font-weight: bold;"
+                  style="color: var(--lhr-text-color);"
                 >
-                  Deep nested text
+                  <text
+                    style="font-weight: bold;"
+                  >
+                    Deep nested text
+                  </text>
                 </text>
               </text>
             </view>
@@ -584,33 +590,35 @@ exports[`Snapshot Tests with Verification > Edge Cases and Special Characters > 
     style="flex-direction: column;"
   >
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Special characters: &lt; &gt; & " '
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Unicode: 中文 日本語 한국어 🎉
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Multiple spaces:     and    tabs
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Empty elements: 
       </text>
-      <text />
+      <text
+        style="color: var(--lhr-text-color);"
+      />
       <text>
          and 
       </text>
@@ -619,7 +627,7 @@ exports[`Snapshot Tests with Verification > Edge Cases and Special Characters > 
       style="flex-direction: column;"
     />
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     />
   </view>
 </page>
@@ -631,7 +639,7 @@ exports[`Snapshot Tests with Verification > Element Attributes > should match sn
     style="flex-direction: column;"
   >
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Paragraph with id and class
@@ -658,7 +666,7 @@ exports[`Snapshot Tests with Verification > Image Element > should match snapsho
       style="width: 100%; height: auto;"
     />
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Text below image
@@ -674,7 +682,7 @@ exports[`Snapshot Tests with Verification > Inline Elements > should match snaps
     style="flex-direction: column;"
   >
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Link example: 
@@ -688,7 +696,7 @@ exports[`Snapshot Tests with Verification > Inline Elements > should match snaps
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Code block: 
@@ -700,12 +708,14 @@ exports[`Snapshot Tests with Verification > Inline Elements > should match snaps
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Span element: 
       </text>
-      <text>
+      <text
+        style="color: var(--lhr-text-color);"
+      >
         <text>
           Inline span
         </text>
@@ -721,14 +731,14 @@ exports[`Snapshot Tests with Verification > Inline Styles > should match snapsho
     style="flex-direction: column; padding: 20px; background-color: rgb(245, 245, 245);"
   >
     <text
-      style="font-size: 24px; font-weight: bold; margin: 12px 0px 10px 0px; color: rgb(51, 51, 51);"
+      style="color: rgb(51, 51, 51); font-size: 24px; font-weight: bold; margin: 12px 0px 10px 0px;"
     >
       <text>
         Styled Heading
       </text>
     </text>
     <text
-      style="margin-bottom: 1em; line-height: 1.6; color: rgb(102, 102, 102);"
+      style="color: rgb(102, 102, 102); margin-bottom: 1em; line-height: 1.6;"
     >
       <text>
         
@@ -764,21 +774,21 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
       style="flex-direction: column; padding-left: 5px;"
     >
       <view
-        style="flex-direction: column;"
+        style="flex-direction: column; color: var(--lhr-text-color);"
       >
         <text>
           • Unordered item 1
         </text>
       </view>
       <view
-        style="flex-direction: column;"
+        style="flex-direction: column; color: var(--lhr-text-color);"
       >
         <text>
           • Unordered item 2
         </text>
       </view>
       <view
-        style="flex-direction: column;"
+        style="flex-direction: column; color: var(--lhr-text-color);"
       >
         <text>
           • Nested:
@@ -788,14 +798,14 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
           style="flex-direction: column; padding-left: 5px;"
         >
           <view
-            style="flex-direction: column;"
+            style="flex-direction: column; color: var(--lhr-text-color);"
           >
             <text>
               • Nested item 1
             </text>
           </view>
           <view
-            style="flex-direction: column;"
+            style="flex-direction: column; color: var(--lhr-text-color);"
           >
             <text>
               • Nested item 2
@@ -808,14 +818,14 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
       style="flex-direction: column; padding-left: 5px;"
     >
       <view
-        style="flex-direction: column;"
+        style="flex-direction: column; color: var(--lhr-text-color);"
       >
         <text>
           1. Ordered item 1
         </text>
       </view>
       <view
-        style="flex-direction: column;"
+        style="flex-direction: column; color: var(--lhr-text-color);"
       >
         <text>
           2. Ordered item 2
@@ -835,7 +845,7 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 32px; font-weight: bold; margin: 10px 0px;"
+        style="color: var(--lhr-text-color); font-size: 32px; font-weight: bold; margin: 10px 0px;"
       >
         <text>
           Article Header
@@ -846,14 +856,14 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
       style="flex-direction: column;"
     >
       <text
-        style="font-size: 24px; font-weight: bold; margin: 12px 0px;"
+        style="color: var(--lhr-text-color); font-size: 24px; font-weight: bold; margin: 12px 0px;"
       >
         <text>
           Section Title
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           Section content.
@@ -867,7 +877,7 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
         style="flex-direction: column; padding-left: 5px;"
       >
         <view
-          style="flex-direction: column;"
+          style="flex-direction: column; color: var(--lhr-text-color);"
         >
           <text>
             • 
@@ -881,7 +891,7 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
           </text>
         </view>
         <view
-          style="flex-direction: column;"
+          style="flex-direction: column; color: var(--lhr-text-color);"
         >
           <text>
             • 
@@ -900,7 +910,7 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
       style="flex-direction: column;"
     >
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           Sidebar content.
@@ -911,7 +921,7 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
       style="flex-direction: column;"
     >
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           Article footer.
@@ -928,7 +938,7 @@ exports[`Snapshot Tests with Verification > Special Elements (hr, br, blockquote
     style="flex-direction: column;"
   >
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Text before horizontal rule
@@ -938,14 +948,14 @@ exports[`Snapshot Tests with Verification > Special Elements (hr, br, blockquote
       style="height: 1px; background-color: var(--lhr-divider-color); margin: 1em 0px;"
     />
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Text after horizontal rule
       </text>
     </text>
     <text
-      style="margin-bottom: 1em;"
+      style="color: var(--lhr-text-color); margin-bottom: 1em;"
     >
       <text>
         Line 1
@@ -957,14 +967,14 @@ Line 3
       style="flex-direction: column; margin-left: 40px; margin-right: 40px; padding-left: 16px; border-left: 4px solid var(--lhr-blockquote-border);"
     >
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           This is a blockquote with multiple lines.
         </text>
       </text>
       <text
-        style="margin-bottom: 1em;"
+        style="color: var(--lhr-text-color); margin-bottom: 1em;"
       >
         <text>
           It can contain paragraphs.
@@ -972,7 +982,7 @@ Line 3
       </text>
     </view>
     <text
-      style="font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
+      style="color: var(--lhr-text-color); font-family: monospace; background-color: var(--lhr-bg-color-tertiary); padding: 16px; overflow: auto;"
     >
       <text>
         const x = 1;

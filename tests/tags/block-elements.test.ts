@@ -100,7 +100,7 @@ describe('Block Elements', () => {
     ]);
   });
 
-  it('should transform p to text with marginBottom', () => {
+  it('should transform p to text with marginBottom and color', () => {
     const html = '<p>Paragraph</p>';
     const result = transformHTML(html);
 
@@ -108,7 +108,9 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'text',
-        props: { style: { marginBottom: '1em' } },
+        props: {
+          style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
+        },
         children: [
           { kind: 'text', content: 'Paragraph', meta: { source: 'text' } },
         ],

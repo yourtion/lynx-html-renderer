@@ -45,7 +45,7 @@ const html = `
       <p style="margin: 0; line-height: 1.6;">多种格式可以 <strong><em>组合使用</em></strong> 在同一个句子中。</p>
     </div>
     
-    <h3 style="font-size: 18px; color: #f8f9fa; margin-bottom: 15px;">2. 表格支持</h3>
+    <h3 style="font-size: 18px; color: #333; margin-bottom: 15px;">2. 表格支持</h3>
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 3px; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
       <thead>
         <tr style="background-color: #f8f9fa; color: white;">
@@ -116,21 +116,30 @@ export function App(props: { onRender?: () => void }) {
   );
 
   useEffect(() => {
-    console.info('Hello, ReactLynx ' + JSON.stringify(lynx.__globalProps));
-  }, []);
+    console.info(`Hello, ReactLynx ${JSON.stringify(lynx.__globalProps)}`);
+    console.info(`Dark mode: ${darkMode}, theme: ${lynx.__globalProps.theme}`);
+  }, [darkMode]);
   props.onRender?.();
 
   const toggleStyle = () => {
     setRemoveAllStyle(!removeAllStyle);
   };
+  
+  const useDarkMode = darkMode && removeAllStyle;
 
   return (
-    <scroll-view scroll-orientation="vertical" class="container">
+    <scroll-view
+      scroll-orientation="vertical"
+      class="container"
+      style={{
+        backgroundColor: useDarkMode ? '#121212' : '#fff',
+      }}
+    >
       <HTMLRenderer
         html={html}
         styleMode="css-class"
         removeAllStyle={removeAllStyle}
-        darkMode={darkMode}
+        darkMode={useDarkMode}
       />
 
       {/* 控制面板 */}
@@ -140,22 +149,31 @@ export function App(props: { onRender?: () => void }) {
           bottom: '50px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: removeAllStyle ? '#28a745' : '#007bff',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          shadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
-        bindtap={toggleStyle}
       >
-        <text
+        <view
           style={{
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: 'bold',
+            backgroundColor: removeAllStyle
+              ? '#28a745'
+              : darkMode
+                ? '#333'
+                : '#007bff',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            shadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
+          bindtap={toggleStyle}
         >
-          {removeAllStyle ? '✓ 已移除样式' : '切换纯文本模式'}
-        </text>
+          <text
+            style={{
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            {removeAllStyle ? '✓ 已移除样式' : '切换纯文本模式'}
+          </text>
+        </view>
       </view>
     </scroll-view>
   );

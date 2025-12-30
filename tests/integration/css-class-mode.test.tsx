@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom';
+import { render } from '@lynx-js/react/testing-library';
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../src/html-parser';
 import { HTMLRenderer } from '../../src/index';
-import { render } from '@lynx-js/react/testing-library';
 
 describe('CSS Class Mode Integration', () => {
   describe('transformHTML with styleMode option', () => {
@@ -22,7 +22,10 @@ describe('CSS Class Mode Integration', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].kind).toBe('element');
-      expect(result[0].props.style).toEqual({ marginBottom: '1em' });
+      expect(result[0].props.style).toEqual({
+        marginBottom: '1em',
+        color: 'var(--lhr-text-color)',
+      });
       expect(result[0].props.className).toBeUndefined();
     });
 
@@ -31,7 +34,10 @@ describe('CSS Class Mode Integration', () => {
       const result = transformHTML(html);
 
       expect(result).toHaveLength(1);
-      expect(result[0].props.style).toEqual({ marginBottom: '1em' });
+      expect(result[0].props.style).toEqual({
+        marginBottom: '1em',
+        color: 'var(--lhr-text-color)',
+      });
       expect(result[0].props.className).toBeUndefined();
     });
 
@@ -104,8 +110,8 @@ describe('CSS Class Mode Integration', () => {
       const result = transformHTML(html, { styleMode: 'css-class' });
 
       expect(result).toHaveLength(1);
-      // span has no defaultStyle in TAG_MAP
-      expect(result[0].props.className).toBeUndefined();
+      // span has defaultStyle with color in TAG_MAP
+      expect(result[0].props.className).toBe('lhr-span');
       expect(result[0].props.style).toBeUndefined();
     });
 
@@ -206,7 +212,10 @@ describe('CSS Class Mode Integration', () => {
         removeAllStyle: true,
       });
       // removeAllStyle只移除HTML的style属性，defaultStyle仍然作为inline style存在
-      expect(result2[0].props.style).toEqual({ marginBottom: '1em' });
+      expect(result2[0].props.style).toEqual({
+        marginBottom: '1em',
+        color: 'var(--lhr-text-color)',
+      });
       expect(result2[0].props.className).toBeUndefined();
     });
   });
@@ -214,7 +223,11 @@ describe('CSS Class Mode Integration', () => {
   describe('Dark Mode Support', () => {
     it('HTMLRenderer should not add lhr-dark class when darkMode is false', () => {
       const { container } = render(
-        <HTMLRenderer html="<p>Test</p>" styleMode="css-class" darkMode={false} />,
+        <HTMLRenderer
+          html="<p>Test</p>"
+          styleMode="css-class"
+          darkMode={false}
+        />,
       );
 
       const root = container.querySelector('.lynx-html-renderer');
@@ -224,7 +237,11 @@ describe('CSS Class Mode Integration', () => {
 
     it('HTMLRenderer should add lhr-dark class when darkMode is true', () => {
       const { container } = render(
-        <HTMLRenderer html="<p>Test</p>" styleMode="css-class" darkMode={true} />,
+        <HTMLRenderer
+          html="<p>Test</p>"
+          styleMode="css-class"
+          darkMode={true}
+        />,
       );
 
       const root = container.querySelector('.lynx-html-renderer');

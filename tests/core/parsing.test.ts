@@ -29,7 +29,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'element',
           tag: 'text',
-          props: {},
+          props: { style: { color: 'var(--lhr-text-color)' } },
           children: [],
           capabilities: {
             layout: 'inline',

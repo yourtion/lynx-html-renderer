@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { transformHTML } from './html-parser';
 import { AdapterRegistry } from './render/adapter-registry';
 import type {
@@ -82,17 +82,62 @@ class RowAdapter implements LynxRenderAdapter {
   }
 }
 
+/**
+ * 只在 text 元素上有效的 CSS 属性
+ * 参考: https://github.com/context7/lynxjs/blob/main/api/elements/built-in/text.md
+ */
+const TEXT_ONLY_PROPERTIES = new Set([
+  'color',
+  'fontFamily',
+  'fontSize',
+  'fontStyle',
+  'fontWeight',
+  'lineHeight',
+  'textAlign',
+  'textDecoration',
+  'letterSpacing',
+  'wordSpacing',
+  'direction',
+]);
+
 class CellAdapter implements LynxRenderAdapter {
   match(node: LynxElementNode): boolean {
     return node.role === 'cell';
   }
 
   render(node: LynxElementNode, ctx: RenderContext) {
-    const cellStyle = {
-      ...node.props.style,
-    };
+    // 分离文本样式和其他样式
+    const cellStyle: Record<string, unknown> = {};
+    const textStyles: Record<string, unknown> = {};
 
-    return <view style={cellStyle}>{ctx.renderChildren(node)}</view>;
+    if (node.props.style) {
+      for (const [key, value] of Object.entries(node.props.style)) {
+        if (TEXT_ONLY_PROPERTIES.has(key)) {
+          textStyles[key] = value;
+        } else {
+          cellStyle[key] = value;
+        }
+      }
+    }
+
+    // 渲染子节点，如果子节点是 text，应用文本样式
+    const children = ctx.renderChildren(node).map((child) => {
+      if (
+        React.isValidElement(child) &&
+        (child.type === 'text' || child.type === text)
+      ) {
+        // 应用文本样式到 text 元素
+        return React.cloneElement(child, {
+          style: {
+            ...(child.props.style as Record<string, unknown> | undefined),
+            ...textStyles,
+          },
+        });
+      }
+      return child;
+    });
+
+    return <view style={cellStyle}>{children}</view>;
   }
 }
 
