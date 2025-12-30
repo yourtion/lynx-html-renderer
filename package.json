@@ -29,6 +29,7 @@
     "preview": "cd example && rspeedy preview",
     "test": "vitest run",
     "coverage": "vitest run --coverage --coverage.include='src/**'",
+    "coverage:ci": "vitest run --coverage --coverage.include='src/**' --reporter=junit --outputFile=test-report.junit.xml",
     "docs:dev": "rspress dev",
     "docs:build": "rspress build",
     "tag": "git tag v`node -p 'require(\"./package\").version'`",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
+    "@codecov/webpack-plugin": "^1.9.1",
     "@lynx-js/preact-devtools": "^5.0.1-cf9aef5",
     "@lynx-js/qrcode-rsbuild-plugin": "^0.4.3",
     "@lynx-js/react": "^0.115.1",
