@@ -112,7 +112,12 @@ describe('Block Elements', () => {
           style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
         },
         children: [
-          { kind: 'text', content: 'Paragraph', meta: { source: 'text' } },
+          {
+            kind: 'text',
+            content: 'Paragraph',
+            inheritableStyles: { color: 'var(--lhr-text-color)' },
+            meta: { source: 'text' },
+          },
         ],
         capabilities: { layout: 'block', textContainer: true, isVoid: false },
         meta: { sourceTag: 'p', sourceAttrs: {} },

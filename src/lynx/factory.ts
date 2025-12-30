@@ -33,6 +33,14 @@ export function createLynxNode(
 
     // 只添加有值的字段
     if (partial.marks) textNode.marks = partial.marks;
+    if (
+      partial.inheritableStyles &&
+      Object.keys(partial.inheritableStyles).length > 0
+    ) {
+      textNode.inheritableStyles = partial.inheritableStyles;
+    }
+    if (partial.inheritableClasses)
+      textNode.inheritableClasses = partial.inheritableClasses;
     if (partial.meta) textNode.meta = partial.meta;
 
     return textNode;

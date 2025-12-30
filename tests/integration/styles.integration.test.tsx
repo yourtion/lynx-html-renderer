@@ -226,10 +226,14 @@ describe('Styles Integration Tests', () => {
       const html = '<p>Paragraph</p>';
       const { container } = render(<HTMLRenderer html={html} />);
 
+      // With unwrapping, the p element no longer creates a wrapper
+      // The text element should have inherited color but NOT margin-bottom
       const text = container.querySelector('text');
       const style = text?.getAttribute('style');
-      expect(style).toContain('margin-bottom');
-      expect(style).toContain('1em');
+      expect(style).toContain('color');
+
+      // margin-bottom is a container property, not inheritable to text
+      expect(style).not.toContain('margin-bottom');
     });
 
     it('should apply ul default padding', () => {

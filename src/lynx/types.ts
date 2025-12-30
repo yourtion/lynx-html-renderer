@@ -72,6 +72,19 @@ export interface LynxTextNode extends LynxBaseNode {
     code?: boolean;
   };
 
+  /** 从父元素继承的可继承样式（inline 模式） */
+  inheritableStyles?: {
+    fontFamily?: string;
+    fontSize?: string | number;
+    fontWeight?: string | number;
+    fontStyle?: string;
+    lineHeight?: string | number;
+    color?: string;
+  };
+
+  /** 从父元素继承的 class 名称（css-class 模式） */
+  inheritableClasses?: string;
+
   meta?: {
     source?: 'text' | 'br';
   };

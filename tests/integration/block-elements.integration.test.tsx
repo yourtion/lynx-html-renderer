@@ -343,7 +343,8 @@ describe('Block Elements Integration Tests', () => {
       const { container } = render(<HTMLRenderer html={html} />);
 
       const texts = container.querySelectorAll('text');
-      expect(texts.length).toBeGreaterThan(6);
+      // With unwrapping, each heading renders as a single text element (no nested structure)
+      expect(texts.length).toBe(6);
     });
   });
 });

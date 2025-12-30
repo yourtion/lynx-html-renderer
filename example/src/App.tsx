@@ -124,7 +124,7 @@ export function App(props: { onRender?: () => void }) {
   const toggleStyle = () => {
     setRemoveAllStyle(!removeAllStyle);
   };
-  
+
   const useDarkMode = darkMode && removeAllStyle;
 
   return (

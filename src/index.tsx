@@ -8,6 +8,7 @@ import type {
   RenderContext,
   RenderResult,
 } from './render/types';
+import { extractInheritableStyles } from './transform/utils/inheritable-properties';
 
 // 内置适配器实现
 class ViewAdapter implements LynxRenderAdapter {
@@ -37,6 +38,133 @@ class TextAdapter implements LynxRenderAdapter {
       ) {
         // Render the innermost text child directly with its marks converted to styles
         return renderNode(innermostText);
+      }
+    }
+
+    // Special handling for text elements with className or style and single text child
+    // This unwraps redundant <text class/style="..."><text>content</text></text> structures
+    // e.g., when h1 maps to <text>, we get: <text style="..."><text>Title</text></text>
+    // We should render only the inner text with its inheritableStyles/inheritableClasses
+    if (
+      (node.props.className || node.props.style) &&
+      node.children.length === 1 &&
+      node.children[0].kind === 'text'
+    ) {
+      const textNode = node.children[0];
+
+      // For CSS-class mode, merge element className with inheritableClasses
+      // Element className has container properties (margin, etc.)
+      // inheritableClasses has text-only properties (fontSize, color, etc.)
+      if (textNode.inheritableClasses) {
+        const mergedClassName = node.props.className
+          ? `${node.props.className} ${textNode.inheritableClasses}`.trim()
+          : textNode.inheritableClasses;
+
+        const mergedTextNode = {
+          ...textNode,
+          inheritableClasses: mergedClassName,
+        };
+        return renderNode(mergedTextNode);
+      } else if (node.props.className) {
+        // Has element className but no inheritableClasses
+        const mergedTextNode = {
+          ...textNode,
+          inheritableClasses: node.props.className,
+        };
+        return renderNode(mergedTextNode);
+      }
+
+      // For inline mode, check if element has style that should override inheritableStyles
+      if (node.props.style) {
+        // Element has inline/merged style - this is the source of truth
+        // Extract only inheritable properties from the element's style
+        const inheritableStyle = extractInheritableStyles(
+          node.props.style as Record<string, unknown>,
+        );
+
+        if (Object.keys(inheritableStyle).length > 0) {
+          const mergedTextNode = {
+            ...textNode,
+            inheritableStyles: inheritableStyle,
+          };
+          return renderNode(mergedTextNode);
+        }
+      }
+
+      // Fall back to inheritableStyles if set
+      if (textNode.inheritableStyles) {
+        const mergedTextNode = {
+          ...textNode,
+          inheritableStyles: textNode.inheritableStyles,
+        };
+        return renderNode(mergedTextNode);
+      }
+
+      // If neither, render as-is (text node without styles)
+      return renderNode(textNode);
+    }
+
+    // Special handling for nested text elements (text inside text)
+    // This happens when both outer and inner tags map to <text>, e.g., <h1><p>Text</p></h1>
+    // We should merge styles/classes and render only the inner text content directly
+    if (
+      (node.props.className || node.props.style) &&
+      node.children.length === 1 &&
+      node.children[0].kind === 'element' &&
+      node.children[0].tag === 'text'
+    ) {
+      const childElement = node.children[0];
+
+      // Recursively find the innermost text content and accumulate all classNames
+      const findInnermostTextWithInheritance = (
+        parent: LynxElementNode,
+        accumulatedClassNames: string[],
+      ): { textNode: { kind: 'text' }; classNames: string[] } | null => {
+        // Accumulate className from current element if it has one
+        if (parent.props.className) {
+          accumulatedClassNames.push(parent.props.className);
+        }
+
+        // Check for nested text element
+        if (
+          parent.children.length === 1 &&
+          parent.children[0].kind === 'element' &&
+          parent.children[0].tag === 'text'
+        ) {
+          const child = parent.children[0];
+          return findInnermostTextWithInheritance(child, accumulatedClassNames);
+        }
+
+        // Base case: look for direct text children
+        const textChild = parent.children.find(
+          (child): child is { kind: 'text' } => child.kind === 'text',
+        );
+
+        if (textChild) {
+          return {
+            textNode: textChild,
+            classNames: accumulatedClassNames,
+          };
+        }
+
+        return null;
+      };
+
+      const result = findInnermostTextWithInheritance(childElement, []);
+
+      if (result) {
+        // Merge all accumulated classNames with inheritableClasses
+        const mergedClassName = result.textNode.inheritableClasses
+          ? [...result.classNames, result.textNode.inheritableClasses]
+              .join(' ')
+              .trim()
+          : result.classNames.join(' ').trim();
+
+        const mergedTextNode = {
+          ...result.textNode,
+          inheritableClasses: mergedClassName || undefined,
+        };
+        return renderNode(mergedTextNode);
       }
     }
 
@@ -176,8 +304,12 @@ function getRenderContext(
 // 主渲染函数
 function renderNode(node: LynxNode): RenderResult {
   if (node.kind === 'text') {
-    // 处理文本节点，将 marks 转换为样式
-    const style: Record<string, string | number> = {};
+    // 处理继承的样式（inline 模式）
+    const style: Record<string, string | number> = {
+      ...(node.inheritableStyles ?? {}),
+    };
+
+    // Marks 样式覆盖继承样式（更高优先级）
     if (node.marks?.bold) style.fontWeight = 'bold';
     if (node.marks?.italic) style.fontStyle = 'italic';
     if (node.marks?.underline) style.textDecoration = 'underline';
@@ -188,7 +320,14 @@ function renderNode(node: LynxNode): RenderResult {
       style.borderRadius = '3px';
     }
 
-    return <text style={style}>{node.content}</text>;
+    // 处理继承的类名（css-class 模式）
+    const className = node.inheritableClasses;
+
+    return (
+      <text style={style} {...(className && { className })}>
+        {node.content}
+      </text>
+    );
   }
 
   // 处理元素节点

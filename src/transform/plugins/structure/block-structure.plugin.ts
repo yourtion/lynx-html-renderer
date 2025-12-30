@@ -1,11 +1,14 @@
 import { createLynxNode } from '../../../lynx/factory';
 import { mergeAllTextNodes } from '../../../lynx/utils';
+import { getTextClassNameForTag } from '../../../utils/css-generator';
 import type {
   Capabilities,
+  CSSProperties,
   HtmlAstNode,
   LynxNode,
   TransformPlugin,
 } from '../../types';
+import { extractInheritableStyles } from '../../utils/inheritable-properties';
 import { BLOCK_TAG_MAP } from './tag-config';
 
 /**
@@ -20,8 +23,9 @@ export const blockStructurePlugin: TransformPlugin = {
   apply(ctx) {
     // 递归转换 AST 为 LynxNode
     const astChildren = ctx.ast.children ?? [];
-    const lynxChildren = astChildren.map((astNode) =>
-      convertAstNode(astNode, ctx),
+    const lynxChildren = astChildren.map(
+      (astNode) =>
+        convertAstNode(astNode, ctx, undefined, undefined, undefined), // 无父级样式/类名
     );
     ctx.root.children = lynxChildren.filter((n): n is LynxNode => n !== null);
 
@@ -37,6 +41,8 @@ function convertAstNode(
   astNode: HtmlAstNode,
   ctx: { metadata: Record<string, unknown> },
   parentMarks?: Record<string, boolean>,
+  parentInheritableStyles?: CSSProperties, // inline 模式：继承的样式
+  parentInheritableClasses?: string, // css-class 模式：继承的类名
 ): LynxNode | null {
   // 处理文本节点
   if (astNode.type === 'text') {
@@ -54,13 +60,15 @@ function convertAstNode(
       kind: 'text',
       content,
       marks: parentMarks,
+      inheritableStyles: parentInheritableStyles, // inline 模式
+      inheritableClasses: parentInheritableClasses, // css-class 模式
       meta: { source: 'text' },
     });
   }
 
   // 处理标签节点
   if (astNode.type === 'tag') {
-    const tag = astNode.name?.toLowerCase();
+    const tag = astNode.name?.toLowerCase().trim();
     if (!tag) return null;
 
     const mapping = BLOCK_TAG_MAP[tag];
@@ -92,7 +100,13 @@ function convertAstNode(
       // 转换子节点
       const astChildren = astNode.children ?? [];
       const lynxChildren = astChildren.map((child) =>
-        convertAstNode(child, ctx, newMarks),
+        convertAstNode(
+          child,
+          ctx,
+          newMarks,
+          parentInheritableStyles, // 保持原样传递
+          parentInheritableClasses, // 保持原样传递
+        ),
       );
 
       // 如果只有一个子节点，直接返回（展开）
@@ -112,8 +126,43 @@ function convertAstNode(
 
     // 处理普通元素
     const astChildren = astNode.children ?? [];
+    const styleMode =
+      (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
+
+    // 根据模式收集继承信息
+    let currentInheritableStyles: CSSProperties = {};
+    let currentInheritableClasses = '';
+
+    if (styleMode === 'inline') {
+      // Inline 模式：提取可继承样式
+      const currentDefaultStyle = mapping.defaultStyle;
+      currentInheritableStyles = extractInheritableStyles(currentDefaultStyle);
+    } else {
+      // CSS-Class 模式：使用 text class
+      currentInheritableClasses = getTextClassNameForTag(tag) ?? '';
+    }
+
+    // 合并父元素的继承信息
+    const mergedInheritableStyles: CSSProperties = {
+      ...parentInheritableStyles,
+      ...currentInheritableStyles,
+    };
+
+    const mergedInheritableClasses = parentInheritableClasses
+      ? `${parentInheritableClasses} ${currentInheritableClasses}`.trim()
+      : currentInheritableClasses;
+
+    // 过滤掉空字符串
+    const finalInheritableClasses = mergedInheritableClasses || undefined;
+
     const lynxChildren = astChildren.map((child) =>
-      convertAstNode(child, ctx, parentMarks),
+      convertAstNode(
+        child,
+        ctx,
+        parentMarks,
+        mergedInheritableStyles, // inline 模式
+        finalInheritableClasses, // css-class 模式（过滤空值）
+      ),
     );
 
     const lynxNode = createLynxNode({

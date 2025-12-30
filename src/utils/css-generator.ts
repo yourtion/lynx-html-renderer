@@ -3,6 +3,31 @@ import { BLOCK_TAG_MAP } from '../transform/plugins/structure/tag-config';
 import { generateAllCSSVariables } from './css-variables';
 
 /**
+ * 可以安全应用到 text 节点的属性（核心字体属性）
+ */
+const TEXT_ONLY_PROPERTIES = new Set([
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'lineHeight',
+  'color',
+] as const);
+
+/**
+ * 从样式中提取 text-only 属性
+ */
+function extractTextOnlyProperties(style: CSSProperties): CSSProperties {
+  const textOnly: CSSProperties = {};
+  for (const prop of TEXT_ONLY_PROPERTIES) {
+    if (prop in style && style[prop] !== undefined) {
+      textOnly[prop] = style[prop];
+    }
+  }
+  return textOnly;
+}
+
+/**
  * 将camelCase转换为kebab-case
  * @example camelToKebab('flexDirection') => 'flex-direction'
  */
@@ -54,19 +79,32 @@ function cssPropertiesToString(props: CSSProperties): string {
 }
 
 /**
- * 生成CSS类规则
+ * 生成CSS类规则（容器 + text）
  * @param tag - HTML标签名
  * @param style - CSS样式对象
  * @param rootClass - 根容器class名
  */
-function generateClassRule(
+function generateClassRules(
   tag: string,
   style: CSSProperties,
   rootClass: string,
-): string {
+): string[] {
   const className = `lhr-${tag}`;
+  const textClassName = `lhr-${tag}-text`;
+  const rules: string[] = [];
+
+  // 生成容器 class（完整样式）
   const styleString = cssPropertiesToString(style);
-  return `.${rootClass} .${className} {\n${styleString}\n}`;
+  rules.push(`.${rootClass} .${className} {\n${styleString}\n}`);
+
+  // 生成 text class（仅text-only属性）
+  const textOnlyStyle = extractTextOnlyProperties(style);
+  if (Object.keys(textOnlyStyle).length > 0) {
+    const textStyleString = cssPropertiesToString(textOnlyStyle);
+    rules.push(`.${rootClass} .${textClassName} {\n${textStyleString}\n}`);
+  }
+
+  return rules;
 }
 
 /**
@@ -112,11 +150,15 @@ export function generateCSS(rootClass: string = 'lynx-html-renderer'): string {
     }
   }
 
-  // 生成所有标签的样式规则
+  // 生成所有标签的样式规则（容器 + text）
   for (const [tag, mapping] of Object.entries(BLOCK_TAG_MAP)) {
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      const rule = generateClassRule(tag, mapping.defaultStyle, rootClass);
-      rules.push(rule);
+      const classRules = generateClassRules(
+        tag,
+        mapping.defaultStyle,
+        rootClass,
+      );
+      rules.push(...classRules);
     }
   }
 
@@ -126,8 +168,20 @@ export function generateCSS(rootClass: string = 'lynx-html-renderer'): string {
     const mapping = BLOCK_TAG_MAP[tag];
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
       const className = `lhr-${tag}`;
+      const textClassName = `lhr-${tag}-text`;
+
+      // 容器暗黑模式
       const styleString = cssPropertiesToString(mapping.defaultStyle);
       rules.push(`.${rootClass}.lhr-dark .${className} {\n${styleString}\n}`);
+
+      // text 暗黑模式
+      const textOnlyStyle = extractTextOnlyProperties(mapping.defaultStyle);
+      if (Object.keys(textOnlyStyle).length > 0) {
+        const textStyleString = cssPropertiesToString(textOnlyStyle);
+        rules.push(
+          `.${rootClass}.lhr-dark .${textClassName} {\n${textStyleString}\n}`,
+        );
+      }
     }
   }
 
@@ -167,4 +221,29 @@ export function getClassNameForTag(tag: string): string | null {
     return null;
   }
   return `lhr-${tag}`;
+}
+
+/**
+ * 获取 text 节点的 CSS 类名
+ * @param tag HTML标签名
+ * @returns text节点的CSS类名，如果标签没有text-only样式则返回null
+ *
+ * @example
+ * ```ts
+ * getTextClassNameForTag('p'); // => 'lhr-p-text'
+ * getTextClassNameForTag('div'); // => null (div只有flex-direction，不是text属性)
+ * ```
+ */
+export function getTextClassNameForTag(tag: string): string | null {
+  const mapping = BLOCK_TAG_MAP[tag];
+  if (!mapping || !mapping.defaultStyle) {
+    return null;
+  }
+
+  const textOnlyStyle = extractTextOnlyProperties(mapping.defaultStyle);
+  if (Object.keys(textOnlyStyle).length === 0) {
+    return null;
+  }
+
+  return `lhr-${tag}-text`;
 }

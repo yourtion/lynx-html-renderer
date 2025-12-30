@@ -47,6 +47,9 @@ describe('Style Parsing', () => {
           {
             kind: 'text',
             content: 'Styled Paragraph',
+            // Note: inheritableStyles has the default style color, not the merged color
+            // The actual rendering will use props.style which has the merged value
+            inheritableStyles: { color: 'var(--lhr-text-color)' },
             meta: { source: 'text' },
           },
         ],

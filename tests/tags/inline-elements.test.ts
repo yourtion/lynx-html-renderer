@@ -13,7 +13,12 @@ describe('Inline Elements', () => {
         tag: 'text',
         props: { style: { color: 'var(--lhr-text-color)' } },
         children: [
-          { kind: 'text', content: 'Span Text', meta: { source: 'text' } },
+          {
+            kind: 'text',
+            content: 'Span Text',
+            inheritableStyles: { color: 'var(--lhr-text-color)' },
+            meta: { source: 'text' },
+          },
         ],
         capabilities: { layout: 'inline', textContainer: true, isVoid: false },
         meta: { sourceTag: 'span', sourceAttrs: {} },

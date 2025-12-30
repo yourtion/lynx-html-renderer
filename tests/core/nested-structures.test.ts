@@ -40,6 +40,7 @@ describe('Nested Structures', () => {
 
     // With marks system, <strong> no longer creates a wrapper element
     // It returns a text node with marks directly
+    // Text nodes now have inheritableStyles from parent p element
     expect(result).toEqual([
       {
         kind: 'element',
@@ -53,14 +54,25 @@ describe('Nested Structures', () => {
               style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
             },
             children: [
-              { kind: 'text', content: 'Paragraph ', meta: { source: 'text' } },
+              {
+                kind: 'text',
+                content: 'Paragraph ',
+                inheritableStyles: { color: 'var(--lhr-text-color)' },
+                meta: { source: 'text' },
+              },
               {
                 kind: 'text',
                 content: 'with bold',
                 marks: { bold: true },
+                inheritableStyles: { color: 'var(--lhr-text-color)' },
                 meta: { source: 'text' },
               },
-              { kind: 'text', content: ' text', meta: { source: 'text' } },
+              {
+                kind: 'text',
+                content: ' text',
+                inheritableStyles: { color: 'var(--lhr-text-color)' },
+                meta: { source: 'text' },
+              },
             ],
             capabilities: {
               layout: 'block',

@@ -103,7 +103,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '32px',
       fontWeight: 'bold',
-      margin: '10px 0',
+      margin: '24px 0',
     },
   },
   h2: {
@@ -112,7 +112,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '24px',
       fontWeight: 'bold',
-      margin: '12px 0',
+      margin: '20px 0',
     },
   },
   h3: {
@@ -121,7 +121,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '20px',
       fontWeight: 'bold',
-      margin: '14px 0',
+      margin: '16px 0',
     },
   },
   h4: {
@@ -130,7 +130,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '18px',
       fontWeight: 'bold',
-      margin: '16px 0',
+      margin: '14px 0',
     },
   },
   h5: {
@@ -139,7 +139,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '16px',
       fontWeight: 'bold',
-      margin: '18px 0',
+      margin: '12px 0',
     },
   },
   h6: {
@@ -148,7 +148,7 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
       ...HEADING_CONFIG.defaultStyle,
       fontSize: '14px',
       fontWeight: 'bold',
-      margin: '20px 0',
+      margin: '10px 0',
     },
   },
 

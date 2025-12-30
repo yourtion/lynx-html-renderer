@@ -1,8 +1,8 @@
+import { codecovWebpackPlugin } from '@codecov/webpack-plugin';
 import { pluginQRCode } from '@lynx-js/qrcode-rsbuild-plugin';
 import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin';
 import { defineConfig } from '@lynx-js/rspeedy';
 import { pluginTypeCheck } from '@rsbuild/plugin-type-check';
-import { codecovWebpackPlugin } from '@codecov/webpack-plugin';
 
 export default defineConfig({
   source: {
@@ -25,11 +25,11 @@ export default defineConfig({
       appendPlugins(
         codecovWebpackPlugin({
           enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-          bundleName: "lynx-html-renderer-example",
+          bundleName: 'lynx-html-renderer-example',
           uploadToken: process.env.CODECOV_TOKEN,
-        })
-      )
-      return config
+        }),
+      );
+      return config;
     },
   },
 });
