@@ -1,3 +1,4 @@
+import { parseStyleString } from '../../../utils/style-parser';
 import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 /**
@@ -47,6 +48,7 @@ function processMediaElements(lynxNode: LynxNode): void {
       // 优先级 2: 如果 HTML 属性中没有，从 style 属性中提取 width/height
       // 即使 removeAllStyle = true，也要保留图片的原始尺寸
       if (!style.width || !style.height) {
+        // Now using shared parseStyleString with proper kebab-case → camelCase conversion
         const styleFromAttr = sourceAttrs.style
           ? parseStyleString(sourceAttrs.style)
           : {};
@@ -77,23 +79,4 @@ function processMediaElements(lynxNode: LynxNode): void {
       processMediaElements(child);
     }
   }
-}
-
-/**
- * 解析 CSS style 字符串为对象
- */
-function parseStyleString(style: string): Record<string, string> {
-  const result: Record<string, string> = {};
-
-  style.split(';').forEach((item) => {
-    const [rawKey, rawValue] = item.split(':');
-    if (!rawKey || !rawValue) return;
-
-    const key = rawKey.trim();
-    const value = rawValue.trim();
-
-    result[key] = value;
-  });
-
-  return result;
 }

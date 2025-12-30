@@ -18,12 +18,12 @@ import { tableStructurePlugin } from './structure/table-structure.plugin';
 export const builtinPlugins: TransformPlugin[] = [
   // Normalize Phase
   htmlNormalizePlugin,
-  textMergePlugin,
 
   // Structure Phase
   blockStructurePlugin,
   listStructurePlugin,
   tableStructurePlugin,
+  textMergePlugin, // Moved to structure phase with order 999 to run after all structure plugins
 
   // Capability Phase
   styleCapabilityPlugin,

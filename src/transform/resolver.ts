@@ -6,6 +6,7 @@ import type { PluginConfig, TransformPhase, TransformPlugin } from './types';
  */
 export class TransformPluginResolver {
   private plugins: TransformPlugin[] = [];
+  private pluginsByPhase: Map<TransformPhase, TransformPlugin[]> = new Map();
 
   constructor(config?: PluginConfig) {
     this.plugins = this.resolvePlugins(config);
@@ -18,6 +19,7 @@ export class TransformPluginResolver {
    * 3. 用 replace 覆盖同名插件
    * 4. 合并 extra 插件
    * 5. 按 phase → order 排序
+   * 6. 缓存 plugins by phase for O(1) lookup
    */
   private resolvePlugins(config?: PluginConfig): TransformPlugin[] {
     let plugins: TransformPlugin[] = [];
@@ -59,14 +61,28 @@ export class TransformPluginResolver {
       return (a.order ?? 0) - (b.order ?? 0);
     });
 
+    // 6. Cache by phase for O(1) lookup
+    const phases: TransformPhase[] = [
+      'normalize',
+      'structure',
+      'capability',
+      'finalize',
+    ];
+    for (const phase of phases) {
+      this.pluginsByPhase.set(
+        phase,
+        plugins.filter((p) => p.phase === phase),
+      );
+    }
+
     return plugins;
   }
 
   /**
-   * 按阶段获取插件
+   * 按阶段获取插件 (cached for O(1) lookup)
    */
   getPluginsByPhase(phase: TransformPhase): TransformPlugin[] {
-    return this.plugins.filter((p) => p.phase === phase);
+    return this.pluginsByPhase.get(phase) ?? [];
   }
 
   /**

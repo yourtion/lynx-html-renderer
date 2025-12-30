@@ -1,3 +1,4 @@
+import { parseStyleString } from '../../../utils/style-parser';
 import type {
   CSSProperties,
   LynxElementNode,
@@ -70,25 +71,4 @@ function processStyles(
       processStyles(child, options);
     }
   }
-}
-
-/**
- * 解析 CSS style 字符串为对象
- * 将 kebab-case 转换为 camelCase
- */
-function parseStyleString(style: string): CSSProperties {
-  const result: CSSProperties = {};
-
-  style.split(';').forEach((item) => {
-    const [rawKey, rawValue] = item.split(':');
-    if (!rawKey || !rawValue) return;
-
-    // kebab-case → camelCase
-    const key = rawKey.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-    const value = rawValue.trim();
-
-    result[key] = value;
-  });
-
-  return result;
 }

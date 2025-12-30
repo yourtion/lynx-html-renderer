@@ -1,6 +1,22 @@
 import type { LynxNode, LynxTextNode } from './types';
 
 /**
+ * Compare two marks objects for equality
+ * Direct comparison without string serialization for better performance
+ */
+function compareMarks(
+  a: Record<string, boolean> | undefined,
+  b: Record<string, boolean> | undefined,
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((key) => a[key] === b[key]);
+}
+
+/**
  * 合并相邻文本节点
  * Only merges text nodes that have the same marks (or both have no marks)
  */
@@ -16,8 +32,7 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
       const nodeMarks = node.marks || {};
 
       // Check if marks are the same (compare keys and values)
-      const marksAreSame =
-        JSON.stringify(lastMarks) === JSON.stringify(nodeMarks);
+      const marksAreSame = compareMarks(lastMarks, nodeMarks);
 
       if (marksAreSame) {
         // Special handling for br tags: clean up whitespace around newlines

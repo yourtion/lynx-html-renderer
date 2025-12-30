@@ -1,5 +1,4 @@
 import { createLynxNode } from '../../../lynx/factory';
-import { mergeAllTextNodes } from '../../../lynx/utils';
 import { getTextClassNameForTag } from '../../../utils/css-generator';
 import type {
   Capabilities,
@@ -29,8 +28,9 @@ export const blockStructurePlugin: TransformPlugin = {
     );
     ctx.root.children = lynxChildren.filter((n): n is LynxNode => n !== null);
 
-    // 合并所有相邻的文本节点（包括 br 转换的换行符）
-    ctx.root = mergeAllTextNodes(ctx.root) as LynxNode;
+    // Note: Text merging is now ONLY handled by text-merge.plugin in normalize phase
+    // This avoids redundant tree traversals while maintaining plugin modularity
+    // The br->\n conversions will be merged when normalize phase runs
   },
 };
 
@@ -44,6 +44,10 @@ function convertAstNode(
   parentInheritableStyles?: CSSProperties, // inline 模式：继承的样式
   parentInheritableClasses?: string, // css-class 模式：继承的类名
 ): LynxNode | null {
+  // Extract styleMode once at the beginning (optimization: avoid repeated property access)
+  const styleMode =
+    (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
+
   // 处理文本节点
   if (astNode.type === 'text') {
     const content = astNode.data ?? '';
@@ -126,8 +130,6 @@ function convertAstNode(
 
     // 处理普通元素
     const astChildren = astNode.children ?? [];
-    const styleMode =
-      (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
 
     // 根据模式收集继承信息
     let currentInheritableStyles: CSSProperties = {};
@@ -179,9 +181,6 @@ function convertAstNode(
 
     // 添加 defaultStyle
     if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      const styleMode =
-        (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
-
       if (styleMode === 'css-class') {
         // CSS类模式：添加className
         const className = `lhr-${tag}`;
