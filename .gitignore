@@ -15,5 +15,11 @@ dist/
 # TypeScript
 *.tsbuildinfo
 
+# Coverage
 coverage
 site
+
+# Claude Code
+.claude/hooks/
+.claude/session-config.json
+.claude/sessions.json
