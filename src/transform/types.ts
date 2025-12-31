@@ -34,6 +34,15 @@ export type {
 };
 
 /**
+ * 节点能力处理器类型
+ * 用于批量处理能力阶段的节点访问
+ */
+export type NodeCapabilityHandler = (
+  node: LynxNode,
+  ctx: TransformContext,
+) => undefined | LynxNode;
+
+/**
  * 转换插件接口
  */
 export interface TransformPlugin {
@@ -49,7 +58,18 @@ export interface TransformPlugin {
   /** 是否默认启用 */
   enabledByDefault?: boolean;
 
-  /** 插件执行入口 */
+  /** 可选：注册能力处理器（推荐用于 capability 阶段）
+   *
+   * 返回一个 Map，key 是节点类型（kind），value 是对应的处理器
+   * 引擎会在一次遍历中调用所有相关的处理器，提高性能
+   *
+   * 如果此方法存在，将优先于 apply() 使用
+   */
+  registerCapabilityHandlers?: (
+    ctx: TransformContext,
+  ) => Map<string, NodeCapabilityHandler>;
+
+  /** 插件执行入口（传统方式，向后兼容） */
   apply(ctx: TransformContext): void;
 }
 
@@ -73,6 +93,9 @@ export interface TransformContext {
 
     /** 替换节点 */
     replaceNode(target: LynxNode, next: LynxNode): void;
+
+    /** 注册能力处理器（用于批量处理优化） */
+    registerHandler(nodeKind: string, handler: NodeCapabilityHandler): void;
   };
 
   /** 插件间传递元数据 */
@@ -85,6 +108,9 @@ export interface TransformContext {
     /** 节点计数 */
     nodeCount: number;
   };
+
+  /** 内部：处理器注册表（用于批量处理） */
+  _handlerRegistry?: Map<string, NodeCapabilityHandler[]>;
 }
 
 /**
