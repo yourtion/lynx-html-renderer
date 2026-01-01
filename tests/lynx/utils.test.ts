@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { LynxNode, LynxTextNode } from '../../src/lynx/types';
 import {
-  mergeAdjacentTextNodes,
-  isTextNode,
   hasMarks,
+  isTextNode,
+  mergeAdjacentTextNodes,
   mergeAllTextNodes,
 } from '../../src/lynx/utils';
-import type { LynxNode, LynxTextNode } from '../../src/lynx/types';
 
 describe('Lynx Utils', () => {
   describe('mergeAdjacentTextNodes', () => {
@@ -194,8 +194,16 @@ describe('Lynx Utils', () => {
 
     it('should handle marks with false values', () => {
       const nodes: LynxNode[] = [
-        { kind: 'text', content: 'Text1 ', marks: { bold: true, italic: false } },
-        { kind: 'text', content: 'Text2', marks: { bold: true, italic: false } },
+        {
+          kind: 'text',
+          content: 'Text1 ',
+          marks: { bold: true, italic: false },
+        },
+        {
+          kind: 'text',
+          content: 'Text2',
+          marks: { bold: true, italic: false },
+        },
       ];
 
       const result = mergeAdjacentTextNodes(nodes);
@@ -262,9 +270,9 @@ describe('Lynx Utils', () => {
 
     it('should handle marks with only false values', () => {
       expect(hasMarks({ bold: false })).toBe(false);
-      expect(
-        hasMarks({ bold: false, italic: false, underline: false }),
-      ).toBe(false);
+      expect(hasMarks({ bold: false, italic: false, underline: false })).toBe(
+        false,
+      );
     });
   });
 

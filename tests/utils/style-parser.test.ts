@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { parseStyleString, isInheritableProperty } from '../../src/utils/style-parser';
+import { describe, expect, it } from 'vitest';
+import {
+  isInheritableProperty,
+  parseStyleString,
+} from '../../src/utils/style-parser';
 
 describe('Style Parser', () => {
   describe('parseStyleString', () => {
@@ -31,7 +34,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle whitespace around declarations', () => {
-      const result = parseStyleString('  color  :  red  ;  font-size  :  14px  ;  ');
+      const result = parseStyleString(
+        '  color  :  red  ;  font-size  :  14px  ;  ',
+      );
 
       expect(result).toEqual({
         color: 'red',
@@ -52,7 +57,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle mixed semicolons', () => {
-      const result = parseStyleString('color: red; font-size: 14px; background: blue');
+      const result = parseStyleString(
+        'color: red; font-size: 14px; background: blue',
+      );
 
       expect(result).toEqual({
         color: 'red',
@@ -62,7 +69,9 @@ describe('Style Parser', () => {
     });
 
     it('should skip invalid declarations', () => {
-      const result = parseStyleString('color: red; invalid-declaration; font-size: 14px');
+      const result = parseStyleString(
+        'color: red; invalid-declaration; font-size: 14px',
+      );
 
       expect(result).toEqual({
         color: 'red',
@@ -131,7 +140,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle shorthand properties', () => {
-      const result = parseStyleString('margin: 10px 20px; padding: 5px 10px 15px 20px;');
+      const result = parseStyleString(
+        'margin: 10px 20px; padding: 5px 10px 15px 20px;',
+      );
 
       expect(result).toEqual({
         margin: '10px 20px',
@@ -150,7 +161,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle quotes in values', () => {
-      const result = parseStyleString('font-family: "Arial", sans-serif; content: "hello";');
+      const result = parseStyleString(
+        'font-family: "Arial", sans-serif; content: "hello";',
+      );
 
       expect(result).toEqual({
         fontFamily: '"Arial", sans-serif',
@@ -170,7 +183,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle CSS custom properties', () => {
-      const result = parseStyleString('--custom-color: #fff; --another-var: value;');
+      const result = parseStyleString(
+        '--custom-color: #fff; --another-var: value;',
+      );
 
       // The regex converts -X to X, so --custom-color becomes -CustomColor
       expect(result).toEqual({
@@ -180,7 +195,9 @@ describe('Style Parser', () => {
     });
 
     it('should skip malformed declarations gracefully', () => {
-      const result = parseStyleString('color: red; : bad; font-size:; font-weight: bold;');
+      const result = parseStyleString(
+        'color: red; : bad; font-size:; font-weight: bold;',
+      );
 
       expect(result).toEqual({
         color: 'red',
@@ -197,8 +214,9 @@ describe('Style Parser', () => {
     });
 
     it('should handle very long style strings efficiently', () => {
-      const styles = Array.from({ length: 100 }, (_, i) =>
-        `prop${i}: value${i};`,
+      const styles = Array.from(
+        { length: 100 },
+        (_, i) => `prop${i}: value${i};`,
       ).join(' ');
 
       const result = parseStyleString(styles);
@@ -303,7 +321,8 @@ describe('Style Parser', () => {
     });
 
     it('should handle inline styles from HTML attributes', () => {
-      const style = 'font-family: Arial, sans-serif; font-size: 14px; color: rgb(255, 0, 0);';
+      const style =
+        'font-family: Arial, sans-serif; font-size: 14px; color: rgb(255, 0, 0);';
 
       const result = parseStyleString(style);
 

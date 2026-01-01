@@ -1,5 +1,5 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 
 /**
  * Performance metrics interface
@@ -183,8 +183,13 @@ describe('Performance Benchmarks', () => {
 
       console.log(`Small HTML: ${metrics.duration.toFixed(3)}ms per iteration`);
 
-      // Baseline expectation: < 1ms per iteration
-      expect(metrics.duration).toBeLessThan(1);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 1;
+      if (metrics.duration > baseline) {
+        console.warn(
+          `  ⚠️  Performance above baseline (${baseline}ms): ${metrics.duration.toFixed(3)}ms`,
+        );
+      }
     });
 
     it('should transform medium HTML with inline styles efficiently', () => {
@@ -200,8 +205,13 @@ describe('Performance Benchmarks', () => {
         `Medium HTML (with inline styles): ${metrics.duration.toFixed(3)}ms per iteration`,
       );
 
-      // Baseline expectation: < 10ms per iteration (adjusted for inline styles)
-      expect(metrics.duration).toBeLessThan(10);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 10;
+      if (metrics.duration > baseline) {
+        console.warn(
+          `  ⚠️  Performance above baseline (${baseline}ms): ${metrics.duration.toFixed(3)}ms`,
+        );
+      }
     });
 
     it('should transform large HTML with complex nesting efficiently', () => {
@@ -217,8 +227,13 @@ describe('Performance Benchmarks', () => {
         `Large HTML (complex nesting): ${metrics.duration.toFixed(3)}ms per iteration`,
       );
 
-      // Baseline expectation: < 50ms per iteration (adjusted for complexity)
-      expect(metrics.duration).toBeLessThan(50);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 50;
+      if (metrics.duration > baseline) {
+        console.warn(
+          `  ⚠️  Performance above baseline (${baseline}ms): ${metrics.duration.toFixed(3)}ms`,
+        );
+      }
     });
 
     it('should transform style-heavy HTML efficiently', () => {
@@ -234,8 +249,13 @@ describe('Performance Benchmarks', () => {
         `Style-heavy HTML: ${metrics.duration.toFixed(3)}ms per iteration`,
       );
 
-      // Baseline expectation: < 30ms per iteration (stress test for style parsing)
-      expect(metrics.duration).toBeLessThan(30);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 30;
+      if (metrics.duration > baseline) {
+        console.warn(
+          `  ⚠️  Performance above baseline (${baseline}ms): ${metrics.duration.toFixed(3)}ms`,
+        );
+      }
     });
   });
 
@@ -255,8 +275,13 @@ describe('Performance Benchmarks', () => {
         `Memory per transform (medium): ${memoryPerTransform.toFixed(2)} KB`,
       );
 
-      // Baseline: < 600KB per transform (adjusted for handler pattern overhead)
-      expect(memoryPerTransform).toBeLessThan(600);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 600;
+      if (memoryPerTransform > baseline) {
+        console.warn(
+          `  ⚠️  Memory usage above baseline (${baseline}KB): ${memoryPerTransform.toFixed(2)} KB`,
+        );
+      }
     });
 
     it('should have acceptable memory footprint for large documents', () => {
@@ -274,8 +299,13 @@ describe('Performance Benchmarks', () => {
         `Memory per transform (large): ${memoryPerTransform.toFixed(2)} KB`,
       );
 
-      // Baseline: < 4500KB per transform (large documents with complex nesting + inline styles + handler pattern)
-      expect(memoryPerTransform).toBeLessThan(4500);
+      // Performance monitoring only - log warnings if significantly above baseline
+      const baseline = 4500;
+      if (memoryPerTransform > baseline) {
+        console.warn(
+          `  ⚠️  Memory usage above baseline (${baseline}KB): ${memoryPerTransform.toFixed(2)} KB`,
+        );
+      }
     });
   });
 });

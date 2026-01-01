@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  createRootNode,
-  createLynxNode,
-  replaceLynxNode,
   createElementNode,
+  createLynxNode,
+  createRootNode,
   createTextNode,
+  replaceLynxNode,
 } from '../../src/lynx/factory';
 import type { LynxElementNode, LynxTextNode } from '../../src/lynx/types';
 
@@ -117,7 +117,10 @@ describe('Lynx Factory', () => {
         }) as LynxTextNode;
 
         expect(node.marks).toEqual({ bold: true, italic: true });
-        expect(node.inheritableStyles).toEqual({ color: 'blue', fontSize: '14px' });
+        expect(node.inheritableStyles).toEqual({
+          color: 'blue',
+          fontSize: '14px',
+        });
         expect(node.inheritableClasses).toEqual(['styled']);
         expect(node.meta).toEqual({ source: 'span' });
       });

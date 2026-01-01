@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   HTMLTransformError,
   LynxRenderError,
@@ -26,15 +26,26 @@ describe('Error Classes', () => {
 
     it('should include cause error', () => {
       const cause = new Error('Original error');
-      const error = new HTMLTransformError('Test error', 'parse', undefined, cause);
+      const error = new HTMLTransformError(
+        'Test error',
+        'parse',
+        undefined,
+        cause,
+      );
 
       expect(error.cause).toBe(cause);
     });
 
     it('should generate detailed error report', () => {
-      const html = '<div>This is a very long HTML content that should be truncated in the error report</div>';
+      const html =
+        '<div>This is a very long HTML content that should be truncated in the error report</div>';
       const cause = new Error('Cause error');
-      const error = new HTMLTransformError('Transformation failed', 'transform', html, cause);
+      const error = new HTMLTransformError(
+        'Transformation failed',
+        'transform',
+        html,
+        cause,
+      );
 
       const details = error.getDetails();
 
@@ -135,7 +146,8 @@ describe('Error Classes', () => {
     it('should generate details for text node', () => {
       const node: LynxNode = {
         kind: 'text',
-        content: 'This is a very long text content that should be truncated in the error details output',
+        content:
+          'This is a very long text content that should be truncated in the error details output',
       };
       const error = new LynxRenderError('Failed', node);
 
@@ -212,12 +224,7 @@ describe('Error Classes', () => {
 
     it('should include cause error', () => {
       const cause = new Error('Underlying issue');
-      const error = new PluginError(
-        'Failed',
-        'my-plugin',
-        'normalize',
-        cause,
-      );
+      const error = new PluginError('Failed', 'my-plugin', 'normalize', cause);
 
       expect(error.cause).toBe(cause);
     });
@@ -265,10 +272,10 @@ describe('Error Classes', () => {
 
     it('should allow error instanceof checks', () => {
       const transformError = new HTMLTransformError('Test', 'parse');
-      const renderError = new LynxRenderError(
-        'Test',
-        { kind: 'text', content: 'x' },
-      );
+      const renderError = new LynxRenderError('Test', {
+        kind: 'text',
+        content: 'x',
+      });
       const pluginError = new PluginError('Test', 'p', 'phase');
 
       expect(transformError instanceof Error).toBe(true);

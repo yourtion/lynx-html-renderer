@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { AdapterRegistry } from '../../src/render/adapter-registry';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { LynxElementNode, LynxRenderAdapter } from '../../src/lynx/types';
+import { AdapterRegistry } from '../../src/render/adapter-registry';
 
 describe('AdapterRegistry', () => {
   let registry: AdapterRegistry;
@@ -14,10 +14,7 @@ describe('AdapterRegistry', () => {
     registry = new AdapterRegistry(fallbackAdapter);
   });
 
-  const createMockNode = (
-    tag: string,
-    role?: string,
-  ): LynxElementNode => ({
+  const createMockNode = (tag: string, role?: string): LynxElementNode => ({
     kind: 'element',
     tag,
     props: {},
@@ -118,12 +115,12 @@ describe('AdapterRegistry', () => {
       registry.registerByRole('paragraph', paragraphAdapter);
       registry.registerByRole('heading', headingAdapter);
 
-      expect(
-        registry.resolve(createMockNode('text', 'paragraph')),
-      ).toBe(paragraphAdapter);
-      expect(
-        registry.resolve(createMockNode('text', 'heading')),
-      ).toBe(headingAdapter);
+      expect(registry.resolve(createMockNode('text', 'paragraph'))).toBe(
+        paragraphAdapter,
+      );
+      expect(registry.resolve(createMockNode('text', 'heading'))).toBe(
+        headingAdapter,
+      );
     });
 
     it('should overwrite existing role adapter', () => {

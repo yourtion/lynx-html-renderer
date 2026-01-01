@@ -1,6 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { walkAst, walkAstUntil, findAstNodes, findFirstAstNode } from '../../src/ast/walkers';
+import { describe, expect, it, vi } from 'vitest';
 import type { HtmlAstNode } from '../../src/ast/types';
+import {
+  findAstNodes,
+  findFirstAstNode,
+  walkAst,
+  walkAstUntil,
+} from '../../src/ast/walkers';
 
 describe('AST Walkers', () => {
   const createMockNode = (
@@ -235,7 +240,10 @@ describe('AST Walkers', () => {
       other.attribs = { class: 'foo' };
       const root = createMockNode('root', [other, target]);
 
-      const result = findFirstAstNode(root, (node) => node.attribs?.id === 'test');
+      const result = findFirstAstNode(
+        root,
+        (node) => node.attribs?.id === 'test',
+      );
 
       expect(result).toBe(target);
     });

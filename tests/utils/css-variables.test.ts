@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  LIGHT_MODE_VARS,
+  type CSSVariables,
   DARK_MODE_VARS,
+  generateAllCSSVariables,
   generateCSSVariables,
   getVariableMapping,
+  LIGHT_MODE_VARS,
   resolveCSSVariables,
-  generateAllCSSVariables,
-  type CSSVariables,
 } from '../../src/utils/css-variables';
 
 describe('CSS Variables', () => {
@@ -169,7 +169,9 @@ describe('CSS Variables', () => {
       const lightKeys = Object.keys(LIGHT_MODE_VARS).map((k) =>
         k.replace(/^--/, ''),
       );
-      const darkKeys = Object.keys(DARK_MODE_VARS).map((k) => k.replace(/^--/, ''));
+      const darkKeys = Object.keys(DARK_MODE_VARS).map((k) =>
+        k.replace(/^--/, ''),
+      );
 
       expect(Object.keys(lightMapping).sort()).toEqual(lightKeys.sort());
       expect(Object.keys(darkMapping).sort()).toEqual(darkKeys.sort());
@@ -178,14 +180,20 @@ describe('CSS Variables', () => {
 
   describe('resolveCSSVariables', () => {
     it('should replace var() with actual value in light mode', () => {
-      const result = resolveCSSVariables('color: var(--lhr-text-color);', 'light');
+      const result = resolveCSSVariables(
+        'color: var(--lhr-text-color);',
+        'light',
+      );
 
       expect(result).toContain('#212529');
       expect(result).not.toContain('var(');
     });
 
     it('should replace var() with actual value in dark mode', () => {
-      const result = resolveCSSVariables('color: var(--lhr-text-color);', 'dark');
+      const result = resolveCSSVariables(
+        'color: var(--lhr-text-color);',
+        'dark',
+      );
 
       expect(result).toContain('#e9ecef');
       expect(result).not.toContain('var(');
