@@ -25,7 +25,7 @@ export default defineConfig({
       appendPlugins(
         codecovRspackPlugin({
           enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-          bundleName: "example",
+          bundleName: "lhr-example",
           uploadToken: process.env.CODECOV_TOKEN,
           debug: true,
           uploadOverrides: {
