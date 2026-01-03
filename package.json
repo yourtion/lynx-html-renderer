@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
-    "@codecov/webpack-plugin": "^1.9.1",
+    "@codecov/rspack-plugin": "file:pkg/codecov-rspack-plugin-1.0.0.tgz",
     "@lynx-js/preact-devtools": "^5.0.1-cf9aef5",
     "@lynx-js/qrcode-rsbuild-plugin": "^0.4.3",
     "@lynx-js/react": "^0.115.1",
