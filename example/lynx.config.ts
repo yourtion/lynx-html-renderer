@@ -1,13 +1,13 @@
-import { codecovWebpackPlugin } from '@codecov/webpack-plugin';
-import { pluginQRCode } from '@lynx-js/qrcode-rsbuild-plugin';
-import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin';
-import { defineConfig } from '@lynx-js/rspeedy';
-import { pluginTypeCheck } from '@rsbuild/plugin-type-check';
+import { codecovRspackPlugin } from "@codecov/rspack-plugin";
+import { pluginQRCode } from "@lynx-js/qrcode-rsbuild-plugin";
+import { pluginReactLynx } from "@lynx-js/react-rsbuild-plugin";
+import { defineConfig } from "@lynx-js/rspeedy";
+import { pluginTypeCheck } from "@rsbuild/plugin-type-check";
 
 export default defineConfig({
   source: {
     entry: {
-      index: './src/index.tsx',
+      index: "./src/index.tsx",
     },
   },
   output: {
@@ -38,10 +38,15 @@ export default defineConfig({
       });
 
       appendPlugins(
-        codecovWebpackPlugin({
+        codecovRspackPlugin({
           enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-          bundleName: 'lynx-html-renderer-example',
+          bundleName: "example",
           uploadToken: process.env.CODECOV_TOKEN,
+          debug: true,
+          uploadOverrides: {
+            sha: process.env.GH_COMMIT_SHA,
+          },
+          // dryRun: true,
         }),
       );
       return config;

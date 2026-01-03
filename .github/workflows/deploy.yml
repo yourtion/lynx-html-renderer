@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        with:
+          fetch-depth: 2
         uses: actions/checkout@v4
 
       - name: Setup pnpm
@@ -27,8 +29,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'pnpm'
+          node-version: "18"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
@@ -37,6 +39,9 @@ jobs:
         run: pnpm run docs:build
 
       - name: Build example
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: pnpm run build-example
 
       - name: Prepare site directory
