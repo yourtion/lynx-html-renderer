@@ -188,7 +188,7 @@ packages:
     engines: {node: '>=18.0.0'}
 
   '@codecov/rspack-plugin@file:pkg/codecov-rspack-plugin-1.0.0.tgz':
-    resolution: {integrity: sha512-xyX8/ZSB163hSyBKlMuZK+w0UYWyvNYV/ae86PYNghKp60gjUIEh+Z9QU+GGD3+QOVLar+yFNALjfWUvI4k5bQ==, tarball: file:pkg/codecov-rspack-plugin-1.0.0.tgz}
+    resolution: {integrity: sha512-uSnC6qJ0zgD7hltdaF5lAj8vCIXvKnJkiL1QP/g6Q+lmr6yMC8DeuCVeuiURPIY2W8nyejOYGBwe93veUC8Qog==, tarball: file:pkg/codecov-rspack-plugin-1.0.0.tgz}
     version: 1.0.0
     engines: {node: '>=18.0.0'}
     peerDependencies:
