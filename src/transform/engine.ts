@@ -114,6 +114,7 @@ export function transformHTML(
     ctx.metadata.removeAllStyle = options.removeAllStyle ?? false;
     ctx.metadata.styleMode = options.styleMode ?? 'inline';
     ctx.metadata.rootClassName = options.rootClassName ?? 'lynx-html-renderer';
+    ctx.metadata.linkStyle = options.linkStyle;
   }
 
   // 6. 按阶段执行插件

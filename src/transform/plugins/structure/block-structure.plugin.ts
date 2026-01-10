@@ -1,14 +1,22 @@
-import { createLynxNode } from '../../../lynx/factory';
+import { isTagNode, isTextNode, isWhitespaceNode } from '../../../ast/types';
+import { createElementNode, createLynxNode } from '../../../lynx/factory';
 import { getTextClassNameForTag } from '../../../utils/css-generator';
 import type {
-  Capabilities,
   CSSProperties,
   HtmlAstNode,
+  LynxElementNode,
   LynxNode,
   TransformPlugin,
 } from '../../types';
 import { extractInheritableStyles } from '../../utils/inheritable-properties';
 import { BLOCK_TAG_MAP } from './tag-config';
+
+/**
+ * 检查节点是否为元素节点
+ */
+function isElementNode(node: LynxNode): node is LynxElementNode {
+  return node.kind === 'element';
+}
 
 /**
  * 块级结构插件
@@ -49,10 +57,10 @@ function convertAstNode(
     (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
 
   // 处理文本节点
-  if (astNode.type === 'text') {
+  if (isTextNode(astNode)) {
     const content = astNode.data ?? '';
     // 跳过被 html-normalize 标记的纯空白节点
-    if ((astNode as unknown as Record<string, unknown>).isWhitespace === true) {
+    if (isWhitespaceNode(astNode)) {
       return null;
     }
     // 跳过纯空白节点（只包含空白字符且 trim 后为空）
@@ -71,7 +79,7 @@ function convertAstNode(
   }
 
   // 处理标签节点
-  if (astNode.type === 'tag') {
+  if (isTagNode(astNode)) {
     const tag = astNode.name?.toLowerCase().trim();
     if (!tag) return null;
 
@@ -157,6 +165,39 @@ function convertAstNode(
     // 过滤掉空字符串
     const finalInheritableClasses = mergedInheritableClasses || undefined;
 
+    // 处理链接标签（在合并继承信息之后）
+    if (tag === 'a' && mapping.lynxTag === 'text') {
+      const href = astNode.attribs?.href;
+
+      // 获取自定义链接样式
+      const linkStyle =
+        (ctx.metadata.linkStyle as
+          | Record<string, string | number>
+          | undefined) ?? {};
+
+      // 合并默认样式和自定义样式
+      const props: Record<string, unknown> = {
+        'data-href': href,
+        style: { ...mapping.defaultStyle, ...linkStyle },
+      };
+
+      const linkChildren = astChildren.map((child) =>
+        convertAstNode(
+          child,
+          ctx,
+          parentMarks,
+          mergedInheritableStyles,
+          finalInheritableClasses,
+        ),
+      );
+
+      return createElementNode(
+        'text',
+        props,
+        linkChildren.filter((n): n is LynxNode => n !== null),
+      );
+    }
+
     const lynxChildren = astChildren.map((child) =>
       convertAstNode(
         child,
@@ -179,26 +220,26 @@ function convertAstNode(
       },
     });
 
-    // 添加 defaultStyle
-    if (mapping.defaultStyle && Object.keys(mapping.defaultStyle).length > 0) {
-      if (styleMode === 'css-class') {
-        // CSS类模式：添加className
-        const className = `lhr-${tag}`;
-        (
-          lynxNode as LynxNode & { props: Record<string, unknown> }
-        ).props.className = className;
-      } else {
-        // 内联样式模式：添加inline style（保持原有行为）
-        (
-          lynxNode as LynxNode & { props: Record<string, unknown> }
-        ).props.style = { ...mapping.defaultStyle };
+    // 添加 defaultStyle 和 capabilities
+    if (isElementNode(lynxNode)) {
+      // 添加 defaultStyle
+      if (
+        mapping.defaultStyle &&
+        Object.keys(mapping.defaultStyle).length > 0
+      ) {
+        if (styleMode === 'css-class') {
+          // CSS类模式：添加className
+          lynxNode.props.className = `lhr-${tag}`;
+        } else {
+          // 内联样式模式：添加inline style
+          lynxNode.props.style = { ...mapping.defaultStyle };
+        }
       }
-    }
 
-    // 添加 capabilities
-    if (mapping.capabilities) {
-      (lynxNode as LynxNode & { capabilities: Capabilities }).capabilities =
-        mapping.capabilities;
+      // 添加 capabilities
+      if (mapping.capabilities) {
+        lynxNode.capabilities = mapping.capabilities;
+      }
     }
 
     return lynxNode;

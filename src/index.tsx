@@ -383,14 +383,29 @@ function getInnermostTextWithMarks(node: LynxElementNode): LynxNode | null {
   return null;
 }
 
-export const HTMLRenderer = memo(function HTMLRenderer(props: {
+/**
+ * HTMLRenderer 组件属性
+ */
+export interface HTMLRendererProps {
+  /** HTML 字符串输入 */
   html: string;
+  /** 是否移除所有 class 属性（默认: true） */
   removeAllClass?: boolean;
+  /** 是否移除所有 style 属性（默认: false） */
   removeAllStyle?: boolean;
+  /** 样式模式: 'inline' 内联样式 或 'css-class' CSS类模式（默认: 'inline'） */
   styleMode?: 'inline' | 'css-class';
+  /** 根容器 class 名称（默认: 'lynx-html-renderer'） */
   rootClassName?: string;
+  /** 是否启用暗色模式（默认: false） */
   darkMode?: boolean;
-}) {
+  /** 自定义链接样式（仅 inline 模式生效） */
+  linkStyle?: Record<string, string | number>;
+}
+
+export const HTMLRenderer = memo(function HTMLRenderer(
+  props: HTMLRendererProps,
+) {
   const {
     html,
     removeAllClass = true,
@@ -398,12 +413,19 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
     styleMode = 'inline',
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
+    linkStyle,
   } = props;
 
   // Cache the transformed nodes to avoid re-parsing HTML on every render
   const nodes = useMemo(
-    () => transformHTML(html, { removeAllClass, removeAllStyle, styleMode }),
-    [html, removeAllClass, removeAllStyle, styleMode],
+    () =>
+      transformHTML(html, {
+        removeAllClass,
+        removeAllStyle,
+        styleMode,
+        linkStyle,
+      }),
+    [html, removeAllClass, removeAllStyle, styleMode, linkStyle],
   );
 
   // Cache the renderNode function to maintain stable references
@@ -425,17 +447,17 @@ export const HTMLRenderer = memo(function HTMLRenderer(props: {
 });
 
 /**
- * 直接渲染HTML为React元素（用于测试和非React环境）
- * 这是一个纯函数，不使用React hooks
+ * 直接渲染 HTML 为 React 元素
+ *
+ * 这是一个纯函数，不使用 React hooks，适用于：
+ * - 测试环境
+ * - 非 React 环境
+ * - 需要直接获取渲染结果而非组件的场景
+ *
+ * @param props - 渲染参数
+ * @returns Lynx React 元素数组或容器
  */
-export function renderHTMLDirect(props: {
-  html: string;
-  removeAllClass?: boolean;
-  removeAllStyle?: boolean;
-  styleMode?: 'inline' | 'css-class';
-  rootClassName?: string;
-  darkMode?: boolean;
-}) {
+export function renderHTMLDirect(props: HTMLRendererProps) {
   const {
     html,
     removeAllClass = true,
@@ -443,12 +465,14 @@ export function renderHTMLDirect(props: {
     styleMode = 'inline',
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
+    linkStyle,
   } = props;
 
   const nodes = transformHTML(html, {
     removeAllClass,
     removeAllStyle,
     styleMode,
+    linkStyle,
   });
 
   // CSS类模式：添加根容器
@@ -461,10 +485,16 @@ export function renderHTMLDirect(props: {
 
   return nodes.map(renderNode);
 }
-// 为向后兼容，将HTMLRenderer也作为函数导出（允许直接调用）
-// @ts-expect-error - 将组件作为函数导出用于测试
-(
-  HTMLRenderer as typeof HTMLRenderer & {
-    __callAsFunction?: typeof renderHTMLDirect;
-  }
-).__callAsFunction = renderHTMLDirect;
+
+// 为向后兼容，将 HTMLRenderer 也作为函数导出（允许直接调用）
+// 使用类型断言避免 @ts-expect-error
+type HTMLRendererType = typeof HTMLRenderer & {
+  render: typeof renderHTMLDirect;
+};
+
+(HTMLRenderer as HTMLRendererType).render = renderHTMLDirect;
+
+// 导出公共类型
+export type { HTMLRendererProps };
+export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
+export type { TransformOptions } from './transform/types';
