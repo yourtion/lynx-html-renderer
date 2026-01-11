@@ -235,7 +235,7 @@ export function createUnsupportedTagError(
  */
 export function createStyleError(
   message: string,
-  style: string,
+  _style: string,
   phase: string,
   cause?: Error,
 ): HTMLTransformError {

@@ -212,7 +212,7 @@ class RowAdapter implements LynxRenderAdapter {
 
 /**
  * 只在 text 元素上有效的 CSS 属性
- * 参考: https://github.com/context7/lynxjs/blob/main/api/elements/built-in/text.md
+ * 参考: https://lynxjs.org/api/elements/built-in/text
  */
 const TEXT_ONLY_PROPERTIES = new Set([
   'color',
@@ -226,6 +226,12 @@ const TEXT_ONLY_PROPERTIES = new Set([
   'letterSpacing',
   'wordSpacing',
   'direction',
+  // Lynx-specific text properties
+  'textShadow',
+  'textStroke',
+  'textIndent',
+  'whiteSpace',
+  'wordBreak',
 ]);
 
 class CellAdapter implements LynxRenderAdapter {

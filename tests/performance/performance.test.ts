@@ -1,6 +1,6 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, it } from 'vitest';
-import { getBaseline, PERFORMANCE_BASELINES } from './baselines.config';
+import { getBaseline } from './baselines.config';
 
 /**
  * Performance metrics interface

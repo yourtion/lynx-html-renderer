@@ -54,7 +54,7 @@ describe('Error Classes', () => {
     });
 
     it('should truncate long HTML in details', () => {
-      const longHtml = '<div>' + 'a'.repeat(300) + '</div>';
+      const longHtml = `<div>${'a'.repeat(300)}</div>`;
       const error = new HTMLTransformError('Test', 'parse', longHtml);
 
       const details = error.getDetails();
