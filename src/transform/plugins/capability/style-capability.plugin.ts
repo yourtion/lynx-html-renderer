@@ -8,6 +8,41 @@ import type {
 } from '../../types';
 
 /**
+ * 处理元素的 style 和 class 属性
+ */
+function processElementStyleAndClass(
+  element: LynxElementNode,
+  options: { removeAllStyle: boolean; removeAllClass: boolean },
+): void {
+  const sourceAttrs = element.meta?.sourceAttrs as
+    | Record<string, string>
+    | undefined;
+
+  // 快速跳过没有 style 和 class 的节点
+  if (!sourceAttrs || (!sourceAttrs.style && !sourceAttrs.class)) return;
+
+  // 处理 style 属性
+  if (!options.removeAllStyle && sourceAttrs.style) {
+    const styleFromAttr = parseStyleString(sourceAttrs.style);
+    element.props.style = {
+      ...(element.props.style as CSSProperties),
+      ...styleFromAttr,
+    } as CSSProperties;
+  }
+
+  // 处理 class 属性
+  if (!options.removeAllClass && sourceAttrs.class) {
+    const existingClass = (element.props as { className?: string }).className;
+    if (existingClass) {
+      (element.props as { className: string }).className =
+        `${existingClass} ${sourceAttrs.class}`;
+    } else {
+      (element.props as { className: string }).className = sourceAttrs.class;
+    }
+  }
+}
+
+/**
  * 样式能力插件
  * 职责：解析 HTML style 属性并转换为 Lynx style props
  */
@@ -22,76 +57,16 @@ export const styleCapabilityPlugin: TransformPlugin = {
 
     const removeAllStyle = (ctx.metadata.removeAllStyle as boolean) ?? false;
     const removeAllClass = (ctx.metadata.removeAllClass as boolean) ?? true;
+    const options = { removeAllStyle, removeAllClass };
 
-    // 为 "view" 节点注册处理器（div, p, span 等）
-    handlers.set('view', (node) => {
-      // CRITICAL: 提前检查，不符合条件立即 return
-      // 这避免了不必要的处理，是性能优化的关键
-      const element = node as LynxElementNode;
-      const sourceAttrs = element.meta?.sourceAttrs as
-        | Record<string, string>
-        | undefined;
+    // 为 "view"、"text"、"frame" 节点注册处理器（共享相同逻辑）
+    for (const tag of ['view', 'text', 'frame']) {
+      handlers.set(tag, (node) => {
+        processElementStyleAndClass(node as LynxElementNode, options);
+      });
+    }
 
-      // 快速跳过没有 style 和 class 的节点
-      if (!sourceAttrs || (!sourceAttrs.style && !sourceAttrs.class)) return;
-
-      // 处理 style 属性
-      if (!removeAllStyle && sourceAttrs.style) {
-        const styleFromAttr = parseStyleString(sourceAttrs.style);
-        // 合并到现有 style
-        element.props.style = {
-          ...(element.props.style as CSSProperties),
-          ...styleFromAttr,
-        } as CSSProperties;
-      }
-
-      // 处理 class 属性
-      if (!removeAllClass && sourceAttrs.class) {
-        // 如果已经有className（来自defaultStyle的CSS类），需要合并
-        const existingClass = (element.props as { className?: string })
-          .className;
-        if (existingClass) {
-          // 合并defaultStyle的className和HTML的class属性
-          (element.props as { className: string }).className =
-            `${existingClass} ${sourceAttrs.class}`;
-        } else {
-          (element.props as { className: string }).className =
-            sourceAttrs.class;
-        }
-      }
-    });
-
-    // 为 "text" 节点注册处理器
-    handlers.set('text', (node) => {
-      const element = node as LynxElementNode;
-      const sourceAttrs = element.meta?.sourceAttrs as
-        | Record<string, string>
-        | undefined;
-
-      if (!sourceAttrs || (!sourceAttrs.style && !sourceAttrs.class)) return;
-
-      if (!removeAllStyle && sourceAttrs.style) {
-        const styleFromAttr = parseStyleString(sourceAttrs.style);
-        element.props.style = {
-          ...(element.props.style as CSSProperties),
-          ...styleFromAttr,
-        } as CSSProperties;
-      }
-
-      if (!removeAllClass && sourceAttrs.class) {
-        const existingClass = (element.props as { className?: string })
-          .className;
-        if (existingClass) {
-          (element.props as { className: string }).className =
-            `${existingClass} ${sourceAttrs.class}`;
-        } else {
-          (element.props as { className: string }).className =
-            sourceAttrs.class;
-        }
-      }
-    });
-
-    // 为 "image" 节点注册处理器
+    // 为 "image" 节点注册处理器（只处理 style）
     handlers.set('image', (node) => {
       const element = node as LynxElementNode;
       const sourceAttrs = element.meta?.sourceAttrs as
@@ -106,36 +81,6 @@ export const styleCapabilityPlugin: TransformPlugin = {
           ...(element.props.style as CSSProperties),
           ...styleFromAttr,
         } as CSSProperties;
-      }
-    });
-
-    // 为 "frame" 节点注册处理器（table 等）
-    handlers.set('frame', (node) => {
-      const element = node as LynxElementNode;
-      const sourceAttrs = element.meta?.sourceAttrs as
-        | Record<string, string>
-        | undefined;
-
-      if (!sourceAttrs || (!sourceAttrs.style && !sourceAttrs.class)) return;
-
-      if (!removeAllStyle && sourceAttrs.style) {
-        const styleFromAttr = parseStyleString(sourceAttrs.style);
-        element.props.style = {
-          ...(element.props.style as CSSProperties),
-          ...styleFromAttr,
-        } as CSSProperties;
-      }
-
-      if (!removeAllClass && sourceAttrs.class) {
-        const existingClass = (element.props as { className?: string })
-          .className;
-        if (existingClass) {
-          (element.props as { className: string }).className =
-            `${existingClass} ${sourceAttrs.class}`;
-        } else {
-          (element.props as { className: string }).className =
-            sourceAttrs.class;
-        }
       }
     });
 

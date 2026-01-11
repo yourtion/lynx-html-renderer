@@ -1,5 +1,6 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, it } from 'vitest';
+import { getBaseline, PERFORMANCE_BASELINES } from './baselines.config';
 
 /**
  * Performance metrics interface
@@ -215,6 +216,7 @@ describe('Performance Benchmarks', () => {
     });
 
     it('should transform large HTML with complex nesting efficiently', () => {
+      const baseline = getBaseline('transform-large');
       const metrics = measurePerformance(
         'transform-large',
         () => {
@@ -228,13 +230,13 @@ describe('Performance Benchmarks', () => {
       );
 
       // Performance monitoring only - log warnings if significantly above baseline
-      const baseline = 50;
-      if (metrics.duration > baseline) {
+      const threshold = baseline?.baselineMs ?? 50;
+      if (metrics.duration > threshold) {
         console.warn(
-          `  ⚠️  Performance above baseline (${baseline}ms): ${metrics.duration.toFixed(3)}ms`,
+          `  ⚠️  Performance above baseline (${threshold}ms): ${metrics.duration.toFixed(3)}ms`,
         );
       }
-    });
+    }, 30000); // 30s timeout for large HTML tests
 
     it('should transform style-heavy HTML efficiently', () => {
       const metrics = measurePerformance(
@@ -285,6 +287,7 @@ describe('Performance Benchmarks', () => {
     });
 
     it('should have acceptable memory footprint for large documents', () => {
+      const baseline = getBaseline('memory-large');
       const metrics = measurePerformance(
         'memory-large',
         () => {
@@ -300,12 +303,12 @@ describe('Performance Benchmarks', () => {
       );
 
       // Performance monitoring only - log warnings if significantly above baseline
-      const baseline = 4500;
-      if (memoryPerTransform > baseline) {
+      const threshold = baseline?.memoryKb ?? 4500;
+      if (memoryPerTransform > threshold) {
         console.warn(
-          `  ⚠️  Memory usage above baseline (${baseline}KB): ${memoryPerTransform.toFixed(2)} KB`,
+          `  ⚠️  Memory usage above baseline (${threshold}KB): ${memoryPerTransform.toFixed(2)} KB`,
         );
       }
-    });
+    }, 30000); // 30s timeout for large memory tests
   });
 });

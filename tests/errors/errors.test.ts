@@ -12,7 +12,7 @@ describe('Error Classes', () => {
       const error = new HTMLTransformError('Test error', 'parse');
 
       expect(error.name).toBe('HTMLTransformError');
-      expect(error.message).toContain('[HTML Transform Error in parse]');
+      expect(error.message).toContain('[parse]');
       expect(error.message).toContain('Test error');
       expect(error.phase).toBe('parse');
     });
@@ -26,12 +26,7 @@ describe('Error Classes', () => {
 
     it('should include cause error', () => {
       const cause = new Error('Original error');
-      const error = new HTMLTransformError(
-        'Test error',
-        'parse',
-        undefined,
-        cause,
-      );
+      const error = new HTMLTransformError('Test error', 'parse', cause);
 
       expect(error.cause).toBe(cause);
     });
@@ -49,9 +44,10 @@ describe('Error Classes', () => {
 
       const details = error.getDetails();
 
-      expect(details).toContain('[HTML Transform Error in transform]');
+      expect(details).toContain('[transform]');
       expect(details).toContain('Transformation failed');
       expect(details).toContain('Phase: transform');
+      expect(details).toContain('Code: PARSE_ERROR');
       expect(details).toContain('Caused by: Cause error');
       expect(details).toContain('HTML (first 200 chars):');
       // HTML is not long enough to be truncated
