@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd .. && pnpm run build-example",
-  "outputDirectory": "dist",
+  "buildCommand": "npx -y pnpm@latest run build-example",
+  "outputDirectory": "example/dist",
   "framework": null,
   "rewrites": [
     {
