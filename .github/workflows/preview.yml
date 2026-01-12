@@ -3,7 +3,7 @@ name: PR Preview Deployment
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches: ['**']
+    branches: ["**"]
   workflow_dispatch:
 
 # 取消同一 PR 的旧部署运行，避免资源浪费
@@ -15,6 +15,8 @@ concurrency:
 permissions:
   pull-requests: write
   contents: read
+  actions: read
+  deployments: read
 
 jobs:
   # 部署预览环境
@@ -22,6 +24,7 @@ jobs:
     # PR 关闭时不部署，仅清理
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    environment: Vercel
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
       deployment-url: ${{ steps.deploy.outputs.deployment-url }}
@@ -37,8 +40,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'pnpm'
+          node-version: "18"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
@@ -50,6 +53,23 @@ jobs:
         working-directory: example
         run: npx rspeedy build
 
+      - name: Verify Vercel credentials
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::error::VERCEL_TOKEN secret is not configured. Please configure it in GitHub repository settings."
+            echo "::error::See docs/VERCEL_PREVIEW_SETUP.md for detailed instructions."
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "::error::VERCEL_ORG_ID secret is not configured. Please configure it in GitHub repository settings."
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "::error::VERCEL_PROJECT_ID secret is not configured. Please configure it in GitHub repository settings."
+            exit 1
+          fi
+          echo "✅ All Vercel credentials are configured"
+
       - name: Deploy to Vercel
         id: deploy
         uses: amondnet/vercel-action@v25
@@ -58,7 +78,7 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./example/dist
-          vercel-args: '--prebuilt'
+          vercel-args: "--prebuilt"
 
       - name: Comment PR with preview URL
         uses: actions/github-script@v7
@@ -121,6 +141,7 @@ jobs:
   cleanup-preview:
     # 仅在 PR 关闭时运行
     if: github.event.action == 'closed'
+    environment: Vercel
     runs-on: ubuntu-latest
     # 清理任务使用独立的并发组，不会被取消
     concurrency:
@@ -136,4 +157,4 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--yes'
+          vercel-args: "--yes"
