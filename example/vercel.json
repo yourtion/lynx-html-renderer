@@ -1,5 +1,6 @@
 {
-  "outputDirectory": "./",
+  "buildCommand": "cd .. && pnpm run build-example",
+  "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
     {
