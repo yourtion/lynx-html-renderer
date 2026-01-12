@@ -3,15 +3,27 @@ import { BLOCK_TAG_MAP } from '../transform/plugins/structure/tag-config';
 import { generateAllCSSVariables } from './css-variables';
 
 /**
- * 可以安全应用到 text 节点的属性（核心字体属性）
+ * 可以安全应用到 text 节点的属性（核心字体属性 + Lynx 特定属性）
+ * 参考: https://lynxjs.org/api/elements/built-in/text
  */
 const TEXT_ONLY_PROPERTIES = new Set([
+  'color',
   'fontFamily',
   'fontSize',
-  'fontWeight',
   'fontStyle',
+  'fontWeight',
   'lineHeight',
-  'color',
+  'textAlign',
+  'textDecoration',
+  'letterSpacing',
+  'wordSpacing',
+  'direction',
+  // Lynx-specific text properties
+  'textShadow',
+  'textStroke',
+  'textIndent',
+  'whiteSpace',
+  'wordBreak',
 ] as const);
 
 /**

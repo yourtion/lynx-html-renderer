@@ -143,7 +143,10 @@ export interface TransformOptions {
   /** CSS类模式下的根容器class名，默认 'lynx-html-renderer' */
   rootClassName?: string;
 
-  /** 新增：插件配置 */
+  /** 自定义链接样式（仅 inline 模式生效） */
+  linkStyle?: CSSProperties;
+
+  /** 插件配置 */
   plugins?: PluginConfig;
 
   /** 启用调试模式（输出插件执行日志和性能指标） */

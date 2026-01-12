@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, it } from 'vitest';
 import type { HtmlAstNode } from '../../src/ast/types';
 import {
   findAstNodes,
@@ -279,7 +279,7 @@ describe('AST Walkers', () => {
       node.children = [root];
 
       const visited: number[] = [];
-      const callback = (n: HtmlAstNode) => {
+      const callback = (_n: HtmlAstNode) => {
         visited.push(1);
         // Prevent infinite loop - this will be hit due to circular reference
         if (visited.length > 10) {

@@ -14,7 +14,12 @@ const config = defineConfig({
   },
   test: {
     include: ['tests/**/*', 'example/src/__tests__/**/*'],
-    exclude: ['**/__snapshots__/**/*', '**/*.snap', '**/node_modules/**'],
+    exclude: [
+      '**/__snapshots__/**/*',
+      '**/*.snap',
+      '**/node_modules/**',
+      '**/baselines.config.ts',
+    ],
   },
 });
 

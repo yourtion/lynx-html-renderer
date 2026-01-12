@@ -16,6 +16,12 @@ export const INHERITABLE_PROPERTIES = new Set([
   'fontStyle',
   'lineHeight',
   'color',
+  // Additional text properties that can be inherited
+  'textAlign',
+  'textIndent',
+  'letterSpacing',
+  'wordSpacing',
+  'direction',
 ] as const);
 
 export type InheritableProperty = typeof INHERITABLE_PROPERTIES extends Set<
