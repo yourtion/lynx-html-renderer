@@ -4,18 +4,31 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.lynx.bundle"
+      "source": "/",
+      "destination": "/html/showcase.html"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/index.lynx.bundle",
       "headers": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
+          "key": "Content-Type",
+          "value": "application/octet-stream"
         },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
         {
           "key": "X-Frame-Options",
           "value": "SAMEORIGIN"
