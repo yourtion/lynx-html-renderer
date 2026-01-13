@@ -125,7 +125,9 @@ Scan the QR code below to access the example bundle:
 
 ![QR Code for Example Bundle](./qrcode.png)
 
-The example bundle is available at `/example/dist/index.lynx.bundle`
+The example bundle is available at `https://lynx-html.js.org/index.lynx.bundle?fullscreen=true`
+
+The HTML Version of the example can be found at `https://lynx-html.js.org/html/showcase.html`
 
 ## 🎯 设计目标 | Design Goals
 

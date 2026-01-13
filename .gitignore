@@ -23,3 +23,6 @@ site
 .claude/hooks/
 .claude/session-config.json
 .claude/sessions.json
+
+# Vercel
+.vercel

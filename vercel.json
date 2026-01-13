@@ -1,0 +1,39 @@
+{
+  "buildCommand": "npx -y pnpm@latest run build-example",
+  "outputDirectory": "example/dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/html/showcase.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/index.lynx.bundle",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    }
+  ]
+}

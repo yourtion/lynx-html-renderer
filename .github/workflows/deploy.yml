@@ -48,6 +48,9 @@ jobs:
       - name: Copy example bundle
         run: cp example/dist/index.lynx.bundle site/
 
+      - name: Copy HTML demos
+        run: cp -r example/dist/html site/
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

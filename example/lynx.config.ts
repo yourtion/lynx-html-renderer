@@ -10,6 +10,14 @@ export default defineConfig({
       index: './src/index.tsx',
     },
   },
+  output: {
+    copy: [
+      {
+        from: 'html',
+        to: 'html',
+      },
+    ],
+  },
   plugins: [
     pluginQRCode({
       schema(url) {
@@ -22,6 +30,13 @@ export default defineConfig({
   ],
   tools: {
     rspack(config, { appendPlugins }) {
+      // Add support for importing HTML files as raw strings to be used by HTMLRenderer component
+      // This allows separating HTML content from TypeScript code for better maintainability
+      config.module?.rules?.push({
+        test: /\.html$/,
+        type: 'asset/source',
+      });
+
       appendPlugins(
         codecovWebpackPlugin({
           enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
