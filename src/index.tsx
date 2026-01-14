@@ -1,6 +1,6 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { transformHTML } from './html-parser';
-import { AdapterRegistry } from './render/adapter-registry';
+import { AdapterRegistry, setGlobalRegistry } from './render/adapter-registry';
 import type {
   LynxElementNode,
   LynxNode,
@@ -256,10 +256,7 @@ class CellAdapter implements LynxRenderAdapter {
 
     // 渲染子节点，如果子节点是 text，应用文本样式
     const children = ctx.renderChildren(node).map((child) => {
-      if (
-        React.isValidElement(child) &&
-        (child.type === 'text' || child.type === text)
-      ) {
+      if (React.isValidElement(child) && child.type === 'text') {
         // 应用文本样式到 text 元素
         return React.cloneElement(child, {
           style: {
@@ -286,25 +283,22 @@ adapterRegistry.registerByRole('table', new TableAdapter());
 adapterRegistry.registerByRole('row', new RowAdapter());
 adapterRegistry.registerByRole('cell', new CellAdapter());
 
+// 设置全局注册表实例，供外部扩展使用
+setGlobalRegistry(adapterRegistry);
+
 // 适配器解析函数 - 使用注册表实现 O(1) 查找
 function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
   return adapterRegistry.resolve(node);
 }
 
-// 渲染上下文 - 模块级别单例，减少对象创建
-let cachedContext: RenderContext | null = null;
-
-function getRenderContext(
+function createRenderContext(
   renderNodeFn: (node: LynxNode) => RenderResult,
 ): RenderContext {
-  if (!cachedContext) {
-    cachedContext = {
-      renderChildren(node: LynxElementNode) {
-        return node.children.map(renderNodeFn);
-      },
-    };
-  }
-  return cachedContext;
+  return {
+    renderChildren(node: LynxElementNode) {
+      return node.children.map(renderNodeFn);
+    },
+  };
 }
 
 // 主渲染函数
@@ -338,7 +332,7 @@ function renderNode(node: LynxNode): RenderResult {
 
   // 处理元素节点
   const adapter = resolveAdapter(node);
-  const ctx = getRenderContext(renderNode);
+  const ctx = createRenderContext(renderNode);
   return adapter.render(node, ctx);
 }
 
@@ -434,22 +428,16 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     [html, removeAllClass, removeAllStyle, styleMode, linkStyle],
   );
 
-  // Cache the renderNode function to maintain stable references
-  // Note: renderNode is defined below and contains the rendering logic
-  const memoizedRenderNode = useCallback(renderNode, []);
-
   // CSS类模式：添加根容器
   if (styleMode === 'css-class') {
     const containerClass = darkMode
       ? `${rootClassName} lhr-dark`
       : rootClassName;
-    return (
-      <view className={containerClass}>{nodes.map(memoizedRenderNode)}</view>
-    );
+    return <view className={containerClass}>{nodes.map(renderNode)}</view>;
   }
 
   // 内联样式模式：直接返回节点数组（保持向后兼容）
-  return nodes.map(memoizedRenderNode);
+  return nodes.map(renderNode);
 });
 
 /**
@@ -503,4 +491,11 @@ type HTMLRendererType = typeof HTMLRenderer & {
 // 导出公共类型
 export type { HTMLRendererProps };
 export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
+// 导出适配器扩展 API
+export {
+  getAdapterRegistry,
+  registerAdapterByRole,
+  registerAdapterByTag,
+} from './render/adapter-registry';
+export type { LynxRenderAdapter, RenderContext } from './render/types';
 export type { TransformOptions } from './transform/types';

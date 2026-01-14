@@ -1,12 +1,13 @@
 import { parseDocument } from 'htmlparser2';
 import { createRootNode } from '../lynx/factory';
-import { createTransformContext } from './context';
+import { createTransformContext, type TransformContextImpl } from './context';
 import { TransformPluginResolver } from './resolver';
 import type {
   HtmlAstNode,
   LynxNode,
   TransformOptions,
   TransformPhase,
+  TransformPlugin,
 } from './types';
 
 /**
@@ -47,10 +48,10 @@ function walkLynxNodeTree(
  * 否则回退到传统方式：调用每个插件的 apply() 方法
  */
 function executeCapabilityPhaseWithBatching(
-  plugins: typeof TransformPluginResolver.prototype.getPluginsByPhase,
-  ctx: typeof import('./context').TransformContextImpl,
+  getPlugins: (phase: TransformPhase) => TransformPlugin[],
+  ctx: TransformContextImpl,
 ): void {
-  const capabilityPlugins = plugins('capability');
+  const capabilityPlugins = getPlugins('capability');
 
   // 步骤 1: 注册所有处理器
   for (const plugin of capabilityPlugins) {
@@ -70,8 +71,7 @@ function executeCapabilityPhaseWithBatching(
     walkLynxNodeTree(ctx.root, (node) => {
       // 对于元素节点，使用 tag 来匹配处理器
       // 对于文本节点，使用 'text' 来匹配
-      const key =
-        node.kind === 'element' ? (node as { tag: string }).tag : node.kind;
+      const key = node.kind === 'element' ? node.tag : node.kind;
       const handlers = ctx._handlerRegistry?.get(key) || [];
 
       for (const handler of handlers) {
