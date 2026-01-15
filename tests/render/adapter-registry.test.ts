@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { LynxElementNode, LynxRenderAdapter } from '../../src/lynx/types';
 import {
   AdapterRegistry,
+  getAdapterRegistry,
   registerAdapterByRole,
   registerAdapterByTag,
   setGlobalRegistry,
@@ -417,8 +418,14 @@ describe('AdapterRegistry', () => {
 
       registerAdapterByTag('custom-tag', adapter);
 
-      // Verify it was registered (no error means success)
-      expect(true).toBe(true);
+      const registry = getAdapterRegistry();
+      const node: LynxElementNode = {
+        kind: 'element',
+        tag: 'custom-tag',
+        props: {},
+        children: [],
+      };
+      expect(registry.resolve(node)).toBe(adapter);
     });
 
     it('should register adapter by role using global function', () => {
@@ -429,8 +436,15 @@ describe('AdapterRegistry', () => {
 
       registerAdapterByRole('custom-role', adapter);
 
-      // Verify it was registered (no error means success)
-      expect(true).toBe(true);
+      const registry = getAdapterRegistry();
+      const node: LynxElementNode = {
+        kind: 'element',
+        tag: 'div',
+        props: {},
+        children: [],
+        role: 'custom-role',
+      };
+      expect(registry.resolve(node)).toBe(adapter);
     });
   });
 });

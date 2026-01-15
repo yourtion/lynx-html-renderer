@@ -1,37 +1,74 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, expect, it } from 'vitest';
 import { LynxRenderError } from '../../src/errors';
-import type { LynxNode } from '../../src/lynx/types';
+import type {
+  LynxElementNode,
+  LynxNode,
+  LynxTextNode,
+} from '../../src/lynx/types';
 import {
   validateLynxNode,
   validateLynxNodes,
 } from '../../src/validate/lynx-node';
 
+function isTextNode(node: LynxNode): node is LynxTextNode {
+  return node.kind === 'text';
+}
+
+function isElementNode(node: LynxNode): node is LynxElementNode {
+  return node.kind === 'element';
+}
+
+function findTextContent(nodes: LynxNode[]): string[] {
+  const texts: string[] = [];
+  for (const node of nodes) {
+    if (isTextNode(node)) {
+      texts.push(node.content);
+    } else if (isElementNode(node)) {
+      texts.push(...findTextContent(node.children));
+    }
+  }
+  return texts;
+}
+
 describe('Error Handling Tests', () => {
   describe('Malformed HTML', () => {
-    it('should handle unclosed tags', () => {
+    it('should handle unclosed tags and preserve text content', () => {
       const html = '<div><p>Unclosed paragraph';
       const result = transformHTML(html);
       expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+
+      const texts = findTextContent(result);
+      expect(texts).toContain('Unclosed paragraph');
     });
 
-    it('should handle mismatched tags', () => {
+    it('should handle mismatched tags and preserve text content', () => {
       const html = '<div><span>Mismatched</div></span>';
       const result = transformHTML(html);
       expect(Array.isArray(result)).toBe(true);
+
+      const texts = findTextContent(result);
+      expect(texts).toContain('Mismatched');
     });
 
     it('should handle self-closing tags without slash', () => {
       const html = '<p>Text<br>More text</p>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
+
+      const texts = findTextContent(result);
+      expect(texts.join('')).toContain('Text');
+      expect(texts.join('')).toContain('More text');
     });
 
-    it('should handle tags with invalid characters', () => {
-      const html = '<div>Normal text</div>';
+    it('should silently drop tags with invalid tag names', () => {
+      const html = '<123invalid>Content</123invalid><div>Valid</div>';
       const result = transformHTML(html);
       expect(Array.isArray(result)).toBe(true);
+
+      const texts = findTextContent(result);
+      expect(texts).toContain('Valid');
     });
   });
 
@@ -39,20 +76,38 @@ describe('Error Handling Tests', () => {
     it('should handle multiple root elements', () => {
       const html = '<p>First</p><p>Second</p><p>Third</p>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThanOrEqual(2);
+      expect(result.length).toBe(3);
+
+      for (const node of result) {
+        expect(isElementNode(node)).toBe(true);
+        if (isElementNode(node)) {
+          expect(node.meta?.sourceTag).toBe('p');
+        }
+      }
     });
 
-    it('should handle special characters in text', () => {
-      const html = '<p>Special: &lt; &gt; &amp; &quot; &apos;</p>';
+    it('should decode HTML entities in text', () => {
+      const html = '<p>Special: &lt; &gt; &amp; &quot;</p>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      const textContent = texts.join('');
+      expect(textContent).toContain('<');
+      expect(textContent).toContain('>');
+      expect(textContent).toContain('&');
+      expect(textContent).toContain('"');
     });
 
-    it('should handle unicode characters', () => {
+    it('should handle unicode characters correctly', () => {
       const html = '<p>Unicode: 你好 🎉</p>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      const textContent = texts.join('');
+      expect(textContent).toContain('你好');
+      expect(textContent).toContain('🎉');
     });
   });
 
@@ -60,13 +115,20 @@ describe('Error Handling Tests', () => {
     it('should handle empty style attribute', () => {
       const html = '<div style="">Content</div>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+      expect(isElementNode(result[0])).toBe(true);
+      if (isElementNode(result[0])) {
+        expect(result[0].tag).toBe('view');
+      }
     });
 
     it('should handle malformed style values', () => {
       const html = '<div style="color:;font-weight:">Content</div>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      expect(texts).toContain('Content');
     });
 
     it('should handle attributes without values', () => {
@@ -77,65 +139,131 @@ describe('Error Handling Tests', () => {
   });
 
   describe('Unknown Tags', () => {
-    it('should handle unknown HTML tags gracefully', () => {
-      const html = '<unknown-tag>Content</unknown-tag>';
+    it('should drop unknown HTML tags but preserve content inside known tags', () => {
+      const html = '<div><unknown-tag>Content in unknown</unknown-tag></div>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].meta?.sourceTag).toBe('div');
+      }
     });
 
-    it('should handle custom web components', () => {
+    it('should drop custom web components as unknown tags', () => {
       const html = '<my-component>Content</my-component>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    it('should drop script and style tags completely', () => {
+      const html =
+        '<script>alert("test")</script><style>.class{}</style><div>Safe</div>';
+      const result = transformHTML(html);
+
+      const texts = findTextContent(result);
+      expect(texts.join('')).not.toContain('alert');
+      expect(texts.join('')).not.toContain('.class');
+      expect(texts).toContain('Safe');
     });
   });
 
   describe('Text Node Edge Cases', () => {
-    it('should handle empty text nodes', () => {
+    it('should handle empty div with no text nodes', () => {
       const html = '<div></div>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].children.length).toBe(0);
+      }
     });
 
-    it('should handle text with only whitespace', () => {
+    it('should handle text with only whitespace inside block elements', () => {
       const html = '<div>   </div>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].children.length).toBe(0);
+      }
     });
 
     it('should handle very long text content', () => {
       const longText = 'A'.repeat(10000);
       const html = `<p>${longText}</p>`;
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      expect(texts[0].length).toBe(10000);
     });
   });
 
   describe('Nested Inline Elements', () => {
-    it('should handle nested formatting tags', () => {
+    it('should handle nested formatting tags with correct marks', () => {
       const html = '<strong>bold <em>bold and italic</em> bold</strong>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+
+      const allTexts: LynxTextNode[] = [];
+      function collectTexts(nodes: LynxNode[]) {
+        for (const node of nodes) {
+          if (isTextNode(node)) {
+            allTexts.push(node);
+          } else if (isElementNode(node)) {
+            collectTexts(node.children);
+          }
+        }
+      }
+      collectTexts(result);
+
+      const boldTexts = allTexts.filter((t) => t.marks?.bold);
+      expect(boldTexts.length).toBeGreaterThan(0);
     });
 
     it('should handle overlapping text marks', () => {
       const html = '<strong>bold</strong> <em>italic</em> <u>underline</u>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+
+      const allTexts: LynxTextNode[] = [];
+      function collectTexts(nodes: LynxNode[]) {
+        for (const node of nodes) {
+          if (isTextNode(node)) {
+            allTexts.push(node);
+          } else if (isElementNode(node)) {
+            collectTexts(node.children);
+          }
+        }
+      }
+      collectTexts(result);
+
+      const boldText = allTexts.find((t) => t.marks?.bold);
+      const italicText = allTexts.find((t) => t.marks?.italic);
+      const underlineText = allTexts.find((t) => t.marks?.underline);
+
+      expect(boldText?.content).toBe('bold');
+      expect(italicText?.content).toBe('italic');
+      expect(underlineText?.content).toBe('underline');
     });
   });
 
   describe('Table Edge Cases', () => {
-    it('should handle table with missing cells', () => {
+    it('should handle table with cells and preserve structure', () => {
       const html = '<table><tr><td>Cell</td></tr></table>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].meta?.sourceTag).toBe('table');
+      }
     });
 
     it('should handle table with empty rows', () => {
       const html = '<table><tr></tr><tr><td>Cell</td></tr></table>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      expect(texts).toContain('Cell');
     });
   });
 
@@ -143,13 +271,22 @@ describe('Error Handling Tests', () => {
     it('should handle image without src', () => {
       const html = '<img />';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].tag).toBe('image');
+      }
     });
 
     it('should handle image with empty src', () => {
       const html = '<img src="" />';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].tag).toBe('image');
+        expect(result[0].meta?.sourceAttrs?.src).toBe('');
+      }
     });
   });
 
@@ -157,14 +294,26 @@ describe('Error Handling Tests', () => {
     it('should handle list with empty items', () => {
       const html = '<ul><li></li><li>Item</li><li></li></ul>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      if (isElementNode(result[0])) {
+        expect(result[0].meta?.sourceTag).toBe('ul');
+      }
+
+      const texts = findTextContent(result);
+      expect(texts.join('')).toContain('Item');
     });
 
     it('should handle nested lists', () => {
       const html =
         '<ul><li>Item 1<ul><li>Nested 1</li><li>Nested 2</li></ul></li></ul>';
       const result = transformHTML(html);
-      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+
+      const texts = findTextContent(result);
+      expect(texts.join('')).toContain('Item 1');
+      expect(texts.join('')).toContain('Nested 1');
+      expect(texts.join('')).toContain('Nested 2');
     });
   });
 });

@@ -402,12 +402,13 @@ describe('CSS Variables', () => {
         '--lhr-blockquote-border',
       ];
 
-      const css = variables.map((v) => `${v}: ${v};`).join(' ');
+      const css = variables.map((v) => `color: var(${v});`).join(' ');
       const result = resolveCSSVariables(css, 'dark');
 
       variables.forEach((v) => {
         expect(result).not.toContain(`var(${v})`);
       });
+      expect(result).toContain('#');
     });
   });
 });

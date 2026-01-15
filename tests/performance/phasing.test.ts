@@ -1,8 +1,8 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, expect, it } from 'vitest';
 
-describe('Phase Performance Profiling', () => {
-  it('should profile each transformation phase', () => {
+describe('Performance API Usage', () => {
+  it('should measure total transform time using performance API', () => {
     const html = `
       <div>
         <p>Text with <strong>bold</strong> and <em>italic</em></p>
@@ -13,37 +13,21 @@ describe('Phase Performance Profiling', () => {
       </div>
     `;
 
-    // Profile using Web Performance API
-    const phases = [
-      'parse-html',
-      'normalize-phase',
-      'structure-phase',
-      'capability-phase',
-      'finalize-phase',
-    ];
+    performance.mark('transform-start');
 
-    phases.forEach((phase) => {
-      performance.mark(`${phase}-start`);
-    });
-
-    // Execute transformation
     const result = transformHTML(html);
 
-    phases.forEach((phase) => {
-      performance.mark(`${phase}-end`);
-      performance.measure(phase, `${phase}-start`, `${phase}-end`);
-    });
+    performance.mark('transform-end');
+    performance.measure('transform-total', 'transform-start', 'transform-end');
 
-    // Report phase timings
     const measures = performance.getEntriesByType(
       'measure',
     ) as PerformanceMeasure[];
-    console.log('\nPhase Breakdown:');
+    console.log('\nTransform Timing:');
     measures.forEach((measure) => {
       console.log(`  ${measure.name}: ${measure.duration.toFixed(3)}ms`);
     });
 
-    // Cleanup
     performance.clearMarks();
     performance.clearMeasures();
 

@@ -16,7 +16,7 @@ describe('Core HTML Parsing', () => {
       ]);
     });
 
-    it('should merge adjacent text nodes', () => {
+    it('should keep text nodes separate when divided by inline elements', () => {
       const html = 'Hello <span> </span> World';
       const result = transformHTML(html);
 

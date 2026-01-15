@@ -179,11 +179,13 @@ describe('Plugin Info API', () => {
       }
     });
 
-    it('should return empty array for phase with no plugins', () => {
+    it('should filter plugins by finalize phase', () => {
       const plugins = getPluginsByPhase('finalize');
 
       expect(Array.isArray(plugins)).toBe(true);
-      expect(plugins.length).toBe(0);
+      for (const plugin of plugins) {
+        expect(plugin.phase).toBe('finalize');
+      }
     });
   });
 });
