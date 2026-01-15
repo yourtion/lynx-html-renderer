@@ -1,5 +1,10 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, expect, it } from 'vitest';
+import {
+  getPluginInfo,
+  getPluginInfoByName,
+  getPluginsByPhase,
+} from '../../src/transform/plugin-info';
 
 describe('Transform Options', () => {
   describe('removeAllClass', () => {
@@ -110,6 +115,75 @@ describe('Transform Options', () => {
 
       // Empty style should not add style prop
       expect(result[0].props?.style).toEqual({ flexDirection: 'column' });
+    });
+  });
+});
+
+describe('Plugin Info API', () => {
+  describe('getPluginInfo', () => {
+    it('should return all builtin plugins', () => {
+      const plugins = getPluginInfo();
+
+      expect(Array.isArray(plugins)).toBe(true);
+      expect(plugins.length).toBeGreaterThan(0);
+    });
+
+    it('should return plugins with required fields', () => {
+      const plugins = getPluginInfo();
+
+      for (const plugin of plugins) {
+        expect(plugin).toHaveProperty('name');
+        expect(plugin).toHaveProperty('phase');
+        expect(plugin).toHaveProperty('order');
+        expect(plugin).toHaveProperty('enabledByDefault');
+        expect(typeof plugin.name).toBe('string');
+        expect(typeof plugin.order).toBe('number');
+        expect(typeof plugin.enabledByDefault).toBe('boolean');
+      }
+    });
+  });
+
+  describe('getPluginInfoByName', () => {
+    it('should return plugin info for existing plugin', () => {
+      const plugins = getPluginInfo();
+      const firstName = plugins[0].name;
+
+      const plugin = getPluginInfoByName(firstName);
+
+      expect(plugin).toBeDefined();
+      expect(plugin?.name).toBe(firstName);
+    });
+
+    it('should return undefined for non-existent plugin', () => {
+      const plugin = getPluginInfoByName('non-existent-plugin');
+
+      expect(plugin).toBeUndefined();
+    });
+  });
+
+  describe('getPluginsByPhase', () => {
+    it('should filter plugins by phase', () => {
+      const structurePlugins = getPluginsByPhase('structure');
+
+      expect(Array.isArray(structurePlugins)).toBe(true);
+      for (const plugin of structurePlugins) {
+        expect(plugin.phase).toBe('structure');
+      }
+    });
+
+    it('should sort plugins by order', () => {
+      const plugins = getPluginsByPhase('structure');
+
+      for (let i = 1; i < plugins.length; i++) {
+        expect(plugins[i].order).toBeGreaterThanOrEqual(plugins[i - 1].order);
+      }
+    });
+
+    it('should return empty array for phase with no plugins', () => {
+      const plugins = getPluginsByPhase('finalize');
+
+      expect(Array.isArray(plugins)).toBe(true);
+      expect(plugins.length).toBe(0);
     });
   });
 });

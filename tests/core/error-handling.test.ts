@@ -1,5 +1,11 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
 import { describe, expect, it } from 'vitest';
+import { LynxRenderError } from '../../src/errors';
+import type { LynxNode } from '../../src/lynx/types';
+import {
+  validateLynxNode,
+  validateLynxNodes,
+} from '../../src/validate/lynx-node';
 
 describe('Error Handling Tests', () => {
   describe('Malformed HTML', () => {
@@ -159,6 +165,179 @@ describe('Error Handling Tests', () => {
         '<ul><li>Item 1<ul><li>Nested 1</li><li>Nested 2</li></ul></li></ul>';
       const result = transformHTML(html);
       expect(Array.isArray(result)).toBe(true);
+    });
+  });
+});
+
+describe('LynxNode Validation', () => {
+  describe('validateLynxNode', () => {
+    it('should validate valid element node', () => {
+      const node: LynxNode = {
+        kind: 'element',
+        tag: 'view',
+        props: {},
+        children: [],
+      };
+
+      expect(() => validateLynxNode(node)).not.toThrow();
+    });
+
+    it('should validate valid text node', () => {
+      const node: LynxNode = {
+        kind: 'text',
+        content: 'Hello world',
+      };
+
+      expect(() => validateLynxNode(node)).not.toThrow();
+    });
+
+    it('should throw for invalid node kind', () => {
+      const node = { kind: 'invalid' } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow(LynxRenderError);
+      expect(() => validateLynxNode(node)).toThrow('Invalid node kind');
+    });
+
+    it('should throw for element node without valid tag', () => {
+      const node = {
+        kind: 'element',
+        tag: '',
+        props: {},
+        children: [],
+      } as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('must have a valid tag');
+    });
+
+    it('should throw for element node with invalid children', () => {
+      const node = {
+        kind: 'element',
+        tag: 'view',
+        props: {},
+        children: 'not an array',
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('children must be an array');
+    });
+
+    it('should throw for element node without props', () => {
+      const node = {
+        kind: 'element',
+        tag: 'view',
+        props: null,
+        children: [],
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('must have a props object');
+    });
+
+    it('should validate nested children recursively', () => {
+      const node: LynxNode = {
+        kind: 'element',
+        tag: 'view',
+        props: {},
+        children: [
+          { kind: 'text', content: 'child text' },
+          {
+            kind: 'element',
+            tag: 'text',
+            props: {},
+            children: [],
+          },
+        ],
+      };
+
+      expect(() => validateLynxNode(node)).not.toThrow();
+    });
+
+    it('should throw for invalid child node', () => {
+      const node: LynxNode = {
+        kind: 'element',
+        tag: 'view',
+        props: {},
+        children: [{ kind: 'invalid' } as unknown as LynxNode],
+      };
+
+      expect(() => validateLynxNode(node)).toThrow('Invalid child at index 0');
+    });
+
+    it('should throw for text node with non-string content', () => {
+      const node = {
+        kind: 'text',
+        content: 123,
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('content must be a string');
+    });
+
+    it('should validate text node with valid marks', () => {
+      const node: LynxNode = {
+        kind: 'text',
+        content: 'styled text',
+        marks: { bold: true, italic: true },
+      };
+
+      expect(() => validateLynxNode(node)).not.toThrow();
+    });
+
+    it('should throw for text node with invalid marks type', () => {
+      const node = {
+        kind: 'text',
+        content: 'text',
+        marks: 'invalid',
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('marks must be an object');
+    });
+
+    it('should throw for text node with array marks', () => {
+      const node = {
+        kind: 'text',
+        content: 'text',
+        marks: ['bold'],
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('marks must be an object');
+    });
+
+    it('should throw for text node with invalid mark types', () => {
+      const node = {
+        kind: 'text',
+        content: 'text',
+        marks: { bold: true, invalidMark: true },
+      } as unknown as LynxNode;
+
+      expect(() => validateLynxNode(node)).toThrow('Invalid mark types');
+    });
+  });
+
+  describe('validateLynxNodes', () => {
+    it('should validate array of valid nodes', () => {
+      const nodes: LynxNode[] = [
+        { kind: 'text', content: 'text1' },
+        { kind: 'element', tag: 'view', props: {}, children: [] },
+      ];
+
+      expect(() => validateLynxNodes(nodes)).not.toThrow();
+    });
+
+    it('should throw for non-array input', () => {
+      expect(() =>
+        validateLynxNodes('not an array' as unknown as LynxNode[]),
+      ).toThrow('must be an array');
+    });
+
+    it('should throw for array with invalid node', () => {
+      const nodes = [
+        { kind: 'text', content: 'valid' },
+        { kind: 'invalid' },
+      ] as unknown as LynxNode[];
+
+      expect(() => validateLynxNodes(nodes)).toThrow('Invalid node at index 1');
+    });
+
+    it('should validate empty array', () => {
+      expect(() => validateLynxNodes([])).not.toThrow();
     });
   });
 });

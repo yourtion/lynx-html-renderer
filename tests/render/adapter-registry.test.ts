@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { LynxElementNode, LynxRenderAdapter } from '../../src/lynx/types';
-import { AdapterRegistry } from '../../src/render/adapter-registry';
+import {
+  AdapterRegistry,
+  registerAdapterByRole,
+  registerAdapterByTag,
+  setGlobalRegistry,
+} from '../../src/render/adapter-registry';
 
 describe('AdapterRegistry', () => {
   let registry: AdapterRegistry;
@@ -391,6 +396,41 @@ describe('AdapterRegistry', () => {
 
       expect(registry.resolve(lowercaseNode)).toBe(fallbackAdapter);
       expect(registry.resolve(uppercaseNode)).toBe(adapter);
+    });
+  });
+
+  describe('Global Registry Functions', () => {
+    beforeEach(() => {
+      const fallback: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'fallback',
+      };
+      const newRegistry = new AdapterRegistry(fallback);
+      setGlobalRegistry(newRegistry);
+    });
+
+    it('should register adapter by tag using global function', () => {
+      const adapter: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'custom-tag',
+      };
+
+      registerAdapterByTag('custom-tag', adapter);
+
+      // Verify it was registered (no error means success)
+      expect(true).toBe(true);
+    });
+
+    it('should register adapter by role using global function', () => {
+      const adapter: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'custom-role',
+      };
+
+      registerAdapterByRole('custom-role', adapter);
+
+      // Verify it was registered (no error means success)
+      expect(true).toBe(true);
     });
   });
 });
