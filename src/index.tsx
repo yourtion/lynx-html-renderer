@@ -12,20 +12,12 @@ import { extractInheritableStyles } from './transform/utils/inheritable-properti
 
 // 内置适配器实现
 class ViewAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.tag === 'view';
-  }
-
   render(node: LynxElementNode, ctx: RenderContext) {
     return <view {...node.props}>{ctx.renderChildren(node)}</view>;
   }
 }
 
 class TextAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.tag === 'text';
-  }
-
   render(node: LynxElementNode, ctx: RenderContext) {
     // Special handling for transparent text wrappers with single text child with marks
     // These are created by inline formatting tags to avoid nested <text> elements
@@ -37,7 +29,7 @@ class TextAdapter implements LynxRenderAdapter {
         innermostText.marks
       ) {
         // Render the innermost text child directly with its marks converted to styles
-        return renderNode(innermostText);
+        return renderNode(innermostText, ctx);
       }
     }
 
@@ -64,14 +56,14 @@ class TextAdapter implements LynxRenderAdapter {
           ...textNode,
           inheritableClasses: mergedClassName,
         };
-        return renderNode(mergedTextNode);
+        return renderNode(mergedTextNode, ctx);
       } else if (node.props.className) {
         // Has element className but no inheritableClasses
         const mergedTextNode = {
           ...textNode,
           inheritableClasses: node.props.className,
         };
-        return renderNode(mergedTextNode);
+        return renderNode(mergedTextNode, ctx);
       }
 
       // For inline mode, check if element has style that should override inheritableStyles
@@ -87,7 +79,7 @@ class TextAdapter implements LynxRenderAdapter {
             ...textNode,
             inheritableStyles: inheritableStyle,
           };
-          return renderNode(mergedTextNode);
+          return renderNode(mergedTextNode, ctx);
         }
       }
 
@@ -97,11 +89,11 @@ class TextAdapter implements LynxRenderAdapter {
           ...textNode,
           inheritableStyles: textNode.inheritableStyles,
         };
-        return renderNode(mergedTextNode);
+        return renderNode(mergedTextNode, ctx);
       }
 
       // If neither, render as-is (text node without styles)
-      return renderNode(textNode);
+      return renderNode(textNode, ctx);
     }
 
     // Special handling for nested text elements (text inside text)
@@ -164,7 +156,7 @@ class TextAdapter implements LynxRenderAdapter {
           ...result.textNode,
           inheritableClasses: mergedClassName || undefined,
         };
-        return renderNode(mergedTextNode);
+        return renderNode(mergedTextNode, ctx);
       }
     }
 
@@ -173,20 +165,12 @@ class TextAdapter implements LynxRenderAdapter {
 }
 
 class ImageAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.tag === 'image';
-  }
-
   render(node: LynxElementNode) {
     return <image {...node.props} />;
   }
 }
 
 class TableAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.role === 'table';
-  }
-
   render(node: LynxElementNode, ctx: RenderContext) {
     const tableStyle = {
       ...node.props.style,
@@ -197,10 +181,6 @@ class TableAdapter implements LynxRenderAdapter {
 }
 
 class RowAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.role === 'row';
-  }
-
   render(node: LynxElementNode, ctx: RenderContext) {
     const rowStyle = {
       ...node.props.style,
@@ -235,10 +215,6 @@ const TEXT_ONLY_PROPERTIES = new Set([
 ]);
 
 class CellAdapter implements LynxRenderAdapter {
-  match(node: LynxElementNode): boolean {
-    return node.role === 'cell';
-  }
-
   render(node: LynxElementNode, ctx: RenderContext) {
     // 分离文本样式和其他样式
     const cellStyle: Record<string, unknown> = {};
@@ -272,16 +248,38 @@ class CellAdapter implements LynxRenderAdapter {
   }
 }
 
-// 适配器注册表 - O(1) 查找性能
-const adapterRegistry = new AdapterRegistry(new ViewAdapter());
+/**
+ * Create a new adapter registry with all default adapters registered
+ *
+ * Use this to create an isolated registry instance for advanced use cases
+ * like testing, SSR, or micro-frontends.
+ *
+ * @returns A new AdapterRegistry with all default adapters
+ *
+ * @example
+ * ```typescript
+ * import { createDefaultRegistry } from 'lynx-html-renderer';
+ *
+ * const registry = createDefaultRegistry();
+ * registry.registerByTag('custom', myAdapter);
+ * ```
+ */
+export function createDefaultRegistry(): AdapterRegistry {
+  const viewAdapter = new ViewAdapter();
+  const registry = new AdapterRegistry(viewAdapter);
 
-// 注册所有内置适配器
-adapterRegistry.registerByTag('view', new ViewAdapter());
-adapterRegistry.registerByTag('text', new TextAdapter());
-adapterRegistry.registerByTag('image', new ImageAdapter());
-adapterRegistry.registerByRole('table', new TableAdapter());
-adapterRegistry.registerByRole('row', new RowAdapter());
-adapterRegistry.registerByRole('cell', new CellAdapter());
+  registry.registerByTag('view', viewAdapter);
+  registry.registerByTag('text', new TextAdapter());
+  registry.registerByTag('image', new ImageAdapter());
+  registry.registerByRole('table', new TableAdapter());
+  registry.registerByRole('row', new RowAdapter());
+  registry.registerByRole('cell', new CellAdapter());
+
+  return registry;
+}
+
+// 初始化全局适配器注册表（使用 createDefaultRegistry 减少重复代码）
+const adapterRegistry = createDefaultRegistry();
 
 // 设置全局注册表实例，供外部扩展使用
 setGlobalRegistry(adapterRegistry);
@@ -291,18 +289,23 @@ function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
   return adapterRegistry.resolve(node);
 }
 
-function createRenderContext(
-  renderNodeFn: (node: LynxNode) => RenderResult,
-): RenderContext {
-  return {
-    renderChildren(node: LynxElementNode) {
-      return node.children.map(renderNodeFn);
-    },
-  };
-}
+// 共享的 RenderContext 单例，减少 GC 压力
+const sharedRenderContext: RenderContext = {
+  renderChildren(node: LynxElementNode) {
+    return node.children.map((child, index) => (
+      // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+      <React.Fragment key={index}>
+        {renderNode(child, sharedRenderContext)}
+      </React.Fragment>
+    ));
+  },
+};
 
 // 主渲染函数
-function renderNode(node: LynxNode): RenderResult {
+function renderNode(
+  node: LynxNode,
+  ctx: RenderContext = sharedRenderContext,
+): RenderResult {
   if (node.kind === 'text') {
     // 处理继承的样式（inline 模式）
     const style: Record<string, string | number> = {
@@ -332,7 +335,6 @@ function renderNode(node: LynxNode): RenderResult {
 
   // 处理元素节点
   const adapter = resolveAdapter(node);
-  const ctx = createRenderContext(renderNode);
   return adapter.render(node, ctx);
 }
 
@@ -433,11 +435,21 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     const containerClass = darkMode
       ? `${rootClassName} lhr-dark`
       : rootClassName;
-    return <view className={containerClass}>{nodes.map(renderNode)}</view>;
+    return (
+      <view className={containerClass}>
+        {nodes.map((node, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+          <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+        ))}
+      </view>
+    );
   }
 
   // 内联样式模式：直接返回节点数组（保持向后兼容）
-  return nodes.map(renderNode);
+  return nodes.map((node, index) => (
+    // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+  ));
 });
 
 /**
@@ -474,10 +486,20 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     const containerClass = darkMode
       ? `${rootClassName} lhr-dark`
       : rootClassName;
-    return <view className={containerClass}>{nodes.map(renderNode)}</view>;
+    return (
+      <view className={containerClass}>
+        {nodes.map((node, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+          <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+        ))}
+      </view>
+    );
   }
 
-  return nodes.map(renderNode);
+  return nodes.map((node, index) => (
+    // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+  ));
 }
 
 // 为向后兼容，将 HTMLRenderer 也作为函数导出（允许直接调用）
@@ -493,6 +515,7 @@ export type { HTMLRendererProps };
 export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
 // 导出适配器扩展 API
 export {
+  AdapterRegistry,
   getAdapterRegistry,
   registerAdapterByRole,
   registerAdapterByTag,

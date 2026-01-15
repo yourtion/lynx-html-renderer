@@ -27,15 +27,6 @@ export type RenderResult = unknown;
  */
 export interface LynxRenderAdapter {
   /**
-   * Check if this adapter can handle the given node
-   *
-   * @deprecated This method is deprecated and will be removed in a future version.
-   * Use `registerAdapterByTag` or `registerAdapterByRole` from the adapter registry instead.
-   * When using the registry-based approach, this method is not needed.
-   */
-  match?(node: LynxElementNode): boolean;
-
-  /**
    * Render the node to a Lynx component
    */
   render(node: LynxElementNode, ctx: RenderContext): RenderResult;

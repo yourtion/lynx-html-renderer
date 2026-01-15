@@ -66,7 +66,9 @@ function executeCapabilityPhaseWithBatching(
     }
   }
 
-  // 步骤 2: 单次遍历执行所有处理器
+  // 步骤 2: 收集替换请求（延迟应用）
+  const replacements: Array<{ target: LynxNode; next: LynxNode }> = [];
+
   if (ctx._handlerRegistry && ctx._handlerRegistry.size > 0) {
     walkLynxNodeTree(ctx.root, (node) => {
       // 对于元素节点，使用 tag 来匹配处理器
@@ -77,13 +79,17 @@ function executeCapabilityPhaseWithBatching(
       for (const handler of handlers) {
         const result = handler(node, ctx);
         if (result && result !== node) {
-          // Handler 返回了替换节点
-          ctx.utils.replaceNode(node, result);
+          // 收集替换请求，不立即执行
+          replacements.push({ target: node, next: result });
         }
       }
     });
 
-    // 清理 handler registry（为下次 transform 准备）
+    // 步骤 3: 遍历完成后统一应用替换
+    for (const { target, next } of replacements) {
+      ctx.utils.replaceNode(target, next);
+    }
+
     ctx._handlerRegistry.clear();
   }
 }

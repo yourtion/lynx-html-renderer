@@ -148,3 +148,5 @@ export function registerAdapterByRole(
 }
 
 export { AdapterRegistry };
+
+export type { LynxRenderAdapter };
