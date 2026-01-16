@@ -23,7 +23,7 @@ export interface Capabilities {
  * LynxNode 基础接口
  */
 export interface LynxBaseNode {
-  kind: string;
+  kind: 'element' | 'text';
   meta?: Record<string, unknown>; // 调试、插件扩展、来源信息
 }
 
@@ -98,7 +98,7 @@ export type LynxNode = LynxElementNode | LynxTextNode;
 /**
  * Lynx 属性类型
  */
-export type LynxProps = {
+export interface LynxProps extends Record<string, unknown> {
   style?: CSSProperties;
   className?: string;
 
@@ -110,9 +110,7 @@ export type LynxProps = {
 
   // 事件（MVP 可不支持）
   onTap?: () => void;
-
-  [key: string]: unknown;
-};
+}
 
 /**
  * CSS 属性类型

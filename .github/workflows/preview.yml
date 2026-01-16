@@ -3,7 +3,9 @@ name: PR Preview Deployment
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches: ["**"]
+    branches:
+      - "**"
+      - "!gh-pages"
   workflow_dispatch:
 
 # 取消同一 PR 的旧部署运行，避免资源浪费

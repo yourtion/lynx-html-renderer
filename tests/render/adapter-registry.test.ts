@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createDefaultRegistry } from '../../src/index';
 import type { LynxElementNode, LynxRenderAdapter } from '../../src/lynx/types';
-import { AdapterRegistry } from '../../src/render/adapter-registry';
+import {
+  AdapterRegistry,
+  getAdapterRegistry,
+  registerAdapterByRole,
+  registerAdapterByTag,
+  setGlobalRegistry,
+} from '../../src/render/adapter-registry';
 
 describe('AdapterRegistry', () => {
   let registry: AdapterRegistry;
@@ -391,6 +398,97 @@ describe('AdapterRegistry', () => {
 
       expect(registry.resolve(lowercaseNode)).toBe(fallbackAdapter);
       expect(registry.resolve(uppercaseNode)).toBe(adapter);
+    });
+  });
+
+  describe('Global Registry Functions', () => {
+    beforeEach(() => {
+      const fallback: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'fallback',
+      };
+      const newRegistry = new AdapterRegistry(fallback);
+      setGlobalRegistry(newRegistry);
+    });
+
+    it('should register adapter by tag using global function', () => {
+      const adapter: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'custom-tag',
+      };
+
+      registerAdapterByTag('custom-tag', adapter);
+
+      const registry = getAdapterRegistry();
+      const node: LynxElementNode = {
+        kind: 'element',
+        tag: 'custom-tag',
+        props: {},
+        children: [],
+      };
+      expect(registry.resolve(node)).toBe(adapter);
+    });
+
+    it('should register adapter by role using global function', () => {
+      const adapter: LynxRenderAdapter = {
+        canHandle: () => true,
+        render: () => 'custom-role',
+      };
+
+      registerAdapterByRole('custom-role', adapter);
+
+      const registry = getAdapterRegistry();
+      const node: LynxElementNode = {
+        kind: 'element',
+        tag: 'div',
+        props: {},
+        children: [],
+        role: 'custom-role',
+      };
+      expect(registry.resolve(node)).toBe(adapter);
+    });
+  });
+
+  describe('createDefaultRegistry', () => {
+    const createMockNode = (tag: string, role?: string): LynxElementNode => ({
+      kind: 'element',
+      tag,
+      props: {},
+      children: [],
+      ...(role ? { role } : {}),
+    });
+
+    it('should create independent registry instances', () => {
+      const registry1 = createDefaultRegistry();
+      const registry2 = createDefaultRegistry();
+      expect(registry1).not.toBe(registry2);
+    });
+
+    it('should have default adapters registered', () => {
+      const registry = createDefaultRegistry();
+      expect(registry.resolve(createMockNode('view'))).toBeDefined();
+      expect(registry.resolve(createMockNode('text'))).toBeDefined();
+      expect(registry.resolve(createMockNode('image'))).toBeDefined();
+    });
+
+    it('should have role adapters registered', () => {
+      const registry = createDefaultRegistry();
+      expect(registry.resolve(createMockNode('view', 'table'))).toBeDefined();
+      expect(registry.resolve(createMockNode('view', 'row'))).toBeDefined();
+      expect(registry.resolve(createMockNode('view', 'cell'))).toBeDefined();
+    });
+
+    it('should allow custom adapters without affecting other instances', () => {
+      const registry1 = createDefaultRegistry();
+      const registry2 = createDefaultRegistry();
+
+      const customAdapter: LynxRenderAdapter = { render: () => 'custom' };
+      registry1.registerByTag('video', customAdapter);
+
+      expect(registry1.resolve(createMockNode('video'))).toBe(customAdapter);
+      expect(registry2.resolve(createMockNode('video'))).not.toBe(
+        customAdapter,
+      );
     });
   });
 });

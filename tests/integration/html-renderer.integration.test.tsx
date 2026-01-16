@@ -184,4 +184,33 @@ describe('HTMLRenderer Integration Tests', () => {
       expect(container).toBeDefined();
     });
   });
+
+  describe('React Key Generation', () => {
+    it('should render multiple root nodes without key errors', () => {
+      const html = '<p>First</p><p>Second</p><p>Third</p>';
+      const { container } = render(<HTMLRenderer html={html} />);
+
+      expect(container.textContent).toContain('First');
+      expect(container.textContent).toContain('Second');
+      expect(container.textContent).toContain('Third');
+    });
+
+    it('should render children with proper keys', () => {
+      const html = '<div><p>A</p><p>B</p><p>C</p></div>';
+      const { container } = render(<HTMLRenderer html={html} />);
+
+      const texts = container.querySelectorAll('text');
+      expect(texts.length).toBe(3);
+    });
+  });
+
+  describe('Memoization', () => {
+    it('should memoize HTMLRenderer component', () => {
+      const html = '<p>Memoized</p>';
+      const { container, rerender } = render(<HTMLRenderer html={html} />);
+      rerender(<HTMLRenderer html={html} />);
+
+      expect(container.textContent).toContain('Memoized');
+    });
+  });
 });

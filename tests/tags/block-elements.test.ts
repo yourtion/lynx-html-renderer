@@ -124,4 +124,57 @@ describe('Block Elements', () => {
       },
     ]);
   });
+
+  describe('Capability Plugin - Layout', () => {
+    it('should add capabilities to all block elements', () => {
+      const html = '<div><section><article>Content</article></section></div>';
+      const result = transformHTML(html);
+
+      expect(result[0].capabilities).toBeDefined();
+      expect(result[0].capabilities?.layout).toBe('flex');
+      expect(result[0].children[0].capabilities).toBeDefined();
+    });
+
+    it('should not override existing capabilities', () => {
+      const html = '<p>Text</p>';
+      const result = transformHTML(html);
+
+      // p tag has specific capabilities set by structure plugin
+      expect(result[0].capabilities?.layout).toBe('block');
+      expect(result[0].capabilities?.textContainer).toBe(true);
+    });
+  });
+
+  describe('Capability Plugin - Style', () => {
+    it('should parse inline styles from HTML', () => {
+      const html = '<div style="color: red; font-size: 16px">Styled</div>';
+      const result = transformHTML(html);
+
+      expect(result[0].props?.style?.color).toBe('red');
+      expect(result[0].props?.style?.fontSize).toBe('16px');
+    });
+
+    it('should merge default styles with inline styles', () => {
+      const html = '<div style="color: blue">Content</div>';
+      const result = transformHTML(html);
+
+      // Should have both flexDirection (default) and color (inline)
+      expect(result[0].props?.style?.flexDirection).toBe('column');
+      expect(result[0].props?.style?.color).toBe('blue');
+    });
+
+    it('should handle class attribute with removeAllClass=false', () => {
+      const html = '<div class="my-class other-class">Content</div>';
+      const result = transformHTML(html, { removeAllClass: false });
+
+      expect(result[0].props?.className).toBe('my-class other-class');
+    });
+
+    it('should remove class attribute by default', () => {
+      const html = '<div class="my-class">Content</div>';
+      const result = transformHTML(html);
+
+      expect(result[0].props?.className).toBeUndefined();
+    });
+  });
 });

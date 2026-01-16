@@ -38,27 +38,9 @@ jobs:
       - name: Build Rspress docs
         run: pnpm run docs:build
 
-      - name: Build example
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        run: pnpm run build-example
-
-      - name: Prepare site directory
-        run: mkdir -p site
-
-      - name: Copy Rspress build artifacts
-        run: cp -r doc_build/* site/
-
-      - name: Copy example bundle
-        run: cp example/dist/index.lynx.bundle site/
-
-      - name: Copy HTML demos
-        run: cp -r example/dist/html site/
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+          publish_dir: ./doc_build
           cname: lynx-html.js.org

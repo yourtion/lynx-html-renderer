@@ -5,6 +5,7 @@ import type {
   TransformContext as ITransformContext,
   LynxNode,
   NodeCapabilityHandler,
+  TransformMetadata,
 } from './types';
 
 /**
@@ -13,7 +14,12 @@ import type {
 export class TransformContextImpl implements ITransformContext {
   readonly ast: HtmlAstNode;
   root: LynxNode;
-  metadata: Record<string, unknown> = {};
+  metadata: TransformMetadata = {
+    removeAllClass: true,
+    removeAllStyle: false,
+    styleMode: 'inline',
+    rootClassName: 'lynx-html-renderer',
+  };
 
   // 内部：处理器注册表（用于批量处理优化）
   _handlerRegistry: Map<string, NodeCapabilityHandler[]> = new Map();

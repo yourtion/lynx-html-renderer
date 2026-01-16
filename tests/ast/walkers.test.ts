@@ -270,25 +270,22 @@ describe('AST Walkers', () => {
   });
 
   describe('edge cases', () => {
-    it('should detect circular references', () => {
+    it('should throw when callback detects too many iterations (e.g., from circular references)', () => {
       const node = createMockNode('text');
       const root = createMockNode('root', [node]);
 
-      // Create circular reference (not normal, but testing robustness)
       // @ts-expect-error - testing edge case
       node.children = [root];
 
       const visited: number[] = [];
       const callback = (_n: HtmlAstNode) => {
         visited.push(1);
-        // Prevent infinite loop - this will be hit due to circular reference
         if (visited.length > 10) {
           throw new Error('Too many iterations');
         }
       };
 
-      // Should throw error due to infinite loop detection
-      expect(() => walkAst(root, callback)).toThrow();
+      expect(() => walkAst(root, callback)).toThrow('Too many iterations');
     });
 
     it('should handle node without children property', () => {

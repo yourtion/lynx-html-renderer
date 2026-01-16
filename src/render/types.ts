@@ -27,11 +27,6 @@ export type RenderResult = unknown;
  */
 export interface LynxRenderAdapter {
   /**
-   * Check if this adapter can handle the given node
-   */
-  match(node: LynxElementNode): boolean;
-
-  /**
    * Render the node to a Lynx component
    */
   render(node: LynxElementNode, ctx: RenderContext): RenderResult;

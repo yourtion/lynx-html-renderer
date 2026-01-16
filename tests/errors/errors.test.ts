@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createParseError,
+  createPluginError,
+  createStyleError,
+  createUnsupportedTagError,
+  getErrorCode,
   HTMLTransformError,
+  isPluginError,
+  isRenderError,
+  isTransformError,
   LynxRenderError,
   PluginError,
 } from '../../src/errors';
@@ -280,6 +288,207 @@ describe('Error Classes', () => {
       expect(transformError instanceof HTMLTransformError).toBe(true);
       expect(renderError instanceof LynxRenderError).toBe(true);
       expect(pluginError instanceof PluginError).toBe(true);
+    });
+  });
+
+  describe('Error Factory Functions', () => {
+    describe('createParseError', () => {
+      it('should create PARSE_ERROR type error', () => {
+        const error = createParseError('Invalid HTML', '<div><span>');
+
+        expect(error).toBeInstanceOf(HTMLTransformError);
+        expect(error.code).toBe('PARSE_ERROR');
+        expect(error.phase).toBe('parse');
+        expect(error.html).toBe('<div><span>');
+        expect(error.message).toContain('Invalid HTML');
+      });
+
+      it('should include cause when provided', () => {
+        const cause = new Error('Original parsing error');
+        const error = createParseError('Parse failed', '<broken>', cause);
+
+        expect(error.cause).toBe(cause);
+      });
+    });
+
+    describe('createUnsupportedTagError', () => {
+      it('should create UNSUPPORTED_TAG type error', () => {
+        const error = createUnsupportedTagError(
+          'custom-element',
+          'transform',
+          '<custom-element>test</custom-element>',
+        );
+
+        expect(error).toBeInstanceOf(HTMLTransformError);
+        expect(error.code).toBe('UNSUPPORTED_TAG');
+        expect(error.phase).toBe('transform');
+        expect(error.html).toBe('<custom-element>test</custom-element>');
+        expect(error.message).toContain('Unsupported HTML tag: custom-element');
+      });
+    });
+
+    describe('createStyleError', () => {
+      it('should create STYLE_ERROR type error', () => {
+        const error = createStyleError(
+          'Invalid style value',
+          'color: invalid;',
+          'transform',
+        );
+
+        expect(error).toBeInstanceOf(HTMLTransformError);
+        expect(error.code).toBe('STYLE_ERROR');
+        expect(error.phase).toBe('transform');
+        expect(error.message).toContain('Invalid style value');
+      });
+
+      it('should include cause when provided', () => {
+        const cause = new Error('CSS parse error');
+        const error = createStyleError(
+          'Style parsing failed',
+          'bad-style',
+          'parse',
+          cause,
+        );
+
+        expect(error.cause).toBe(cause);
+      });
+    });
+
+    describe('createPluginError', () => {
+      it('should create PluginError', () => {
+        const error = createPluginError(
+          'my-plugin',
+          'Plugin execution failed',
+          'transform',
+        );
+
+        expect(error).toBeInstanceOf(PluginError);
+        expect(error.pluginName).toBe('my-plugin');
+        expect(error.phase).toBe('transform');
+        expect(error.message).toContain('my-plugin');
+        expect(error.message).toContain('Plugin execution failed');
+      });
+
+      it('should include cause when provided', () => {
+        const cause = new Error('Internal plugin error');
+        const error = createPluginError(
+          'css-plugin',
+          'Failed to process CSS',
+          'normalize',
+          cause,
+        );
+
+        expect(error.cause).toBe(cause);
+      });
+    });
+  });
+
+  describe('Error Type Guards', () => {
+    describe('isTransformError', () => {
+      it('should return true for HTMLTransformError', () => {
+        const error = new HTMLTransformError('Test', 'parse');
+        expect(isTransformError(error)).toBe(true);
+      });
+
+      it('should return false for other errors', () => {
+        expect(isTransformError(new Error('Test'))).toBe(false);
+        expect(
+          isTransformError(
+            new LynxRenderError('Test', { kind: 'text', content: 'x' }),
+          ),
+        ).toBe(false);
+        expect(isTransformError(new PluginError('Test', 'p', 'phase'))).toBe(
+          false,
+        );
+        expect(isTransformError(null)).toBe(false);
+        expect(isTransformError(undefined)).toBe(false);
+        expect(isTransformError('string')).toBe(false);
+      });
+    });
+
+    describe('isRenderError', () => {
+      it('should return true for LynxRenderError', () => {
+        const error = new LynxRenderError('Test', {
+          kind: 'text',
+          content: 'x',
+        });
+        expect(isRenderError(error)).toBe(true);
+      });
+
+      it('should return false for other errors', () => {
+        expect(isRenderError(new Error('Test'))).toBe(false);
+        expect(isRenderError(new HTMLTransformError('Test', 'parse'))).toBe(
+          false,
+        );
+        expect(isRenderError(new PluginError('Test', 'p', 'phase'))).toBe(
+          false,
+        );
+        expect(isRenderError(null)).toBe(false);
+        expect(isRenderError(undefined)).toBe(false);
+      });
+    });
+
+    describe('isPluginError', () => {
+      it('should return true for PluginError', () => {
+        const error = new PluginError('Test', 'plugin', 'phase');
+        expect(isPluginError(error)).toBe(true);
+      });
+
+      it('should return false for other errors', () => {
+        expect(isPluginError(new Error('Test'))).toBe(false);
+        expect(isPluginError(new HTMLTransformError('Test', 'parse'))).toBe(
+          false,
+        );
+        expect(
+          isPluginError(
+            new LynxRenderError('Test', { kind: 'text', content: 'x' }),
+          ),
+        ).toBe(false);
+        expect(isPluginError(null)).toBe(false);
+        expect(isPluginError(undefined)).toBe(false);
+      });
+    });
+  });
+
+  describe('getErrorCode', () => {
+    it('should return code for HTMLTransformError', () => {
+      const parseError = createParseError('Test', '<div>');
+      const unsupportedError = createUnsupportedTagError(
+        'custom',
+        'transform',
+        '<custom>',
+      );
+      const styleError = createStyleError('Test', 'bad', 'parse');
+
+      expect(getErrorCode(parseError)).toBe('PARSE_ERROR');
+      expect(getErrorCode(unsupportedError)).toBe('UNSUPPORTED_TAG');
+      expect(getErrorCode(styleError)).toBe('STYLE_ERROR');
+    });
+
+    it('should return RENDER_ERROR for LynxRenderError', () => {
+      const error = new LynxRenderError('Test', { kind: 'text', content: 'x' });
+      expect(getErrorCode(error)).toBe('RENDER_ERROR');
+    });
+
+    it('should return PLUGIN_ERROR for PluginError', () => {
+      const error = new PluginError('Test', 'plugin', 'phase');
+      expect(getErrorCode(error)).toBe('PLUGIN_ERROR');
+    });
+
+    it('should return error name for generic Error', () => {
+      const error = new Error('Test');
+      expect(getErrorCode(error)).toBe('Error');
+
+      const typeError = new TypeError('Test');
+      expect(getErrorCode(typeError)).toBe('TypeError');
+    });
+
+    it('should return undefined for non-error values', () => {
+      expect(getErrorCode(null)).toBeUndefined();
+      expect(getErrorCode(undefined)).toBeUndefined();
+      expect(getErrorCode('string')).toBeUndefined();
+      expect(getErrorCode(123)).toBeUndefined();
+      expect(getErrorCode({})).toBeUndefined();
     });
   });
 });

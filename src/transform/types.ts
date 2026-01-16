@@ -34,6 +34,17 @@ export type {
 };
 
 /**
+ * 转换元数据接口
+ */
+export interface TransformMetadata {
+  removeAllClass: boolean;
+  removeAllStyle: boolean;
+  styleMode: 'inline' | 'css-class';
+  rootClassName: string;
+  linkStyle?: CSSProperties;
+}
+
+/**
  * 节点能力处理器类型
  * 用于批量处理能力阶段的节点访问
  */
@@ -99,7 +110,7 @@ export interface TransformContext {
   };
 
   /** 插件间传递元数据 */
-  metadata: Record<string, unknown>;
+  metadata: TransformMetadata;
 
   /** 性能指标收集（可选） */
   metrics?: {
