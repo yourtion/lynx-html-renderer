@@ -188,4 +188,118 @@ describe('Plugin Info API', () => {
       }
     });
   });
+
+  describe('Plugin Execution Order', () => {
+    it('should execute plugins in phase order: normalize -> structure -> capability -> finalize', () => {
+      const executionOrder: string[] = [];
+
+      const testPlugins = [
+        {
+          name: 'test-finalize',
+          phase: 'finalize' as const,
+          order: 10,
+          apply: () => executionOrder.push('finalize'),
+        },
+        {
+          name: 'test-normalize',
+          phase: 'normalize' as const,
+          order: 10,
+          apply: () => executionOrder.push('normalize'),
+        },
+        {
+          name: 'test-structure',
+          phase: 'structure' as const,
+          order: 10,
+          apply: () => executionOrder.push('structure'),
+        },
+        {
+          name: 'test-capability',
+          phase: 'capability' as const,
+          order: 10,
+          apply: () => executionOrder.push('capability'),
+        },
+      ];
+
+      transformHTML('<div>test</div>', { plugins: { extra: testPlugins } });
+      expect(executionOrder).toEqual([
+        'normalize',
+        'structure',
+        'capability',
+        'finalize',
+      ]);
+    });
+
+    it('should execute plugins within same phase by order', () => {
+      const executionOrder: string[] = [];
+
+      const testPlugins = [
+        {
+          name: 'order-30',
+          phase: 'finalize' as const,
+          order: 30,
+          apply: () => executionOrder.push('order-30'),
+        },
+        {
+          name: 'order-10',
+          phase: 'finalize' as const,
+          order: 10,
+          apply: () => executionOrder.push('order-10'),
+        },
+        {
+          name: 'order-20',
+          phase: 'finalize' as const,
+          order: 20,
+          apply: () => executionOrder.push('order-20'),
+        },
+      ];
+
+      transformHTML('<div>test</div>', { plugins: { extra: testPlugins } });
+      expect(executionOrder).toEqual(['order-10', 'order-20', 'order-30']);
+    });
+  });
+
+  describe('TransformMetadata', () => {
+    it('should have correct default metadata values', () => {
+      let capturedMetadata: Record<string, unknown> = {};
+
+      const inspector = {
+        name: 'inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: { metadata: Record<string, unknown> }) => {
+          capturedMetadata = { ...ctx.metadata };
+        },
+      };
+
+      transformHTML('<div>test</div>', { plugins: { extra: [inspector] } });
+
+      expect(capturedMetadata.removeAllClass).toBe(true);
+      expect(capturedMetadata.removeAllStyle).toBe(false);
+      expect(capturedMetadata.styleMode).toBe('inline');
+    });
+
+    it('should override metadata with provided options', () => {
+      let capturedMetadata: Record<string, unknown> = {};
+
+      const inspector = {
+        name: 'inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: { metadata: Record<string, unknown> }) => {
+          capturedMetadata = { ...ctx.metadata };
+        },
+      };
+
+      transformHTML('<div>test</div>', {
+        removeAllClass: false,
+        removeAllStyle: true,
+        styleMode: 'css-class',
+        plugins: { extra: [inspector] },
+      });
+
+      expect(capturedMetadata.removeAllClass).toBe(false);
+      expect(capturedMetadata.removeAllStyle).toBe(true);
+      expect(capturedMetadata.styleMode).toBe('css-class');
+    });
+  });
 });

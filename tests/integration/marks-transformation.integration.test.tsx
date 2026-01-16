@@ -292,4 +292,19 @@ describe('Marks to Style Transformation', () => {
       expect(style).toContain('font-family: monospace');
     });
   });
+
+  describe('All Marks Combined', () => {
+    it('should apply all four marks together', () => {
+      const html = '<strong><em><u><code>All marks</code></u></em></strong>';
+      const { container } = render(<HTMLRenderer html={html} />);
+
+      const text = container.querySelector('text');
+      const style = text?.getAttribute('style');
+
+      expect(style).toContain('font-weight');
+      expect(style).toContain('font-style');
+      expect(style).toContain('text-decoration');
+      expect(style).toContain('font-family');
+    });
+  });
 });
