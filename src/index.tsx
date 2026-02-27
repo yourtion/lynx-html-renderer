@@ -42,14 +42,14 @@ class TextAdapter implements LynxRenderAdapter {
           ...textNode,
           inheritableClasses: mergedClassName,
         };
-        return renderNode(mergedTextNode, ctx);
+        return ctx.renderNode(mergedTextNode);
       } else if (node.props.className) {
         // Has element className but no inheritableClasses
         const mergedTextNode = {
           ...textNode,
           inheritableClasses: node.props.className,
         };
-        return renderNode(mergedTextNode, ctx);
+        return ctx.renderNode(mergedTextNode);
       }
 
       // For inline mode, check if element has style that should override inheritableStyles
@@ -65,7 +65,7 @@ class TextAdapter implements LynxRenderAdapter {
             ...textNode,
             inheritableStyles: inheritableStyle,
           };
-          return renderNode(mergedTextNode, ctx);
+          return ctx.renderNode(mergedTextNode);
         }
       }
 
@@ -75,11 +75,11 @@ class TextAdapter implements LynxRenderAdapter {
           ...textNode,
           inheritableStyles: textNode.inheritableStyles,
         };
-        return renderNode(mergedTextNode, ctx);
+        return ctx.renderNode(mergedTextNode);
       }
 
       // If neither, render as-is (text node without styles)
-      return renderNode(textNode, ctx);
+      return ctx.renderNode(textNode);
     }
 
     // Special handling for nested text elements (text inside text)
@@ -142,7 +142,7 @@ class TextAdapter implements LynxRenderAdapter {
           ...result.textNode,
           inheritableClasses: mergedClassName || undefined,
         };
-        return renderNode(mergedTextNode, ctx);
+        return ctx.renderNode(mergedTextNode);
       }
     }
 
@@ -265,32 +265,33 @@ export function createDefaultRegistry(): AdapterRegistry {
 }
 
 // 初始化全局适配器注册表（使用 createDefaultRegistry 减少重复代码）
-const adapterRegistry = createDefaultRegistry();
+const defaultAdapterRegistry = createDefaultRegistry();
 
 // 设置全局注册表实例，供外部扩展使用
-setGlobalRegistry(adapterRegistry);
+setGlobalRegistry(defaultAdapterRegistry);
 
-// 适配器解析函数 - 使用注册表实现 O(1) 查找
-function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
-  return adapterRegistry.resolve(node);
+function createRenderContext(registry: AdapterRegistry): RenderContext {
+  const renderContext: RenderContext = {
+    renderChildren(node: LynxElementNode) {
+      return node.children.map((child, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
+        <React.Fragment key={index}>{renderContext.renderNode(child)}</React.Fragment>
+      ));
+    },
+
+    renderNode(node: LynxNode) {
+      return renderNodeWithRegistry(node, registry, renderContext);
+    },
+  };
+
+  return renderContext;
 }
 
-// 共享的 RenderContext 单例，减少 GC 压力
-const sharedRenderContext: RenderContext = {
-  renderChildren(node: LynxElementNode) {
-    return node.children.map((child, index) => (
-      // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-      <React.Fragment key={index}>
-        {renderNode(child, sharedRenderContext)}
-      </React.Fragment>
-    ));
-  },
-};
-
 // 主渲染函数
-function renderNode(
+function renderNodeWithRegistry(
   node: LynxNode,
-  ctx: RenderContext = sharedRenderContext,
+  registry: AdapterRegistry,
+  ctx: RenderContext,
 ): RenderResult {
   if (node.kind === 'text') {
     // 处理继承的样式（inline 模式）
@@ -320,7 +321,7 @@ function renderNode(
   }
 
   // 处理元素节点
-  const adapter = resolveAdapter(node);
+  const adapter: LynxRenderAdapter = registry.resolve(node);
   return adapter.render(node, ctx);
 }
 
@@ -342,6 +343,8 @@ export interface HTMLRendererProps {
   darkMode?: boolean;
   /** 自定义链接样式（仅 inline 模式生效） */
   linkStyle?: Record<string, string | number>;
+  /** 可选：组件级适配器注册表，未提供时使用全局默认注册表 */
+  adapterRegistry?: AdapterRegistry;
 }
 
 export const HTMLRenderer = memo(function HTMLRenderer(
@@ -355,6 +358,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
     linkStyle,
+    adapterRegistry: customAdapterRegistry,
   } = props;
 
   // Cache the transformed nodes to avoid re-parsing HTML on every render
@@ -368,6 +372,10 @@ export const HTMLRenderer = memo(function HTMLRenderer(
       }),
     [html, removeAllClass, removeAllStyle, styleMode, linkStyle],
   );
+  const renderCtx = useMemo(
+    () => createRenderContext(customAdapterRegistry ?? defaultAdapterRegistry),
+    [customAdapterRegistry],
+  );
 
   // CSS类模式：添加根容器
   if (styleMode === 'css-class') {
@@ -378,7 +386,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
       <view className={containerClass}>
         {nodes.map((node, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+          <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
         ))}
       </view>
     );
@@ -387,7 +395,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
   // 内联样式模式：直接返回节点数组（保持向后兼容）
   return nodes.map((node, index) => (
     // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+    <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
   ));
 });
 
@@ -411,6 +419,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
     linkStyle,
+    adapterRegistry: customAdapterRegistry,
   } = props;
 
   const nodes = transformHTML(html, {
@@ -419,6 +428,9 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     styleMode,
     linkStyle,
   });
+  const renderCtx = createRenderContext(
+    customAdapterRegistry ?? defaultAdapterRegistry,
+  );
 
   // CSS类模式：添加根容器
   if (styleMode === 'css-class') {
@@ -429,7 +441,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
       <view className={containerClass}>
         {nodes.map((node, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+          <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
         ))}
       </view>
     );
@@ -437,7 +449,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
 
   return nodes.map((node, index) => (
     // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+    <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
   ));
 }
 

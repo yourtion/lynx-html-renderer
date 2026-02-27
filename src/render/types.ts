@@ -41,4 +41,9 @@ export interface RenderContext {
    * Render all children of a node
    */
   renderChildren(node: LynxElementNode): RenderResult[];
+
+  /**
+   * Render a single node
+   */
+  renderNode(node: LynxNode): RenderResult;
 }

@@ -6,7 +6,11 @@
  */
 
 import '@testing-library/jest-dom';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
+import {
+  HTMLRenderer,
+  createDefaultRegistry,
+  type LynxRenderAdapter,
+} from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
 import { describe, expect, it } from 'vitest';
 
@@ -211,6 +215,28 @@ describe('HTMLRenderer Integration Tests', () => {
       rerender(<HTMLRenderer html={html} />);
 
       expect(container.textContent).toContain('Memoized');
+    });
+  });
+
+  describe('Adapter Registry Isolation', () => {
+    it('should use instance-level adapterRegistry without mutating global behavior', () => {
+      const customRegistry = createDefaultRegistry();
+      const customTextAdapter: LynxRenderAdapter = {
+        render(node, ctx) {
+          return <view className="custom-text-adapter">{ctx.renderChildren(node)}</view>;
+        },
+      };
+      customRegistry.registerByTag('text', customTextAdapter);
+
+      const html = '<p>Custom text adapter</p>';
+
+      const { container: customContainer } = render(
+        <HTMLRenderer html={html} adapterRegistry={customRegistry} />,
+      );
+      expect(customContainer.querySelector('.custom-text-adapter')).toBeDefined();
+
+      const { container: defaultContainer } = render(<HTMLRenderer html={html} />);
+      expect(defaultContainer.querySelector('.custom-text-adapter')).toBeNull();
     });
   });
 });

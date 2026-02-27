@@ -179,6 +179,7 @@ interface HTMLRendererProps {
   removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
   styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
   rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
+  adapterRegistry?: AdapterRegistry; // 可选：组件级适配器注册表（默认使用全局注册表）
 }
 ```
 
@@ -250,4 +251,3 @@ Contributions, issues, and discussions are welcome.
 ---
 
 > This project is designed as a **long-term maintainable HTML-to-Native rendering pipeline**, not a one-off rich text solution.
-
