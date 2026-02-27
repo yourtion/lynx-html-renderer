@@ -40,7 +40,6 @@ export interface TransformMetadata {
   removeAllClass: boolean;
   removeAllStyle: boolean;
   styleMode: 'inline' | 'css-class';
-  rootClassName: string;
   linkStyle?: CSSProperties;
 }
 
@@ -151,7 +150,7 @@ export interface TransformOptions {
   /** 样式模式：'inline'（默认）使用内联样式，'css-class' 使用CSS类 */
   styleMode?: 'inline' | 'css-class';
 
-  /** CSS类模式下的根容器class名，默认 'lynx-html-renderer' */
+  /** @deprecated rootClassName is a renderer concern and ignored by transformHTML */
   rootClassName?: string;
 
   /** 自定义链接样式（仅 inline 模式生效） */

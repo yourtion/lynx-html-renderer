@@ -18,7 +18,6 @@ export class TransformContextImpl implements ITransformContext {
     removeAllClass: true,
     removeAllStyle: false,
     styleMode: 'inline',
-    rootClassName: 'lynx-html-renderer',
   };
 
   // 内部：处理器注册表（用于批量处理优化）

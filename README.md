@@ -198,9 +198,11 @@ interface TransformOptions {
   removeAllClass?: boolean;   // 是否删除所有 HTML 的 class 属性，默认为 true
   removeAllStyle?: boolean;   // 是否删除所有 HTML 的 style 属性，默认为 false
   styleMode?: 'inline' | 'css-class';  // 样式模式
-  rootClassName?: string;     // CSS类模式下的根容器类名
+  debug?: boolean;            // 是否启用 transform 调试日志
 }
 ```
+
+`rootClassName` 属于渲染层（`HTMLRenderer`）配置，`transformHTML` 会忽略该字段（保留仅为兼容）。
 
 ### CSS 工具函数
 

@@ -156,7 +156,6 @@ export function transformHTML(
     ctx.metadata.removeAllClass = options.removeAllClass ?? true;
     ctx.metadata.removeAllStyle = options.removeAllStyle ?? false;
     ctx.metadata.styleMode = options.styleMode ?? 'inline';
-    ctx.metadata.rootClassName = options.rootClassName ?? 'lynx-html-renderer';
     ctx.metadata.linkStyle = options.linkStyle;
   }
 

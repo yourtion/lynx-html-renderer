@@ -301,6 +301,26 @@ describe('Plugin Info API', () => {
       expect(capturedMetadata.removeAllStyle).toBe(true);
       expect(capturedMetadata.styleMode).toBe('css-class');
     });
+
+    it('should ignore rootClassName in transform metadata', () => {
+      let capturedMetadata: Record<string, unknown> = {};
+
+      const inspector = {
+        name: 'inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: { metadata: Record<string, unknown> }) => {
+          capturedMetadata = { ...ctx.metadata };
+        },
+      };
+
+      transformHTML('<div>test</div>', {
+        rootClassName: 'custom-root',
+        plugins: { extra: [inspector] },
+      });
+
+      expect('rootClassName' in capturedMetadata).toBe(false);
+    });
   });
 
   describe('Debug Mode', () => {

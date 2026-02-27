@@ -13,6 +13,7 @@
 | `rootClassName` | `string` | `'lynx-html-renderer'` | 根容器类名 |
 | `darkMode` | `boolean` | `false` | 启用暗色模式 |
 | `linkStyle` | `Record<string, string \| number>` | - | 自定义链接样式 |
+| `debug` | `boolean` | `false` | 启用 transform 调试日志 |
 
 ## Supported HTML Tags
 
@@ -216,8 +217,11 @@ import { transformHTML } from 'lynx-html-renderer/html-parser';
 const nodes = transformHTML('<div>Hello</div>', {
   removeAllClass: true,
   styleMode: 'inline',
+  debug: false,
 });
 ```
+
+Note: `rootClassName` is a renderer-only option (`HTMLRenderer`) and is ignored by `transformHTML`.
 
 ## Error Codes
 
