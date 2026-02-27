@@ -42,13 +42,13 @@ HTML AST
 │   Transform Pipeline     │
 │                          │
 │  normalize Phase         │
-│  ├─ html-normalize       │
-│  └─ text-merge           │
+│  └─ html-normalize       │
 │                          │
 │  structure Phase         │
 │  ├─ block-structure      │
 │  ├─ list-structure       │
-│  └─ table-structure      │
+│  ├─ table-structure      │
+│  └─ text-merge           │
 │                          │
 │  capability Phase        │
 │  ├─ style-capability     │
@@ -215,7 +215,7 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 - 遍历 AST，标记纯空白文本节点（通过 `isWhitespace` 标记）
 - 后续 `block-structure` 会过滤这些节点，避免产生无意义的 `<text> </text>` 节点
 
-#### 5.1.2 text-merge 插件
+#### 5.1.2 text-merge 插件（在 structure phase 执行）
 
 **职责：** 合并相邻文本节点
 
@@ -225,6 +225,7 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 
 - 合并相邻的文本节点，减少节点数量
 - 提升 Lynx 渲染性能
+- 插件 `phase = structure`，并使用较大 `order` 在结构处理后执行
 
 ---
 
@@ -599,7 +600,7 @@ const myPlugin: TransformPlugin = {
 | Phase      | Plugin            | Order |
 | ---------- | ----------------- | ----- |
 | normalize  | html-normalize    | 10    |
-| normalize  | text-merge        | 20    |
+| structure  | text-merge        | 999   |
 | structure  | block-structure   | 10    |
 | structure  | list-structure    | 20    |
 | structure  | table-structure   | 30    |
@@ -618,7 +619,7 @@ const myPlugin: TransformPlugin = {
 
 **内建插件：**
 
-- `src/transform/plugins/normalize/` - html-normalize、text-merge
+- `src/transform/plugins/normalize/` - html-normalize、text-merge（phase: structure）
 - `src/transform/plugins/structure/` - block-structure、list-structure、table-structure
 - `src/transform/plugins/capability/` - style-capability、layout-capability、media-capability
 
