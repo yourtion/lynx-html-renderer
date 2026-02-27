@@ -1,5 +1,5 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   getPluginInfo,
   getPluginInfoByName,
@@ -300,6 +300,72 @@ describe('Plugin Info API', () => {
       expect(capturedMetadata.removeAllClass).toBe(false);
       expect(capturedMetadata.removeAllStyle).toBe(true);
       expect(capturedMetadata.styleMode).toBe('css-class');
+    });
+  });
+
+  describe('Debug Mode', () => {
+    it('should collect plugin timing metrics when debug=true', () => {
+      let capturedMetrics:
+        | {
+            pluginTimings: Map<string, number>;
+            nodeCount: number;
+          }
+        | undefined;
+
+      const inspector = {
+        name: 'metrics-inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: {
+          metrics?: { pluginTimings: Map<string, number>; nodeCount: number };
+        }) => {
+          capturedMetrics = ctx.metrics;
+        },
+      };
+
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      transformHTML('<div><p>hello</p><strong>world</strong></div>', {
+        debug: true,
+        plugins: { extra: [inspector] },
+      });
+
+      expect(capturedMetrics).toBeDefined();
+      expect(capturedMetrics?.pluginTimings.size).toBeGreaterThan(0);
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+
+      debugSpy.mockRestore();
+    });
+
+    it('should not collect metrics or emit debug logs when debug is disabled', () => {
+      let capturedMetrics:
+        | {
+            pluginTimings: Map<string, number>;
+            nodeCount: number;
+          }
+        | undefined;
+
+      const inspector = {
+        name: 'metrics-inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: {
+          metrics?: { pluginTimings: Map<string, number>; nodeCount: number };
+        }) => {
+          capturedMetrics = ctx.metrics;
+        },
+      };
+
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      transformHTML('<div>no debug</div>', {
+        plugins: { extra: [inspector] },
+      });
+
+      expect(capturedMetrics).toBeUndefined();
+      expect(debugSpy).not.toHaveBeenCalled();
+
+      debugSpy.mockRestore();
     });
   });
 });

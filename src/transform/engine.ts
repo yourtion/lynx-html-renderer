@@ -20,6 +20,34 @@ const PHASES: TransformPhase[] = [
   'finalize',
 ];
 
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && performance.now) {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function recordPluginTiming(
+  ctx: TransformContextImpl,
+  pluginName: string,
+  durationMs: number,
+): void {
+  if (!ctx.metrics) return;
+
+  const current = ctx.metrics.pluginTimings.get(pluginName) ?? 0;
+  ctx.metrics.pluginTimings.set(pluginName, current + durationMs);
+}
+
+function countLynxNodes(node: LynxNode): number {
+  if (node.kind !== 'element') return 1;
+
+  let total = 1;
+  for (const child of node.children) {
+    total += countLynxNodes(child);
+  }
+  return total;
+}
+
 /**
  * 遍历 LynxNode 树
  * 用于批量处理能力阶段
@@ -56,13 +84,22 @@ function executeCapabilityPhaseWithBatching(
   // 步骤 1: 注册所有处理器
   for (const plugin of capabilityPlugins) {
     if (plugin.registerCapabilityHandlers) {
+      const registerStart = nowMs();
       const handlers = plugin.registerCapabilityHandlers(ctx);
+      recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
       for (const [nodeKind, handler] of handlers) {
-        ctx.utils.registerHandler(nodeKind, handler);
+        ctx.utils.registerHandler(nodeKind, (node, context) => {
+          const handlerStart = nowMs();
+          const result = handler(node, context);
+          recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
+          return result;
+        });
       }
     } else {
       // 回退：使用传统 apply() 方法
+      const applyStart = nowMs();
       plugin.apply(ctx);
+      recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
     }
   }
 
@@ -123,6 +160,13 @@ export function transformHTML(
     ctx.metadata.linkStyle = options.linkStyle;
   }
 
+  if (options?.debug) {
+    ctx.metrics = {
+      pluginTimings: new Map(),
+      nodeCount: 0,
+    };
+  }
+
   // 6. 按阶段执行插件
   for (const phase of PHASES) {
     // 特殊处理 capability 阶段：使用批量处理优化
@@ -135,11 +179,28 @@ export function transformHTML(
       // 其他阶段使用传统方式
       const plugins = resolver.getPluginsByPhase(phase);
       for (const plugin of plugins) {
+        const applyStart = nowMs();
         plugin.apply(ctx);
+        recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
       }
     }
   }
 
+  if (ctx.metrics) {
+    ctx.metrics.nodeCount = countLynxNodes(ctx.root);
+
+    if (options?.debug) {
+      const timingSummary = [...ctx.metrics.pluginTimings.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, duration]) => `${name}: ${duration.toFixed(3)}ms`)
+        .join(', ');
+
+      console.debug(
+        `[lynx-html-renderer] transform completed, nodeCount=${ctx.metrics.nodeCount}, pluginTimings={${timingSummary}}`,
+      );
+    }
+  }
+
   // 7. 返回根节点的子节点
-  return root.children;
+  return ctx.root.kind === 'element' ? ctx.root.children : [];
 }
