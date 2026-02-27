@@ -19,20 +19,6 @@ class ViewAdapter implements LynxRenderAdapter {
 
 class TextAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {
-    // Special handling for transparent text wrappers with single text child with marks
-    // These are created by inline formatting tags to avoid nested <text> elements
-    if (hasTextChildWithMarks(node) && !node.props.style) {
-      const innermostText = getInnermostTextWithMarks(node);
-      if (
-        innermostText &&
-        innermostText.kind === 'text' &&
-        innermostText.marks
-      ) {
-        // Render the innermost text child directly with its marks converted to styles
-        return renderNode(innermostText, ctx);
-      }
-    }
-
     // Special handling for text elements with className or style and single text child
     // This unwraps redundant <text class/style="..."><text>content</text></text> structures
     // e.g., when h1 maps to <text>, we get: <text style="..."><text>Title</text></text>
@@ -336,53 +322,6 @@ function renderNode(
   // 处理元素节点
   const adapter = resolveAdapter(node);
   return adapter.render(node, ctx);
-}
-
-// 辅助函数：检查是否有带 marks 的文本子节点
-function hasTextChildWithMarks(node: LynxElementNode): boolean {
-  if (node.children.length === 1 && node.children[0].kind === 'text') {
-    const textNode = node.children[0];
-    return (
-      textNode.marks !== undefined && Object.keys(textNode.marks).length > 0
-    );
-  }
-  // Also check if there's a single child which is another text wrapper (transparent wrapper from inline formatting)
-  if (
-    node.children.length === 1 &&
-    node.children[0].kind === 'element' &&
-    node.children[0].tag === 'text'
-  ) {
-    const childElement = node.children[0];
-    // Check if this is a transparent wrapper (no props.style)
-    if (!childElement.props.style && hasTextChildWithMarks(childElement)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// 辅助函数：获取最内层的带 marks 的文本节点
-function getInnermostTextWithMarks(node: LynxElementNode): LynxNode | null {
-  if (node.children.length === 1) {
-    const child = node.children[0];
-    // Direct text child with marks
-    if (
-      child.kind === 'text' &&
-      child.marks &&
-      Object.keys(child.marks).length > 0
-    ) {
-      return child;
-    }
-    // Transparent wrapper (element with tag 'text', no style)
-    if (
-      child.kind === 'element' &&
-      child.tag === 'text' &&
-      !child.props.style
-    ) {
-      return getInnermostTextWithMarks(child);
-    }
-  }
-  return null;
 }
 
 /**

@@ -56,7 +56,7 @@ HTML AST
 │  └─ media-capability     │
 │                          │
 │  finalize Phase          │
-│  (reserved)              │
+│  └─ text-normalize-finalize │
 └──────────────────────────┘
    ↓
 LynxNode Tree (IR)
@@ -595,7 +595,7 @@ const myPlugin: TransformPlugin = {
 - ✅ 不牺牲 MVP 落地速度
 - ✅ 保持向后兼容性
 
-**内建插件清单（8 个）：**
+**内建插件清单（9 个）：**
 
 | Phase      | Plugin            | Order |
 | ---------- | ----------------- | ----- |
@@ -604,9 +604,11 @@ const myPlugin: TransformPlugin = {
 | structure  | block-structure   | 10    |
 | structure  | list-structure    | 20    |
 | structure  | table-structure   | 30    |
+| structure  | text-merge        | 999   |
 | capability | style-capability  | 10    |
 | capability | layout-capability | 20    |
 | capability | media-capability  | 100   |
+| finalize   | text-normalize-finalize | 10 |
 
 ## 10. 相关文件
 
@@ -622,6 +624,7 @@ const myPlugin: TransformPlugin = {
 - `src/transform/plugins/normalize/` - html-normalize、text-merge（phase: structure）
 - `src/transform/plugins/structure/` - block-structure、list-structure、table-structure
 - `src/transform/plugins/capability/` - style-capability、layout-capability、media-capability
+- `src/transform/plugins/finalize/` - text-normalize-finalize
 
 **工具函数：**
 

@@ -3,6 +3,7 @@ import { layoutCapabilityPlugin } from './capability/layout-capability.plugin';
 import { mediaCapabilityPlugin } from './capability/media-capability.plugin';
 // Capability Phase
 import { styleCapabilityPlugin } from './capability/style-capability.plugin';
+import { textNormalizeFinalizePlugin } from './finalize/text-normalize-finalize.plugin';
 // Normalize Phase
 import { htmlNormalizePlugin } from './normalize/html-normalize.plugin';
 import { textMergePlugin } from './normalize/text-merge.plugin';
@@ -29,6 +30,9 @@ export const builtinPlugins: TransformPlugin[] = [
   styleCapabilityPlugin,
   layoutCapabilityPlugin,
   mediaCapabilityPlugin,
+
+  // Finalize Phase
+  textNormalizeFinalizePlugin,
 ];
 
 // 导出所有插件
@@ -41,6 +45,7 @@ export {
   styleCapabilityPlugin,
   layoutCapabilityPlugin,
   mediaCapabilityPlugin,
+  textNormalizeFinalizePlugin,
 };
 
 /**
