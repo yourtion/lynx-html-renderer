@@ -179,6 +179,7 @@ interface HTMLRendererProps {
   removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
   styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
   rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
+  debug?: boolean;                  // 是否启用 transform 调试日志（默认：false）
   adapterRegistry?: AdapterRegistry; // 可选：组件级适配器注册表（默认使用全局注册表）
 }
 ```

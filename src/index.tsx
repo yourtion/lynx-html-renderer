@@ -343,6 +343,8 @@ export interface HTMLRendererProps {
   darkMode?: boolean;
   /** 自定义链接样式（仅 inline 模式生效） */
   linkStyle?: Record<string, string | number>;
+  /** 启用 transform 调试日志与指标采集（默认: false） */
+  debug?: boolean;
   /** 可选：组件级适配器注册表，未提供时使用全局默认注册表 */
   adapterRegistry?: AdapterRegistry;
 }
@@ -358,6 +360,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
     linkStyle,
+    debug = false,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -369,8 +372,9 @@ export const HTMLRenderer = memo(function HTMLRenderer(
         removeAllStyle,
         styleMode,
         linkStyle,
+        debug,
       }),
-    [html, removeAllClass, removeAllStyle, styleMode, linkStyle],
+    [html, removeAllClass, removeAllStyle, styleMode, linkStyle, debug],
   );
   const renderCtx = useMemo(
     () => createRenderContext(customAdapterRegistry ?? defaultAdapterRegistry),
@@ -419,6 +423,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     rootClassName = 'lynx-html-renderer',
     darkMode = false,
     linkStyle,
+    debug = false,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -427,6 +432,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     removeAllStyle,
     styleMode,
     linkStyle,
+    debug,
   });
   const renderCtx = createRenderContext(
     customAdapterRegistry ?? defaultAdapterRegistry,

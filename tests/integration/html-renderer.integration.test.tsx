@@ -12,7 +12,7 @@ import {
   type LynxRenderAdapter,
 } from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('HTMLRenderer Integration Tests', () => {
   describe('Basic Rendering', () => {
@@ -215,6 +215,17 @@ describe('HTMLRenderer Integration Tests', () => {
       rerender(<HTMLRenderer html={html} />);
 
       expect(container.textContent).toContain('Memoized');
+    });
+  });
+
+  describe('Debug Option', () => {
+    it('should pass debug option through to transform pipeline', () => {
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      render(<HTMLRenderer html="<div>debug</div>" debug />);
+
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+      debugSpy.mockRestore();
     });
   });
 
