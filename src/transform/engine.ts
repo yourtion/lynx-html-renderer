@@ -54,14 +54,21 @@ function countLynxNodes(node: LynxNode): number {
  */
 function walkLynxNodeTree(
   node: LynxNode,
-  callback: (node: LynxNode) => void,
+  callback: (
+    node: LynxNode,
+    parent: LynxNode | null,
+    index: number,
+  ) => void,
+  parent: LynxNode | null = null,
+  index = -1,
 ): void {
-  callback(node);
+  callback(node, parent, index);
 
   // 只有元素节点有子节点
   if (node.kind === 'element' && node.children) {
-    for (const child of node.children) {
-      walkLynxNodeTree(child, callback);
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i];
+      walkLynxNodeTree(child, callback, node, i);
     }
   }
 }
@@ -103,11 +110,11 @@ function executeCapabilityPhaseWithBatching(
     }
   }
 
-  // 步骤 2: 收集替换请求（延迟应用）
-  const replacements: Array<{ target: LynxNode; next: LynxNode }> = [];
+  // 步骤 2: 收集替换操作（延迟应用）
+  const replacementOps: Array<() => void> = [];
 
   if (ctx._handlerRegistry && ctx._handlerRegistry.size > 0) {
-    walkLynxNodeTree(ctx.root, (node) => {
+    walkLynxNodeTree(ctx.root, (node, parent, index) => {
       // 对于元素节点，使用 tag 来匹配处理器
       // 对于文本节点，使用 'text' 来匹配
       const key = node.kind === 'element' ? node.tag : node.kind;
@@ -116,15 +123,24 @@ function executeCapabilityPhaseWithBatching(
       for (const handler of handlers) {
         const result = handler(node, ctx);
         if (result && result !== node) {
-          // 收集替换请求，不立即执行
-          replacements.push({ target: node, next: result });
+          // 收集替换操作，不立即执行
+          replacementOps.push(() => {
+            if (!parent) {
+              ctx.root = result;
+              return;
+            }
+
+            if (parent.kind === 'element' && index >= 0) {
+              parent.children[index] = result;
+            }
+          });
         }
       }
     });
 
     // 步骤 3: 遍历完成后统一应用替换
-    for (const { target, next } of replacements) {
-      ctx.utils.replaceNode(target, next);
+    for (const applyReplacement of replacementOps) {
+      applyReplacement();
     }
 
     ctx._handlerRegistry.clear();

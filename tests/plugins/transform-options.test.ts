@@ -388,4 +388,55 @@ describe('Plugin Info API', () => {
       debugSpy.mockRestore();
     });
   });
+
+  describe('Capability Handler Replacements', () => {
+    it('should apply text replacements in a single capability traversal', () => {
+      const uppercasePlugin = {
+        name: 'uppercase-text',
+        phase: 'capability' as const,
+        order: 5,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              (
+                node: { kind: string; content?: string },
+              ): undefined | { kind: 'text'; content: string } => {
+                if (node.kind !== 'text' || node.content === undefined) {
+                  return undefined;
+                }
+                return { kind: 'text', content: node.content.toUpperCase() };
+              },
+            ],
+          ]),
+        apply: () => {},
+      };
+
+      const result = transformHTML('<div>one<span>two</span>three</div>', {
+        plugins: { extra: [uppercasePlugin] },
+      });
+
+      const collectText = (nodes: Array<{ kind: string; content?: string; children?: unknown[] }>): string => {
+        let output = '';
+        for (const node of nodes) {
+          if (node.kind === 'text' && node.content) {
+            output += node.content;
+          } else if (node.kind === 'element' && Array.isArray(node.children)) {
+            output += collectText(
+              node.children as Array<{
+                kind: string;
+                content?: string;
+                children?: unknown[];
+              }>,
+            );
+          }
+        }
+        return output;
+      };
+
+      expect(collectText(result as Array<{ kind: string; content?: string; children?: unknown[] }>)).toBe(
+        'ONETWOTHREE',
+      );
+    });
+  });
 });
