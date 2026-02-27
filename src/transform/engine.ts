@@ -76,11 +76,9 @@ function walkLynxNodeTree(
 /**
  * 执行能力阶段（批量处理优化）
  *
- * 如果插件实现了 registerCapabilityHandlers，则使用批量处理：
+ * capability 阶段使用 registerCapabilityHandlers 批量处理：
  * - 所有处理器在一次遍历中调用
  * - 减少树遍历次数从 3 次到 1 次
- *
- * 否则回退到传统方式：调用每个插件的 apply() 方法
  */
 function executeCapabilityPhaseWithBatching(
   getPlugins: (phase: TransformPhase) => TransformPlugin[],
@@ -90,23 +88,22 @@ function executeCapabilityPhaseWithBatching(
 
   // 步骤 1: 注册所有处理器
   for (const plugin of capabilityPlugins) {
-    if (plugin.registerCapabilityHandlers) {
-      const registerStart = nowMs();
-      const handlers = plugin.registerCapabilityHandlers(ctx);
-      recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
-      for (const [nodeKind, handler] of handlers) {
-        ctx.utils.registerHandler(nodeKind, (node, context) => {
-          const handlerStart = nowMs();
-          const result = handler(node, context);
-          recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
-          return result;
-        });
-      }
-    } else {
-      // 回退：使用传统 apply() 方法
-      const applyStart = nowMs();
-      plugin.apply(ctx);
-      recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
+    if (!plugin.registerCapabilityHandlers) {
+      throw new Error(
+        `Capability plugin "${plugin.name}" must implement registerCapabilityHandlers()`,
+      );
+    }
+
+    const registerStart = nowMs();
+    const handlers = plugin.registerCapabilityHandlers(ctx);
+    recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
+    for (const [nodeKind, handler] of handlers) {
+      ctx.utils.registerHandler(nodeKind, (node, context) => {
+        const handlerStart = nowMs();
+        const result = handler(node, context);
+        recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
+        return result;
+      });
     }
   }
 
@@ -194,6 +191,11 @@ export function transformHTML(
       // 其他阶段使用传统方式
       const plugins = resolver.getPluginsByPhase(phase);
       for (const plugin of plugins) {
+        if (!plugin.apply) {
+          throw new Error(
+            `Plugin "${plugin.name}" in phase "${phase}" must implement apply()`,
+          );
+        }
         const applyStart = nowMs();
         plugin.apply(ctx);
         recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);

@@ -95,19 +95,17 @@ export interface TransformPlugin {
   /** 是否默认启用 */
   enabledByDefault?: boolean;
 
-  /** 可选：注册能力处理器（推荐用于 capability 阶段）
+  /** capability 阶段必需：注册能力处理器
    *
    * 返回一个 Map，key 是节点类型（tag），value 是对应的处理器
    * 引擎会在一次遍历中调用所有相关的处理器，提高性能
-   *
-   * 如果此方法存在，将优先于 apply() 使用
    */
   registerCapabilityHandlers?: (
     ctx: TransformContext,
   ) => Map<string, NodeCapabilityHandler>;
 
-  /** 插件执行入口（传统方式，向后兼容） */
-  apply(ctx: TransformContext): void;
+  /** normalize/structure/finalize 阶段执行入口 */
+  apply?: (ctx: TransformContext) => void;
 }
 
 /** 节点能力处理器类型 */
@@ -189,7 +187,11 @@ plugins.sort((a, b) => {
 for (const phase of ["normalize", "structure", "capability", "finalize"]) {
   const plugins = resolver.getPluginsByPhase(phase);
   for (const plugin of plugins) {
-    plugin.apply(ctx);
+    if (phase === "capability") {
+      // capability 阶段要求 registerCapabilityHandlers
+    } else {
+      plugin.apply?.(ctx);
+    }
   }
 }
 ```
@@ -378,13 +380,7 @@ const myCapabilityPlugin: TransformPlugin = {
     return handlers;
   },
 
-  // 传统 apply() 方法（向后兼容）
-  apply(ctx) {
-    // 如果 registerCapabilityHandlers 存在，此方法将被忽略
-    ctx.utils.walkAst((node) => {
-      // ... 传统实现 ...
-    });
-  },
+  // capability 插件不再支持 apply() 回退路径
 };
 ```
 

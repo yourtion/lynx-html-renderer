@@ -216,7 +216,10 @@ describe('Plugin Info API', () => {
           name: 'test-capability',
           phase: 'capability' as const,
           order: 10,
-          apply: () => executionOrder.push('capability'),
+          registerCapabilityHandlers: () => {
+            executionOrder.push('capability');
+            return new Map();
+          },
         },
       ];
 

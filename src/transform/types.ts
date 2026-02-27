@@ -68,19 +68,17 @@ export interface TransformPlugin {
   /** 是否默认启用 */
   enabledByDefault?: boolean;
 
-  /** 可选：注册能力处理器（推荐用于 capability 阶段）
+  /** 注册能力处理器（capability 阶段必需）
    *
    * 返回一个 Map，key 是节点类型（kind），value 是对应的处理器
    * 引擎会在一次遍历中调用所有相关的处理器，提高性能
-   *
-   * 如果此方法存在，将优先于 apply() 使用
    */
   registerCapabilityHandlers?: (
     ctx: TransformContext,
   ) => Map<string, NodeCapabilityHandler>;
 
-  /** 插件执行入口（传统方式，向后兼容） */
-  apply(ctx: TransformContext): void;
+  /** 插件执行入口（normalize/structure/finalize 阶段使用） */
+  apply?: (ctx: TransformContext) => void;
 }
 
 /**
