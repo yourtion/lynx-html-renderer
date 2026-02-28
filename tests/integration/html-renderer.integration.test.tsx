@@ -7,8 +7,8 @@
 
 import '@testing-library/jest-dom';
 import {
-  HTMLRenderer,
   createDefaultRegistry,
+  HTMLRenderer,
   type LynxRenderAdapter,
 } from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
@@ -234,7 +234,11 @@ describe('HTMLRenderer Integration Tests', () => {
       const customRegistry = createDefaultRegistry();
       const customTextAdapter: LynxRenderAdapter = {
         render(node, ctx) {
-          return <view className="custom-text-adapter">{ctx.renderChildren(node)}</view>;
+          return (
+            <view className="custom-text-adapter">
+              {ctx.renderChildren(node)}
+            </view>
+          );
         },
       };
       customRegistry.registerByTag('text', customTextAdapter);
@@ -244,9 +248,13 @@ describe('HTMLRenderer Integration Tests', () => {
       const { container: customContainer } = render(
         <HTMLRenderer html={html} adapterRegistry={customRegistry} />,
       );
-      expect(customContainer.querySelector('.custom-text-adapter')).toBeDefined();
+      expect(
+        customContainer.querySelector('.custom-text-adapter'),
+      ).toBeDefined();
 
-      const { container: defaultContainer } = render(<HTMLRenderer html={html} />);
+      const { container: defaultContainer } = render(
+        <HTMLRenderer html={html} />,
+      );
       expect(defaultContainer.querySelector('.custom-text-adapter')).toBeNull();
     });
   });

@@ -275,7 +275,9 @@ function createRenderContext(registry: AdapterRegistry): RenderContext {
     renderChildren(node: LynxElementNode) {
       return node.children.map((child, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-        <React.Fragment key={index}>{renderContext.renderNode(child)}</React.Fragment>
+        <React.Fragment key={index}>
+          {renderContext.renderNode(child)}
+        </React.Fragment>
       ));
     },
 
@@ -390,7 +392,9 @@ export const HTMLRenderer = memo(function HTMLRenderer(
       <view className={containerClass}>
         {nodes.map((node, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
+          <React.Fragment key={index}>
+            {renderCtx.renderNode(node)}
+          </React.Fragment>
         ))}
       </view>
     );
@@ -447,7 +451,9 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
       <view className={containerClass}>
         {nodes.map((node, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
+          <React.Fragment key={index}>
+            {renderCtx.renderNode(node)}
+          </React.Fragment>
         ))}
       </view>
     );

@@ -54,11 +54,7 @@ function countLynxNodes(node: LynxNode): number {
  */
 function walkLynxNodeTree(
   node: LynxNode,
-  callback: (
-    node: LynxNode,
-    parent: LynxNode | null,
-    index: number,
-  ) => void,
+  callback: (node: LynxNode, parent: LynxNode | null, index: number) => void,
   parent: LynxNode | null = null,
   index = -1,
 ): void {

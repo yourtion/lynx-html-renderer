@@ -1,8 +1,4 @@
-import type {
-  LynxElementNode,
-  LynxNode,
-  TransformPlugin,
-} from '../../types';
+import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 function isTransparentTextWrapper(node: LynxElementNode): boolean {
   if (node.tag !== 'text') return false;

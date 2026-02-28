@@ -402,9 +402,10 @@ describe('Plugin Info API', () => {
           new Map([
             [
               'text',
-              (
-                node: { kind: string; content?: string },
-              ): undefined | { kind: 'text'; content: string } => {
+              (node: {
+                kind: string;
+                content?: string;
+              }): undefined | { kind: 'text'; content: string } => {
                 if (node.kind !== 'text' || node.content === undefined) {
                   return undefined;
                 }
@@ -419,7 +420,9 @@ describe('Plugin Info API', () => {
         plugins: { extra: [uppercasePlugin] },
       });
 
-      const collectText = (nodes: Array<{ kind: string; content?: string; children?: unknown[] }>): string => {
+      const collectText = (
+        nodes: Array<{ kind: string; content?: string; children?: unknown[] }>,
+      ): string => {
         let output = '';
         for (const node of nodes) {
           if (node.kind === 'text' && node.content) {
@@ -437,9 +440,15 @@ describe('Plugin Info API', () => {
         return output;
       };
 
-      expect(collectText(result as Array<{ kind: string; content?: string; children?: unknown[] }>)).toBe(
-        'ONETWOTHREE',
-      );
+      expect(
+        collectText(
+          result as Array<{
+            kind: string;
+            content?: string;
+            children?: unknown[];
+          }>,
+        ),
+      ).toBe('ONETWOTHREE');
     });
   });
 });
