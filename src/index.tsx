@@ -123,12 +123,7 @@ setGlobalRegistry(defaultAdapterRegistry);
 function createRenderContext(registry: AdapterRegistry): RenderContext {
   const renderContext: RenderContext = {
     renderChildren(node: LynxElementNode) {
-      return node.children.map((child, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-        <React.Fragment key={index}>
-          {renderContext.renderNode(child)}
-        </React.Fragment>
-      ));
+      return node.children.map((child) => renderContext.renderNode(child));
     },
 
     renderNode(node: LynxNode) {
@@ -240,21 +235,13 @@ export const HTMLRenderer = memo(function HTMLRenderer(
       : rootClassName;
     return (
       <view className={containerClass}>
-        {nodes.map((node, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>
-            {renderCtx.renderNode(node)}
-          </React.Fragment>
-        ))}
+        {nodes.map((node) => renderCtx.renderNode(node))}
       </view>
     );
   }
 
   // 内联样式模式：直接返回节点数组（保持向后兼容）
-  return nodes.map((node, index) => (
-    // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-    <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
-  ));
+  return nodes.map((node) => renderCtx.renderNode(node));
 });
 
 /**
@@ -299,20 +286,12 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
       : rootClassName;
     return (
       <view className={containerClass}>
-        {nodes.map((node, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-          <React.Fragment key={index}>
-            {renderCtx.renderNode(node)}
-          </React.Fragment>
-        ))}
+        {nodes.map((node) => renderCtx.renderNode(node))}
       </view>
     );
   }
 
-  return nodes.map((node, index) => (
-    // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-    <React.Fragment key={index}>{renderCtx.renderNode(node)}</React.Fragment>
-  ));
+  return nodes.map((node) => renderCtx.renderNode(node));
 }
 
 // 为向后兼容，将 HTMLRenderer 也作为函数导出（允许直接调用）
