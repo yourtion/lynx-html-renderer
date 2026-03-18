@@ -86,7 +86,7 @@ export interface LynxTextNode extends LynxBaseNode {
   inheritableClasses?: string;
 
   meta?: {
-    source?: 'text' | 'br';
+    source?: 'text' | 'br' | 'li-marker';
   };
 }
 

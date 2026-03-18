@@ -236,6 +236,18 @@ function convertAstNode(
 
     // 添加 defaultStyle 和 capabilities
     if (isElementNode(lynxNode)) {
+      if ((tag === 'td' || tag === 'th') && astNode.attribs) {
+        const rowSpan = astNode.attribs.rowspan;
+        const colSpan = astNode.attribs.colspan;
+
+        if (rowSpan) {
+          lynxNode.props.rowSpan = Number.parseInt(rowSpan, 10);
+        }
+        if (colSpan) {
+          lynxNode.props.colSpan = Number.parseInt(colSpan, 10);
+        }
+      }
+
       // 添加 defaultStyle
       if (
         mapping.defaultStyle &&

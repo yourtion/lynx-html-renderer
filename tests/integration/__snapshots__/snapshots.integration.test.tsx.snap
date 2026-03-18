@@ -75,68 +75,66 @@ exports[`Snapshot Tests with Verification > All Table Elements > should match sn
         </text>
       </view>
     </view>
-    <view>
+    <view
+      style="display: flex; flex-direction: row;"
+    >
       <view
-        style="display: flex; flex-direction: row;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
       >
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+        <text
+          style="color: var(--lhr-text-color-secondary);"
         >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 1-1
-          </text>
-        </view>
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
-        >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 1-2
-          </text>
-        </view>
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
-        >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 1-3
-          </text>
-        </view>
+          Body 1-1
+        </text>
       </view>
       <view
-        style="display: flex; flex-direction: row;"
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
       >
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+        <text
+          style="color: var(--lhr-text-color-secondary);"
         >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 2-1
-          </text>
-        </view>
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          Body 1-2
+        </text>
+      </view>
+      <view
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+      >
+        <text
+          style="color: var(--lhr-text-color-secondary);"
         >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 2-2
-          </text>
-        </view>
-        <view
-          style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          Body 1-3
+        </text>
+      </view>
+    </view>
+    <view
+      style="display: flex; flex-direction: row;"
+    >
+      <view
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+      >
+        <text
+          style="color: var(--lhr-text-color-secondary);"
         >
-          <text
-            style="color: var(--lhr-text-color-secondary);"
-          >
-            Body 2-3
-          </text>
-        </view>
+          Body 2-1
+        </text>
+      </view>
+      <view
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+      >
+        <text
+          style="color: var(--lhr-text-color-secondary);"
+        >
+          Body 2-2
+        </text>
+      </view>
+      <view
+        style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+      >
+        <text
+          style="color: var(--lhr-text-color-secondary);"
+        >
+          Body 2-3
+        </text>
       </view>
     </view>
     <view
@@ -369,7 +367,12 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           <text
             style="color: var(--lhr-text-color);"
           >
-            • Feature 1 with 
+            • 
+          </text>
+          <text
+            style="color: var(--lhr-text-color);"
+          >
+            Feature 1 with 
           </text>
           <text
             style="color: var(--lhr-text-color); font-weight: bold;"
@@ -383,7 +386,12 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           <text
             style="color: var(--lhr-text-color);"
           >
-            • Feature 2
+            • 
+          </text>
+          <text
+            style="color: var(--lhr-text-color);"
+          >
+            Feature 2
           </text>
         </view>
         <view
@@ -393,6 +401,11 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="color: var(--lhr-text-color);"
           >
             • 
+          </text>
+          <text
+            style="color: var(--lhr-text-color);"
+          >
+            
                 Feature 3 with nested list:
                 
           </text>
@@ -405,7 +418,12 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
               <text
                 style="color: var(--lhr-text-color);"
               >
-                • Sub-feature 3.1
+                • 
+              </text>
+              <text
+                style="color: var(--lhr-text-color);"
+              >
+                Sub-feature 3.1
               </text>
             </view>
             <view
@@ -414,7 +432,12 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
               <text
                 style="color: var(--lhr-text-color);"
               >
-                • Sub-feature 3.2
+                • 
+              </text>
+              <text
+                style="color: var(--lhr-text-color);"
+              >
+                Sub-feature 3.2
               </text>
             </view>
           </view>
@@ -463,68 +486,66 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             </text>
           </view>
         </view>
-        <view>
+        <view
+          style="display: flex; flex-direction: row;"
+        >
           <view
-            style="display: flex; flex-direction: row;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
           >
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+            <text
+              style="color: var(--lhr-text-color-secondary);"
             >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Item 1
-              </text>
-            </view>
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
-            >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Type A
-              </text>
-            </view>
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
-            >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Description 1
-              </text>
-            </view>
+              Item 1
+            </text>
           </view>
           <view
-            style="display: flex; flex-direction: row;"
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
           >
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+            <text
+              style="color: var(--lhr-text-color-secondary);"
             >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Item 2
-              </text>
-            </view>
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+              Type A
+            </text>
+          </view>
+          <view
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          >
+            <text
+              style="color: var(--lhr-text-color-secondary);"
             >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Type B
-              </text>
-            </view>
-            <view
-              style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+              Description 1
+            </text>
+          </view>
+        </view>
+        <view
+          style="display: flex; flex-direction: row;"
+        >
+          <view
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          >
+            <text
+              style="color: var(--lhr-text-color-secondary);"
             >
-              <text
-                style="color: var(--lhr-text-color-secondary);"
-              >
-                Description 2
-              </text>
-            </view>
+              Item 2
+            </text>
+          </view>
+          <view
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          >
+            <text
+              style="color: var(--lhr-text-color-secondary);"
+            >
+              Type B
+            </text>
+          </view>
+          <view
+            style="display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; padding: 8px; border-width: 1px; border-style: solid; border-color: var(--lhr-border-color); color: var(--lhr-text-color-secondary);"
+          >
+            <text
+              style="color: var(--lhr-text-color-secondary);"
+            >
+              Description 2
+            </text>
           </view>
         </view>
       </view>
@@ -809,7 +830,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • Unordered item 1
+          • 
+        </text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
+          Unordered item 1
         </text>
       </view>
       <view
@@ -818,7 +844,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • Unordered item 2
+          • 
+        </text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
+          Unordered item 2
         </text>
       </view>
       <view
@@ -827,7 +858,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • Nested:
+          • 
+        </text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
+          Nested:
               
         </text>
         <view
@@ -839,7 +875,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
             <text
               style="color: var(--lhr-text-color);"
             >
-              • Nested item 1
+              • 
+            </text>
+            <text
+              style="color: var(--lhr-text-color);"
+            >
+              Nested item 1
             </text>
           </view>
           <view
@@ -848,7 +889,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
             <text
               style="color: var(--lhr-text-color);"
             >
-              • Nested item 2
+              • 
+            </text>
+            <text
+              style="color: var(--lhr-text-color);"
+            >
+              Nested item 2
             </text>
           </view>
         </view>
@@ -863,7 +909,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          1. Ordered item 1
+          1. 
+        </text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
+          Ordered item 1
         </text>
       </view>
       <view
@@ -872,7 +923,12 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          2. Ordered item 2
+          2. 
+        </text>
+        <text
+          style="color: var(--lhr-text-color);"
+        >
+          Ordered item 2
         </text>
       </view>
     </view>
@@ -917,7 +973,9 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
         <view
           style="flex-direction: column; color: var(--lhr-text-color);"
         >
-          <text>
+          <text
+            style="color: var(--lhr-text-color);"
+          >
             • 
           </text>
           <text
@@ -929,7 +987,9 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
         <view
           style="flex-direction: column; color: var(--lhr-text-color);"
         >
-          <text>
+          <text
+            style="color: var(--lhr-text-color);"
+          >
             • 
           </text>
           <text

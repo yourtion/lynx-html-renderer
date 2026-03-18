@@ -12,6 +12,14 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
 
     // Only merge if both are text nodes AND have the same marks
     if (last?.kind === 'text' && node.kind === 'text') {
+      if (
+        last.meta?.source === 'li-marker' ||
+        node.meta?.source === 'li-marker'
+      ) {
+        merged.push(node);
+        continue;
+      }
+
       const lastMarks = last.marks || {};
       const nodeMarks = node.marks || {};
 

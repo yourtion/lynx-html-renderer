@@ -1,9 +1,12 @@
+import { createLynxNode } from '../../../lynx/factory';
 import type {
   LynxElementNode,
   LynxNode,
   LynxTextNode,
   TransformPlugin,
 } from '../../types';
+import { extractInheritableStyles } from '../../utils/inheritable-properties';
+import { BLOCK_TAG_MAP } from './tag-config';
 
 /**
  * 列表结构插件
@@ -54,34 +57,27 @@ function addListMarkers(listElement: LynxElementNode): void {
       // 生成列表标记
       const marker = isOrdered ? `${counter}. ` : '• ';
       counter++;
+      const firstTextChild =
+        liElement.children.find(
+          (node): node is LynxTextNode => node.kind === 'text',
+        ) ?? null;
+      const fallbackStyles = extractInheritableStyles(
+        BLOCK_TAG_MAP.li.defaultStyle,
+      );
 
-      // 尝试合并标记与第一个文本子节点
-      if (
-        liElement.children.length > 0 &&
-        liElement.children[0].kind === 'text'
-      ) {
-        const firstText = liElement.children[0] as LynxTextNode;
-        return {
-          ...liElement,
-          children: [
-            {
-              ...firstText,
-              content: marker + firstText.content,
-            },
-            ...liElement.children.slice(1),
-          ],
-        };
-      }
-
-      // 如果没有文本子节点，添加标记作为新文本节点
       return {
         ...liElement,
         children: [
-          {
+          createLynxNode({
             kind: 'text',
             content: marker,
+            inheritableStyles:
+              Object.keys(fallbackStyles).length > 0
+                ? fallbackStyles
+                : undefined,
+            inheritableClasses: firstTextChild?.inheritableClasses,
             meta: { source: 'li-marker' },
-          },
+          }),
           ...liElement.children,
         ],
       };
