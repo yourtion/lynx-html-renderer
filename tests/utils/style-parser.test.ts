@@ -248,7 +248,7 @@ describe('Style Parser', () => {
     });
 
     it('should return true for text-decoration', () => {
-      expect(isInheritableProperty('textDecoration')).toBe(true);
+      expect(isInheritableProperty('textDecoration')).toBe(false);
     });
 
     it('should return true for letter-spacing and word-spacing', () => {
@@ -280,9 +280,10 @@ describe('Style Parser', () => {
         'fontWeight',
         'lineHeight',
         'textAlign',
-        'textDecoration',
+        'textIndent',
         'letterSpacing',
         'wordSpacing',
+        'direction',
       ];
 
       inheritableProps.forEach((prop) => {

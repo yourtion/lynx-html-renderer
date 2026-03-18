@@ -149,7 +149,7 @@ const css = generateCSS('my-root-class');
 ## 📦 功能特性 | Features
 
 - ✅ HTML 标签 → Lynx 组件映射
-- ✅ CSS style 安全集解析（白名单）
+- ✅ CSS style 安全集解析（受支持属性集）
 - ✅ 文本语义（strong / em / code）
 - ✅ 基础表格支持（table / tr / td）
 - ✅ 用户自定义渲染组件

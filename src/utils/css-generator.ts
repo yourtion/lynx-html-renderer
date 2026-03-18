@@ -1,30 +1,7 @@
 import type { CSSProperties } from '../lynx/types';
 import { BLOCK_TAG_MAP } from '../transform/plugins/structure/tag-config';
 import { generateAllCSSVariables } from './css-variables';
-
-/**
- * 可以安全应用到 text 节点的属性（核心字体属性 + Lynx 特定属性）
- * 参考: https://lynxjs.org/api/elements/built-in/text
- */
-const TEXT_ONLY_PROPERTIES = new Set([
-  'color',
-  'fontFamily',
-  'fontSize',
-  'fontStyle',
-  'fontWeight',
-  'lineHeight',
-  'textAlign',
-  'textDecoration',
-  'letterSpacing',
-  'wordSpacing',
-  'direction',
-  // Lynx-specific text properties
-  'textShadow',
-  'textStroke',
-  'textIndent',
-  'whiteSpace',
-  'wordBreak',
-] as const);
+import { TEXT_ONLY_PROPERTIES, UNITLESS_PROPERTIES } from './style-schema';
 
 /**
  * 从样式中提取 text-only 属性
@@ -46,20 +23,6 @@ function extractTextOnlyProperties(style: CSSProperties): CSSProperties {
 function camelToKebab(camel: string): string {
   return camel.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
-
-/**
- * 不需要单位的CSS属性列表（使用 camelCase）
- */
-const UNITLESS_PROPERTIES = new Set([
-  'flexGrow',
-  'flexShrink',
-  'flexBasis',
-  'opacity',
-  'zIndex',
-  'order',
-  'fontWeight',
-  'lineHeight',
-]);
 
 /**
  * 将CSS属性值转换为CSS字符串

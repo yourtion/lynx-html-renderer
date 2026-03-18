@@ -9,6 +9,7 @@ import type {
   RenderContext,
   RenderResult,
 } from './render/types';
+import { TEXT_ONLY_PROPERTIES } from './utils/style-schema';
 
 // 内置适配器实现
 class ViewAdapter implements LynxRenderAdapter {
@@ -48,30 +49,6 @@ class RowAdapter implements LynxRenderAdapter {
     return <view style={rowStyle}>{ctx.renderChildren(node)}</view>;
   }
 }
-
-/**
- * 只在 text 元素上有效的 CSS 属性
- * 参考: https://lynxjs.org/api/elements/built-in/text
- */
-const TEXT_ONLY_PROPERTIES = new Set([
-  'color',
-  'fontFamily',
-  'fontSize',
-  'fontStyle',
-  'fontWeight',
-  'lineHeight',
-  'textAlign',
-  'textDecoration',
-  'letterSpacing',
-  'wordSpacing',
-  'direction',
-  // Lynx-specific text properties
-  'textShadow',
-  'textStroke',
-  'textIndent',
-  'whiteSpace',
-  'wordBreak',
-]);
 
 class CellAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {

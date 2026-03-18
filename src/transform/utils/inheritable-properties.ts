@@ -3,27 +3,13 @@
  *
  * 用于处理从父元素到 text 节点的样式继承
  */
+import { INHERITABLE_PROPERTIES } from '../../utils/style-schema';
 
 /**
  * 核心字体可继承属性（仅 inline 模式）
  *
  * 这些属性会从父元素的 defaultStyle 中提取并应用到子 text 节点上
  */
-export const INHERITABLE_PROPERTIES = new Set([
-  'fontFamily',
-  'fontSize',
-  'fontWeight',
-  'fontStyle',
-  'lineHeight',
-  'color',
-  // Additional text properties that can be inherited
-  'textAlign',
-  'textIndent',
-  'letterSpacing',
-  'wordSpacing',
-  'direction',
-] as const);
-
 export type InheritableProperty = typeof INHERITABLE_PROPERTIES extends Set<
   infer T
 >
