@@ -116,5 +116,22 @@ describe('Core HTML Parsing', () => {
         { kind: 'text', content: '  Text 3  ', meta: { source: 'text' } },
       ]);
     });
+
+    it('should preserve whitespace between inline sibling elements', () => {
+      const html = '<strong>Bold</strong> <em>Italic</em>';
+      const result = transformHTML(html);
+
+      const content = result
+        .flatMap((node) =>
+          node.kind === 'text'
+            ? [node.content]
+            : node.children
+                .filter((child) => child.kind === 'text')
+                .map((child) => child.content),
+        )
+        .join('');
+
+      expect(content).toBe('Bold Italic');
+    });
   });
 });

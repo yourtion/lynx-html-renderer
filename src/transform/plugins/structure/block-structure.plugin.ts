@@ -31,8 +31,16 @@ export const blockStructurePlugin: TransformPlugin = {
     // 递归转换 AST 为 LynxNode
     const astChildren = ctx.ast.children ?? [];
     const lynxChildren = astChildren.map(
-      (astNode) =>
-        convertAstNode(astNode, ctx, undefined, undefined, undefined), // 无父级样式/类名
+      (astNode, index) =>
+        convertAstNode(
+          astNode,
+          ctx,
+          undefined,
+          undefined,
+          undefined,
+          astChildren,
+          index,
+        ), // 无父级样式/类名
     );
     ctx.root.children = lynxChildren.filter((n): n is LynxNode => n !== null);
 
@@ -51,6 +59,8 @@ function convertAstNode(
   parentMarks?: Record<string, boolean>,
   parentInheritableStyles?: CSSProperties, // inline 模式：继承的样式
   parentInheritableClasses?: string, // css-class 模式：继承的类名
+  siblings: HtmlAstNode[] = [],
+  siblingIndex = -1,
 ): LynxNode | null {
   // Extract styleMode once at the beginning (optimization: avoid repeated property access)
   const styleMode =
@@ -59,18 +69,16 @@ function convertAstNode(
   // 处理文本节点
   if (isTextNode(astNode)) {
     const content = astNode.data ?? '';
-    // 跳过被 html-normalize 标记的纯空白节点
-    if (isWhitespaceNode(astNode)) {
-      return null;
-    }
-    // 跳过纯空白节点（只包含空白字符且 trim 后为空）
-    if (content.trim().length === 0) {
+    if (
+      (isWhitespaceNode(astNode) || content.trim().length === 0) &&
+      !shouldPreserveInlineWhitespace(siblings, siblingIndex)
+    ) {
       return null;
     }
 
     return createLynxNode({
       kind: 'text',
-      content,
+      content: content.trim().length === 0 ? ' ' : content,
       marks: parentMarks,
       inheritableStyles: parentInheritableStyles, // inline 模式
       inheritableClasses: parentInheritableClasses, // css-class 模式
@@ -111,13 +119,15 @@ function convertAstNode(
 
       // 转换子节点
       const astChildren = astNode.children ?? [];
-      const lynxChildren = astChildren.map((child) =>
+      const lynxChildren = astChildren.map((child, index) =>
         convertAstNode(
           child,
           ctx,
           newMarks,
           parentInheritableStyles, // 保持原样传递
           parentInheritableClasses, // 保持原样传递
+          astChildren,
+          index,
         ),
       );
 
@@ -181,13 +191,15 @@ function convertAstNode(
         style: { ...mapping.defaultStyle, ...linkStyle },
       };
 
-      const linkChildren = astChildren.map((child) =>
+      const linkChildren = astChildren.map((child, index) =>
         convertAstNode(
           child,
           ctx,
           parentMarks,
           mergedInheritableStyles,
           finalInheritableClasses,
+          astChildren,
+          index,
         ),
       );
 
@@ -198,13 +210,15 @@ function convertAstNode(
       );
     }
 
-    const lynxChildren = astChildren.map((child) =>
+    const lynxChildren = astChildren.map((child, index) =>
       convertAstNode(
         child,
         ctx,
         parentMarks,
         mergedInheritableStyles, // inline 模式
         finalInheritableClasses, // css-class 模式（过滤空值）
+        astChildren,
+        index,
       ),
     );
 
@@ -261,4 +275,66 @@ function getTagMarks(tag: string): Record<string, boolean> | undefined {
     code: { code: true },
   };
   return marks[tag];
+}
+
+function findRenderableSibling(
+  siblings: HtmlAstNode[],
+  startIndex: number,
+  step: -1 | 1,
+): HtmlAstNode | null {
+  for (
+    let index = startIndex;
+    index >= 0 && index < siblings.length;
+    index += step
+  ) {
+    const sibling = siblings[index];
+
+    if (isTextNode(sibling)) {
+      if ((sibling.data ?? '').trim().length > 0) {
+        return sibling;
+      }
+      continue;
+    }
+
+    if (isTagNode(sibling)) {
+      const tag = sibling.name?.toLowerCase().trim();
+      if (tag && BLOCK_TAG_MAP[tag]) {
+        return sibling;
+      }
+    }
+  }
+
+  return null;
+}
+
+function isInlineRenderableNode(node: HtmlAstNode | null): boolean {
+  if (!node) return false;
+
+  if (isTextNode(node)) {
+    return (node.data ?? '').trim().length > 0;
+  }
+
+  if (!isTagNode(node)) {
+    return false;
+  }
+
+  const tag = node.name?.toLowerCase().trim();
+  if (!tag) return false;
+
+  const mapping = BLOCK_TAG_MAP[tag];
+  if (!mapping) return false;
+
+  return mapping.role === 'inline' || mapping.role === 'image';
+}
+
+function shouldPreserveInlineWhitespace(
+  siblings: HtmlAstNode[],
+  siblingIndex: number,
+): boolean {
+  if (siblingIndex < 0) return false;
+
+  const previous = findRenderableSibling(siblings, siblingIndex - 1, -1);
+  const next = findRenderableSibling(siblings, siblingIndex + 1, 1);
+
+  return isInlineRenderableNode(previous) && isInlineRenderableNode(next);
 }
