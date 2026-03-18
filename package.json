@@ -2,13 +2,13 @@
   "name": "lynx-html-renderer",
   "version": "0.6.0",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./src/index.tsx",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+      "import": "./src/index.tsx",
+      "default": "./src/index.tsx"
     },
     "./html-parser": {
       "types": "./dist/html-parser.d.ts",
@@ -65,7 +65,8 @@
     "generate:css": "node scripts/generate-css.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.115.1"
