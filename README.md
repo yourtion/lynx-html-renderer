@@ -117,7 +117,8 @@ import 'lynx-html-renderer/dist/styles.css';
 <HTMLRenderer html={html} styleMode="css-class" />
 
 // 方式2：动态生成 CSS
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 const css = generateCSS('my-root-class');
 <style>{css}</style>
@@ -211,7 +212,7 @@ interface TransformOptions {
 生成完整的 CSS 字符串。
 
 ```tsx
-import { generateCSS } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 // 使用默认根类名
 const css = generateCSS();
@@ -225,7 +226,7 @@ const customCSS = generateCSS('my-app');
 获取 HTML 标签对应的 CSS 类名。
 
 ```tsx
-import { getClassNameForTag } from 'lynx-html-renderer';
+import { getClassNameForTag } from 'lynx-html-renderer/styles';
 
 getClassNameForTag('p');    // => 'lhr-p'
 getClassNameForTag('h1');   // => 'lhr-h1'

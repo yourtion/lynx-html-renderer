@@ -94,7 +94,8 @@ const html = '<p class="custom" style="color: red;">Text</p>';
 ### 1. 自定义根容器类名
 
 ```tsx
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 function App() {
   const rootClassName = 'my-custom-content';
@@ -147,7 +148,8 @@ import './custom-styles.css';
 ### 3. 动态生成 CSS
 
 ```tsx
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 import { useEffect } from 'react';
 
 function App() {
@@ -170,7 +172,8 @@ function App() {
 ### 4. 主题切换
 
 ```tsx
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 import { useState } from 'react';
 
 function App() {
@@ -201,7 +204,7 @@ function App() {
 生成完整的 CSS 字符串。
 
 ```tsx
-import { generateCSS } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 // 使用默认根类名 'lynx-html-renderer'
 const css = generateCSS();
@@ -221,7 +224,7 @@ const customCSS = generateCSS('my-app');
 获取 HTML 标签对应的 CSS 类名。
 
 ```tsx
-import { getClassNameForTag } from 'lynx-html-renderer';
+import { getClassNameForTag } from 'lynx-html-renderer/styles';
 
 getClassNameForTag('p');     // => 'lhr-p'
 getClassNameForTag('h1');    // => 'lhr-h1'
@@ -341,7 +344,8 @@ import './custom-styles.css';
 ## 完整示例 | Complete Example
 
 ```tsx
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 import { useState } from 'react';
 
 function App() {

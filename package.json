@@ -2,27 +2,51 @@
   "name": "lynx-html-renderer",
   "version": "0.6.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.tsx",
-      "import": "./src/index.tsx",
-      "default": "./src/index.tsx"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./html-parser": {
-      "types": "./src/html-parser.ts",
-      "import": "./src/html-parser.ts",
-      "default": "./src/html-parser.ts"
+      "types": "./dist/html-parser.d.ts",
+      "import": "./dist/html-parser.js",
+      "default": "./dist/html-parser.js"
     },
     "./transform": {
-      "types": "./src/transform/types.ts",
-      "import": "./src/transform/types.ts",
-      "default": "./src/transform/types.ts"
+      "types": "./dist/transform/types.d.ts",
+      "import": "./dist/transform/types.js",
+      "default": "./dist/transform/types.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js",
+      "default": "./dist/errors/index.js"
+    },
+    "./styles": {
+      "types": "./dist/styles.d.ts",
+      "import": "./dist/styles.js",
+      "default": "./dist/styles.js"
+    },
+    "./utils/node-helpers": {
+      "types": "./dist/utils/node-helpers.d.ts",
+      "import": "./dist/utils/node-helpers.js",
+      "default": "./dist/utils/node-helpers.js"
+    },
+    "./validate/lynx-node": {
+      "types": "./dist/validate/lynx-node.d.ts",
+      "import": "./dist/validate/lynx-node.js",
+      "default": "./dist/validate/lynx-node.js"
     },
     "./dist/styles.css": "./dist/styles.css",
     "./dist/styles.min.css": "./dist/styles.min.css"
   },
   "scripts": {
-    "build-example": "pnpm generate:css && cd example && rspeedy build",
+    "build": "pnpm build:lib && node scripts/fix-esm-imports.mjs && pnpm generate:css",
+    "build:lib": "tsc -p tsconfig.build.json",
+    "build-example": "pnpm build && cd example && rspeedy build",
     "check": "biome check --write",
     "dev": "cd example && rspeedy dev",
     "format": "biome format --write",
@@ -34,11 +58,10 @@
     "docs:build": "rspress build",
     "tag": "git tag v`node -p 'require(\"./package\").version'`",
     "postpublish": "pnpm tag && git push && git push --tags",
-    "prepublishOnly": "pnpm generate:css",
-    "generate:css": "tsx scripts/generate-css.ts"
+    "prepublishOnly": "pnpm build",
+    "generate:css": "node scripts/generate-css.mjs"
   },
   "files": [
-    "src",
     "dist"
   ],
   "peerDependencies": {

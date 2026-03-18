@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo } from '@lynx-js/react';
 import { transformHTML } from './html-parser';
 import { AdapterRegistry, setGlobalRegistry } from './render/adapter-registry';
 import type {
@@ -484,4 +484,5 @@ export {
   registerAdapterByTag,
 } from './render/adapter-registry';
 export type { LynxRenderAdapter, RenderContext } from './render/types';
+export { generateCSS, getClassNameForTag } from './styles';
 export type { TransformOptions } from './transform/types';
