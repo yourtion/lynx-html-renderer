@@ -1,10 +1,13 @@
 import { parseDocument } from 'htmlparser2';
+import { createParseError, createPluginError, PluginError } from '../errors';
 import { createRootNode } from '../lynx/factory';
+import { validateLynxNodes } from '../validate/lynx-node';
 import { createTransformContext, type TransformContextImpl } from './context';
 import { TransformPluginResolver } from './resolver';
 import type {
   HtmlAstNode,
   LynxNode,
+  NodeCapabilityHandler,
   TransformOptions,
   TransformPhase,
   TransformPlugin,
@@ -85,20 +88,51 @@ function executeCapabilityPhaseWithBatching(
   // 步骤 1: 注册所有处理器
   for (const plugin of capabilityPlugins) {
     if (!plugin.registerCapabilityHandlers) {
-      throw new Error(
-        `Capability plugin "${plugin.name}" must implement registerCapabilityHandlers()`,
+      throw createPluginError(
+        plugin.name,
+        'Capability plugins must implement registerCapabilityHandlers()',
+        'capability',
       );
     }
 
+    let handlers: Map<string, NodeCapabilityHandler>;
     const registerStart = nowMs();
-    const handlers = plugin.registerCapabilityHandlers(ctx);
+    try {
+      handlers = plugin.registerCapabilityHandlers(ctx);
+    } catch (error) {
+      if (error instanceof PluginError) {
+        throw error;
+      }
+      throw createPluginError(
+        plugin.name,
+        error instanceof Error
+          ? error.message
+          : 'registerCapabilityHandlers() failed',
+        'capability',
+        error instanceof Error ? error : undefined,
+      );
+    }
     recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
     for (const [nodeKind, handler] of handlers) {
       ctx.utils.registerHandler(nodeKind, (node, context) => {
         const handlerStart = nowMs();
-        const result = handler(node, context);
-        recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
-        return result;
+        try {
+          const result = handler(node, context);
+          recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
+          return result;
+        } catch (error) {
+          if (error instanceof PluginError) {
+            throw error;
+          }
+          throw createPluginError(
+            plugin.name,
+            error instanceof Error
+              ? error.message
+              : 'capability handler failed',
+            'capability',
+            error instanceof Error ? error : undefined,
+          );
+        }
       });
     }
   }
@@ -149,7 +183,16 @@ export function transformHTML(
   options?: TransformOptions,
 ): LynxNode[] {
   // 1. 解析 HTML 为 AST
-  const ast = parseDocument(html) as unknown as HtmlAstNode;
+  let ast: HtmlAstNode;
+  try {
+    ast = parseDocument(html) as unknown as HtmlAstNode;
+  } catch (error) {
+    throw createParseError(
+      error instanceof Error ? error.message : 'Failed to parse HTML',
+      html,
+      error instanceof Error ? error : undefined,
+    );
+  }
 
   // 2. 创建初始根节点（容器）
   const root = createRootNode();
@@ -188,12 +231,26 @@ export function transformHTML(
       const plugins = resolver.getPluginsByPhase(phase);
       for (const plugin of plugins) {
         if (!plugin.apply) {
-          throw new Error(
-            `Plugin "${plugin.name}" in phase "${phase}" must implement apply()`,
+          throw createPluginError(
+            plugin.name,
+            `Plugins in phase "${phase}" must implement apply()`,
+            phase,
           );
         }
         const applyStart = nowMs();
-        plugin.apply(ctx);
+        try {
+          plugin.apply(ctx);
+        } catch (error) {
+          if (error instanceof PluginError) {
+            throw error;
+          }
+          throw createPluginError(
+            plugin.name,
+            error instanceof Error ? error.message : 'Plugin apply() failed',
+            phase,
+            error instanceof Error ? error : undefined,
+          );
+        }
         recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
       }
     }
@@ -215,5 +272,11 @@ export function transformHTML(
   }
 
   // 7. 返回根节点的子节点
-  return ctx.root.kind === 'element' ? ctx.root.children : [];
+  const result = ctx.root.kind === 'element' ? ctx.root.children : [];
+
+  if (options?.debug) {
+    validateLynxNodes(result);
+  }
+
+  return result;
 }

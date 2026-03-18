@@ -1,6 +1,6 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { describe, expect, it } from 'vitest';
-import { LynxRenderError } from '../../src/errors';
+import { describe, expect, it, vi } from 'vitest';
+import { LynxRenderError, PluginError } from '../../src/errors';
 import type {
   LynxElementNode,
   LynxNode,
@@ -32,6 +32,94 @@ function findTextContent(nodes: LynxNode[]): string[] {
 }
 
 describe('Error Handling Tests', () => {
+  describe('Transform Pipeline Errors', () => {
+    it('should wrap thrown apply errors as PluginError', () => {
+      const brokenPlugin = {
+        name: 'broken-apply',
+        phase: 'finalize' as const,
+        apply: () => {
+          throw new Error('apply exploded');
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow('broken-apply failed in phase finalize: apply exploded');
+    });
+
+    it('should wrap thrown capability handler errors as PluginError', () => {
+      const brokenPlugin = {
+        name: 'broken-capability',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              () => {
+                throw new Error('handler exploded');
+              },
+            ],
+          ]),
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(
+        'broken-capability failed in phase capability: handler exploded',
+      );
+    });
+
+    it('should validate output nodes in debug mode', () => {
+      const invalidOutputPlugin = {
+        name: 'invalid-output',
+        phase: 'finalize' as const,
+        apply: (ctx: { root: LynxNode }) => {
+          if (ctx.root.kind !== 'element') {
+            return;
+          }
+
+          ctx.root.children.push({
+            kind: 'text',
+            content: 123,
+          } as unknown as LynxNode);
+        },
+      };
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      expect(() =>
+        transformHTML('<div>debug validation</div>', {
+          debug: true,
+          plugins: { extra: [invalidOutputPlugin] },
+        }),
+      ).toThrow(LynxRenderError);
+
+      expect(() =>
+        transformHTML('<div>debug validation</div>', {
+          debug: true,
+          plugins: { extra: [invalidOutputPlugin] },
+        }),
+      ).toThrow('Invalid node at index');
+
+      debugSpy.mockRestore();
+    });
+  });
+
   describe('Malformed HTML', () => {
     it('should handle unclosed tags and preserve text content', () => {
       const html = '<div><p>Unclosed paragraph';
