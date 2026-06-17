@@ -86,11 +86,19 @@ function executeCapabilityPhaseWithBatching(
   const capabilityPlugins = getPlugins('capability');
 
   // 步骤 1: 注册所有处理器
+  // 收集使用 apply 的插件（向后兼容）
+  const applyOnlyPlugins: TransformPlugin[] = [];
+
   for (const plugin of capabilityPlugins) {
     if (!plugin.registerCapabilityHandlers) {
+      // 向后兼容：允许 capability 阶段插件仅实现 apply
+      if (plugin.apply) {
+        applyOnlyPlugins.push(plugin);
+        continue;
+      }
       throw createPluginError(
         plugin.name,
-        'Capability plugins must implement registerCapabilityHandlers()',
+        'Capability plugins must implement registerCapabilityHandlers() or apply()',
         'capability',
       );
     }
@@ -171,6 +179,25 @@ function executeCapabilityPhaseWithBatching(
     }
 
     ctx._handlerRegistry.clear();
+  }
+
+  // 步骤 4: 执行仅使用 apply 的插件（向后兼容）
+  for (const plugin of applyOnlyPlugins) {
+    const applyStart = nowMs();
+    try {
+      plugin.apply?.(ctx);
+    } catch (error) {
+      if (error instanceof PluginError) {
+        throw error;
+      }
+      throw createPluginError(
+        plugin.name,
+        error instanceof Error ? error.message : 'Plugin apply() failed',
+        'capability',
+        error instanceof Error ? error : undefined,
+      );
+    }
+    recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
   }
 }
 

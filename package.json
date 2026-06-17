@@ -3,42 +3,42 @@
   "version": "0.6.0",
   "type": "module",
   "main": "./src/index.tsx",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.tsx",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.tsx",
       "import": "./src/index.tsx",
       "default": "./src/index.tsx"
     },
     "./html-parser": {
-      "types": "./dist/html-parser.d.ts",
-      "import": "./dist/html-parser.js",
-      "default": "./dist/html-parser.js"
+      "types": "./src/html-parser.ts",
+      "import": "./src/html-parser.ts",
+      "default": "./src/html-parser.ts"
     },
     "./transform": {
-      "types": "./dist/transform/types.d.ts",
-      "import": "./dist/transform/types.js",
-      "default": "./dist/transform/types.js"
+      "types": "./src/transform/types.ts",
+      "import": "./src/transform/types.ts",
+      "default": "./src/transform/types.ts"
     },
     "./errors": {
-      "types": "./dist/errors/index.d.ts",
-      "import": "./dist/errors/index.js",
-      "default": "./dist/errors/index.js"
+      "types": "./src/errors/index.ts",
+      "import": "./src/errors/index.ts",
+      "default": "./src/errors/index.ts"
     },
     "./styles": {
-      "types": "./dist/styles.d.ts",
-      "import": "./dist/styles.js",
-      "default": "./dist/styles.js"
+      "types": "./src/styles.ts",
+      "import": "./src/styles.ts",
+      "default": "./src/styles.ts"
     },
     "./utils/node-helpers": {
-      "types": "./dist/utils/node-helpers.d.ts",
-      "import": "./dist/utils/node-helpers.js",
-      "default": "./dist/utils/node-helpers.js"
+      "types": "./src/utils/node-helpers.ts",
+      "import": "./src/utils/node-helpers.ts",
+      "default": "./src/utils/node-helpers.ts"
     },
     "./validate/lynx-node": {
-      "types": "./dist/validate/lynx-node.d.ts",
-      "import": "./dist/validate/lynx-node.js",
-      "default": "./dist/validate/lynx-node.js"
+      "types": "./src/validate/lynx-node.ts",
+      "import": "./src/validate/lynx-node.ts",
+      "default": "./src/validate/lynx-node.ts"
     },
     "./dist/styles.css": "./dist/styles.css",
     "./dist/styles.min.css": "./dist/styles.min.css"

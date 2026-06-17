@@ -329,9 +329,14 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           It also contains a 
         </text>
         <text
-          style="color: blue;"
+          data-href="#"
+          style="color: blue; text-decoration: underline;"
         >
-          link
+          <text
+            style="color: blue;"
+          >
+            link
+          </text>
         </text>
         <text
           style="color: var(--lhr-text-color);"
@@ -367,12 +372,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           <text
             style="color: var(--lhr-text-color);"
           >
-            • 
-          </text>
-          <text
-            style="color: var(--lhr-text-color);"
-          >
-            Feature 1 with 
+            • Feature 1 with 
           </text>
           <text
             style="color: var(--lhr-text-color); font-weight: bold;"
@@ -386,12 +386,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
           <text
             style="color: var(--lhr-text-color);"
           >
-            • 
-          </text>
-          <text
-            style="color: var(--lhr-text-color);"
-          >
-            Feature 2
+            • Feature 2
           </text>
         </view>
         <view
@@ -401,11 +396,6 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
             style="color: var(--lhr-text-color);"
           >
             • 
-          </text>
-          <text
-            style="color: var(--lhr-text-color);"
-          >
-            
                 Feature 3 with nested list:
                 
           </text>
@@ -418,12 +408,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
               <text
                 style="color: var(--lhr-text-color);"
               >
-                • 
-              </text>
-              <text
-                style="color: var(--lhr-text-color);"
-              >
-                Sub-feature 3.1
+                • Sub-feature 3.1
               </text>
             </view>
             <view
@@ -432,12 +417,7 @@ exports[`Snapshot Tests with Verification > Complex Real-World Document > should
               <text
                 style="color: var(--lhr-text-color);"
               >
-                • 
-              </text>
-              <text
-                style="color: var(--lhr-text-color);"
-              >
-                Sub-feature 3.2
+                • Sub-feature 3.2
               </text>
             </view>
           </view>
@@ -741,9 +721,14 @@ exports[`Snapshot Tests with Verification > Inline Elements > should match snaps
         Link example: 
       </text>
       <text
-        style="color: blue;"
+        data-href="https://example.com"
+        style="color: blue; text-decoration: underline;"
       >
-        Example Link
+        <text
+          style="color: blue;"
+        >
+          Example Link
+        </text>
       </text>
     </text>
     <text
@@ -798,7 +783,7 @@ exports[`Snapshot Tests with Verification > Inline Styles > should match snapsho
             Paragraph with 
       </text>
       <text
-        style="font-weight: bold; color: red;"
+        style="color: red; font-weight: bold;"
       >
         styled span
       </text>
@@ -830,12 +815,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • 
-        </text>
-        <text
-          style="color: var(--lhr-text-color);"
-        >
-          Unordered item 1
+          • Unordered item 1
         </text>
       </view>
       <view
@@ -844,12 +824,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • 
-        </text>
-        <text
-          style="color: var(--lhr-text-color);"
-        >
-          Unordered item 2
+          • Unordered item 2
         </text>
       </view>
       <view
@@ -858,12 +833,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          • 
-        </text>
-        <text
-          style="color: var(--lhr-text-color);"
-        >
-          Nested:
+          • Nested:
               
         </text>
         <view
@@ -875,12 +845,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
             <text
               style="color: var(--lhr-text-color);"
             >
-              • 
-            </text>
-            <text
-              style="color: var(--lhr-text-color);"
-            >
-              Nested item 1
+              • Nested item 1
             </text>
           </view>
           <view
@@ -889,12 +854,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
             <text
               style="color: var(--lhr-text-color);"
             >
-              • 
-            </text>
-            <text
-              style="color: var(--lhr-text-color);"
-            >
-              Nested item 2
+              • Nested item 2
             </text>
           </view>
         </view>
@@ -909,12 +869,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          1. 
-        </text>
-        <text
-          style="color: var(--lhr-text-color);"
-        >
-          Ordered item 1
+          1. Ordered item 1
         </text>
       </view>
       <view
@@ -923,12 +878,7 @@ exports[`Snapshot Tests with Verification > List Elements (ul, ol, li) > should 
         <text
           style="color: var(--lhr-text-color);"
         >
-          2. 
-        </text>
-        <text
-          style="color: var(--lhr-text-color);"
-        >
-          Ordered item 2
+          2. Ordered item 2
         </text>
       </view>
     </view>
@@ -979,9 +929,14 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
             • 
           </text>
           <text
-            style="color: blue;"
+            data-href="#"
+            style="color: blue; text-decoration: underline;"
           >
-            Link 1
+            <text
+              style="color: blue;"
+            >
+              Link 1
+            </text>
           </text>
         </view>
         <view
@@ -993,9 +948,14 @@ exports[`Snapshot Tests with Verification > Semantic Block Elements > should mat
             • 
           </text>
           <text
-            style="color: blue;"
+            data-href="#"
+            style="color: blue; text-decoration: underline;"
           >
-            Link 2
+            <text
+              style="color: blue;"
+            >
+              Link 2
+            </text>
           </text>
         </view>
       </view>

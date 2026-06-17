@@ -1,4 +1,4 @@
-import { glob, readFile, stat, writeFile } from 'node:fs/promises';
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 
 const IMPORT_PATTERN =
@@ -53,11 +53,27 @@ async function patchImports(filePath, source) {
   return patched;
 }
 
+async function globJsFiles(dir) {
+  const results = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...(await globJsFiles(fullPath)));
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      results.push(fullPath);
+    }
+  }
+
+  return results;
+}
+
 async function main() {
   const distDir = join(process.cwd(), 'dist');
+  const files = await globJsFiles(distDir);
 
-  for await (const file of glob('**/*.js', { cwd: distDir })) {
-    const fullPath = join(distDir, file);
+  for (const fullPath of files) {
     const content = await readFile(fullPath, 'utf-8');
     const patched = await patchImports(fullPath, content);
 

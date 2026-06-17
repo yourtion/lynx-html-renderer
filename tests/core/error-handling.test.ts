@@ -121,6 +121,101 @@ describe('Error Handling Tests', () => {
   });
 
   describe('Malformed HTML', () => {
+    it('should throw PluginError for plugin without apply method in non-capability phase', () => {
+      const noApplyPlugin = {
+        name: 'no-apply',
+        phase: 'normalize' as const,
+        // intentionally no apply method
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [noApplyPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [noApplyPlugin] },
+        }),
+      ).toThrow('no-apply failed in phase normalize');
+    });
+
+    it('should fall back to apply for capability plugin without registerCapabilityHandlers', () => {
+      let applyCalled = false;
+      const noRegisterPlugin = {
+        name: 'no-register',
+        phase: 'capability' as const,
+        apply: () => {
+          applyCalled = true;
+        },
+      };
+
+      transformHTML('<div>test</div>', {
+        plugins: { extra: [noRegisterPlugin] },
+      });
+      expect(applyCalled).toBe(true);
+    });
+
+    it('should re-throw PluginError from apply without wrapping', () => {
+      const directPluginError = new PluginError('direct', 'plugin', 'finalize');
+      const throwPlugin: TransformPlugin = {
+        name: 'thrower',
+        phase: 'finalize' as const,
+        apply: () => {
+          throw directPluginError;
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [throwPlugin] },
+        }),
+      ).toThrow(directPluginError);
+    });
+
+    it('should re-throw PluginError from capability handler without wrapping', () => {
+      const directPluginError = new PluginError(
+        'direct',
+        'cap-plugin',
+        'capability',
+      );
+      const throwPlugin = {
+        name: 'cap-thrower',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              () => {
+                throw directPluginError;
+              },
+            ],
+          ]),
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [throwPlugin] },
+        }),
+      ).toThrow(directPluginError);
+    });
+
+    it('should throw PluginError for non-Error thrown from registerCapabilityHandlers', () => {
+      const stringThrower = {
+        name: 'string-thrower',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () => {
+          throw 'string error';
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [stringThrower] },
+        }),
+      ).toThrow(PluginError);
+    });
     it('should handle unclosed tags and preserve text content', () => {
       const html = '<div><p>Unclosed paragraph';
       const result = transformHTML(html);

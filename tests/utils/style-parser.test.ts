@@ -3,6 +3,10 @@ import {
   isInheritableProperty,
   parseStyleString,
 } from '../../src/utils/style-parser';
+import {
+  isTextOnlyProperty,
+  isUnitlessProperty,
+} from '../../src/utils/style-schema';
 
 describe('Style Parser', () => {
   describe('parseStyleString', () => {
@@ -343,6 +347,40 @@ describe('Style Parser', () => {
       expect(inheritableKeys).toEqual(['color', 'fontSize']);
       expect(inheritableKeys).not.toContain('border');
       expect(inheritableKeys).not.toContain('margin');
+    });
+  });
+});
+
+describe('style-schema', () => {
+  describe('isTextOnlyProperty', () => {
+    it('should return true for text-only properties', () => {
+      expect(isTextOnlyProperty('color')).toBe(true);
+      expect(isTextOnlyProperty('fontFamily')).toBe(true);
+      expect(isTextOnlyProperty('fontSize')).toBe(true);
+      expect(isTextOnlyProperty('fontStyle')).toBe(true);
+      expect(isTextOnlyProperty('fontWeight')).toBe(true);
+    });
+
+    it('should return false for non-text properties', () => {
+      expect(isTextOnlyProperty('margin')).toBe(false);
+      expect(isTextOnlyProperty('padding')).toBe(false);
+      expect(isTextOnlyProperty('flexDirection')).toBe(false);
+    });
+  });
+
+  describe('isUnitlessProperty', () => {
+    it('should return true for unitless properties', () => {
+      expect(isUnitlessProperty('opacity')).toBe(true);
+      expect(isUnitlessProperty('fontWeight')).toBe(true);
+      expect(isUnitlessProperty('lineHeight')).toBe(true);
+      expect(isUnitlessProperty('zIndex')).toBe(true);
+      expect(isUnitlessProperty('flexGrow')).toBe(true);
+    });
+
+    it('should return false for properties that need units', () => {
+      expect(isUnitlessProperty('width')).toBe(false);
+      expect(isUnitlessProperty('fontSize')).toBe(false);
+      expect(isUnitlessProperty('margin')).toBe(false);
     });
   });
 });

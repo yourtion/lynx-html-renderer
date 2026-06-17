@@ -25,7 +25,7 @@ function mergeTextNodeWithParentProps(
     inheritableClasses: mergedClassName,
     inheritableStyles:
       Object.keys(inheritableStyles).length > 0
-        ? inheritableStyles
+        ? { ...textNode.inheritableStyles, ...inheritableStyles }
         : textNode.inheritableStyles,
   };
 }
@@ -39,21 +39,34 @@ function mergeTextElementWithParentProps(
     child.props.className as string | undefined,
   );
 
+  const {
+    style: parentStyle,
+    className: _parentClassName,
+    ...passthroughProps
+  } = parent.props as Record<string, unknown>;
+
   return {
     ...child,
     props: {
+      ...passthroughProps,
       ...child.props,
-      ...(parent.props.style
+      ...(parentStyle
         ? {
             style: {
+              ...(parentStyle as Record<string, unknown>),
               ...(child.props.style as Record<string, unknown> | undefined),
-              ...(parent.props.style as Record<string, unknown>),
             },
           }
         : {}),
       ...(mergedClassName ? { className: mergedClassName } : {}),
     },
   };
+}
+
+function hasPassthroughProps(props: Record<string, unknown>): boolean {
+  return Object.keys(props).some(
+    (key) => key !== 'style' && key !== 'className',
+  );
 }
 
 export function normalizeTextTreeForRender(node: LynxNode): LynxNode {
@@ -72,8 +85,13 @@ export function normalizeTextTreeForRender(node: LynxNode): LynxNode {
     (element.props.className || element.props.style)
   ) {
     const child = element.children[0];
+    const elementProps = element.props as Record<string, unknown>;
 
     if (child.kind === 'text') {
+      // 如果父元素有 data-href 等非 style/class 属性，保留父元素包装
+      if (hasPassthroughProps(elementProps)) {
+        return element;
+      }
       return mergeTextNodeWithParentProps(child, element);
     }
 

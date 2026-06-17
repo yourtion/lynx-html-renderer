@@ -57,14 +57,26 @@ function addListMarkers(listElement: LynxElementNode): void {
       // 生成列表标记
       const marker = isOrdered ? `${counter}. ` : '• ';
       counter++;
-      const firstTextChild =
-        liElement.children.find(
-          (node): node is LynxTextNode => node.kind === 'text',
-        ) ?? null;
+
+      const firstTextIndex = liElement.children.findIndex(
+        (node): node is LynxTextNode => node.kind === 'text',
+      );
+
+      // 有文本子节点：把标记合并进首个文本，保证标记与内容在同一 <text> 内（同行渲染）
+      if (firstTextIndex >= 0) {
+        const firstText = liElement.children[firstTextIndex] as LynxTextNode;
+        const mergedChildren = [...liElement.children];
+        mergedChildren[firstTextIndex] = {
+          ...firstText,
+          content: marker + firstText.content,
+        };
+        return { ...liElement, children: mergedChildren };
+      }
+
+      // 无文本子节点：标记作为独立文本节点（携带 li 可继承样式）
       const fallbackStyles = extractInheritableStyles(
         BLOCK_TAG_MAP.li.defaultStyle,
       );
-
       return {
         ...liElement,
         children: [
@@ -75,7 +87,6 @@ function addListMarkers(listElement: LynxElementNode): void {
               Object.keys(fallbackStyles).length > 0
                 ? fallbackStyles
                 : undefined,
-            inheritableClasses: firstTextChild?.inheritableClasses,
             meta: { source: 'li-marker' },
           }),
           ...liElement.children,

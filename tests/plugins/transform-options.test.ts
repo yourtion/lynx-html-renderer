@@ -450,5 +450,75 @@ describe('Plugin Info API', () => {
         ),
       ).toBe('ONETWOTHREE');
     });
+
+    it('should handle capability handler that replaces root node', () => {
+      const replaceRootPlugin = {
+        name: 'replace-root',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'root',
+              () => ({
+                kind: 'element',
+                tag: 'view',
+                props: {},
+                children: [{ kind: 'text', content: 'replaced root' }],
+              }),
+            ],
+          ]),
+      };
+
+      const result = transformHTML('<div>test</div>', {
+        plugins: { extra: [replaceRootPlugin] },
+      });
+
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('Layout capability skip', () => {
+    it('should skip element that already has capabilities', () => {
+      let checkedCount = 0;
+      const inspectPlugin = {
+        name: 'inspect-capabilities',
+        phase: 'finalize' as const,
+        order: 999,
+        apply(ctx: {
+          root: { kind: string; children: unknown[]; capabilities?: unknown };
+        }) {
+          if (ctx.root.kind !== 'element') return;
+          for (const child of ctx.root.children) {
+            if (child && typeof child === 'object' && 'capabilities' in child) {
+              checkedCount++;
+            }
+          }
+        },
+      };
+
+      // Pre-set capabilities via a plugin before layout-capability runs
+      const preCapPlugin = {
+        name: 'pre-capabilities',
+        phase: 'capability' as const,
+        order: 5, // runs before layout-capability (order 20)
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'view',
+              (node: { kind: string; capabilities?: unknown }) => {
+                if (node.kind === 'element') {
+                  node.capabilities = { layout: 'flex', isVoid: false };
+                }
+              },
+            ],
+          ]),
+      };
+
+      transformHTML('<div>test</div>', {
+        plugins: { extra: [preCapPlugin, inspectPlugin] },
+      });
+
+      expect(checkedCount).toBeGreaterThan(0);
+    });
   });
 });
