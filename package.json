@@ -93,11 +93,6 @@
   "engines": {
     "node": ">=18"
   },
-  "pnpm": {
-    "overrides": {
-      "esbuild": "0.18.20"
-    }
-  },
   "dependencies": {
     "htmlparser2": "^10.0.0"
   }
