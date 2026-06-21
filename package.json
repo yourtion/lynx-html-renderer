@@ -1,7 +1,30 @@
 {
   "name": "lynx-html-renderer",
-  "version": "0.6.0",
+  "version": "1.0.0",
+  "description": "A lightweight and extensible renderer that renders HTML strings into Lynx native components.",
+  "keywords": [
+    "lynx",
+    "lynx-js",
+    "html",
+    "html-renderer",
+    "rich-text",
+    "renderer",
+    "react"
+  ],
+  "homepage": "https://github.com/yourtion/lynx-html-renderer#readme",
+  "bugs": {
+    "url": "https://github.com/yourtion/lynx-html-renderer/issues"
+  },
+  "license": "MIT",
+  "author": "Yourtion <yourtion@gmail.com> (https://github.com/yourtion)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourtion/lynx-html-renderer.git"
+  },
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./src/index.tsx",
   "types": "./src/index.tsx",
   "exports": {
@@ -65,8 +88,9 @@
     "generate:css": "node scripts/generate-css.mjs"
   },
   "files": [
-    "dist",
-    "src"
+    "src",
+    "dist/styles.css",
+    "dist/styles.min.css"
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.115.1"
@@ -90,6 +114,7 @@
     "typescript": "~5.9.3",
     "vitest": "^3.2.4"
   },
+  "packageManager": "pnpm@10.26.2",
   "engines": {
     "node": ">=18"
   },

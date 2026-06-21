@@ -43,7 +43,7 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 ```bash
 npm install lynx-html-renderer
 # 或
-pnpm install lynx-html-renderer
+pnpm add lynx-html-renderer
 ```
 
 ### 基本使用 | Basic Usage
@@ -131,7 +131,7 @@ const css = generateCSS('my-root-class');
 2. HTML 的 `class` 属性
 3. TAG_MAP 的 `defaultStyle`（通过 `.lhr-{tag}` 类应用）
 
-详细的 CSS 类模式文档请参考：[CSS 类模式指南](./docs/css-class-mode.md)
+详细的 CSS 类模式文档请参考：[CSS 类模式指南](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/css-class-mode.md)
 
 ## 🚫 非目标 | Non-goals
 
@@ -144,7 +144,7 @@ const css = generateCSS('my-root-class');
 
 ## 🧠 核心思想 | Core Concepts
 
-参考 [Architecture](./docs/architecture.md)
+参考 [Architecture](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/architecture.md)
 
 ## 📦 功能特性 | Features
 
@@ -180,6 +180,8 @@ interface HTMLRendererProps {
   removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
   styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
   rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
+  darkMode?: boolean;               // 是否启用暗色模式（默认：false）
+  linkStyle?: Record<string, string | number>; // 自定义链接样式，仅 inline 模式生效
   debug?: boolean;                  // 是否启用 transform 调试日志（默认：false）
   adapterRegistry?: AdapterRegistry; // 可选：组件级适配器注册表（默认使用全局注册表）
 }
