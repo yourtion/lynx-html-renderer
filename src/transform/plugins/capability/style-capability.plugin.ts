@@ -23,10 +23,26 @@ function processElementStyleAndClass(
   // 处理 style 属性
   if (!options.removeAllStyle && sourceAttrs.style) {
     const styleFromAttr = parseStyleString(sourceAttrs.style);
+
+    // 检测内联样式中是否显式设置了 flexDirection
+    const hasExplicitFlexDirection = Object.keys(styleFromAttr).some(
+      (key) => key === 'flexDirection' || key === 'flex-direction',
+    );
+
     element.props.style = {
       ...(element.props.style as CSSProperties),
       ...styleFromAttr,
     } as CSSProperties;
+
+    // 当内联样式设置 display: flex（或 inline-flex）但未指定 flex-direction 时，
+    // 使用 CSS 标准默认值 row，而非块级元素的 column 默认值
+    const finalStyle = element.props.style as CSSProperties;
+    if (
+      !hasExplicitFlexDirection &&
+      (finalStyle.display === 'flex' || finalStyle.display === 'inline-flex')
+    ) {
+      finalStyle.flexDirection = 'row';
+    }
   }
 
   // 处理 class 属性

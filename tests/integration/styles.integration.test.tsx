@@ -378,6 +378,34 @@ describe('Styles Integration Tests', () => {
       expect(style).toContain('row');
     });
 
+    it('should default to row when display:flex is set without explicit flex-direction', () => {
+      // CSS 标准：display: flex 的默认 flex-direction 是 row
+      const html =
+        '<div style="display: flex; flex-wrap: wrap;"><p>Item 1</p><p>Item 2</p></div>';
+      const { container } = render(<HTMLRenderer html={html} />);
+
+      const view = container.querySelector('view');
+      const style = view?.getAttribute('style');
+      expect(style).toContain('display');
+      expect(style).toContain('flex');
+      expect(style).toContain('flex-direction');
+      expect(style).toContain('row');
+      expect(style).not.toContain('column');
+    });
+
+    it('should preserve explicit flex-direction when display:flex is set', () => {
+      const html =
+        '<div style="display: flex; flex-direction: column;"><p>Item 1</p><p>Item 2</p></div>';
+      const { container } = render(<HTMLRenderer html={html} />);
+
+      const view = container.querySelector('view');
+      const style = view?.getAttribute('style');
+      expect(style).toContain('display');
+      expect(style).toContain('flex');
+      expect(style).toContain('flex-direction');
+      expect(style).toContain('column');
+    });
+
     it('should handle justify-content', () => {
       const html = '<div style="justify-content: center;">Content</div>';
       const { container } = render(<HTMLRenderer html={html} />);
