@@ -37,7 +37,11 @@ export interface ScreenshotProvider {
 }
 
 /** 所有支持的 provider 名称 */
-export type ProviderName = 'chromium' | 'lynx-web' | 'lynx-ios' | 'lynx-android';
+export type ProviderName =
+  | 'chromium'
+  | 'lynx-web'
+  | 'lynx-ios'
+  | 'lynx-android';
 
 /** Provider 未实现错误 */
 export class ProviderNotImplementedError extends Error {

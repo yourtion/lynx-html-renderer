@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
-import type { ScreenshotProvider, Screenshot, Viewport } from './types.js';
 import type { Fixture } from '../fixtures/types.js';
+import type { Screenshot, ScreenshotProvider, Viewport } from './types.js';
 
 /**
  * Chromium 原始 HTML 渲染 provider。

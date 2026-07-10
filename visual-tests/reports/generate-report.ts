@@ -1,4 +1,4 @@
-import { mkdir, writeFile, copyFile } from 'node:fs/promises';
+import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ComparisonResult } from '../compare/types.js';
@@ -97,7 +97,12 @@ function buildHtmlReport(
   const overviewBars = sorted
     .map((r) => {
       const pct = (r.similarity * 100).toFixed(1);
-      const color = r.similarity >= 0.95 ? '#28a745' : r.similarity >= 0.8 ? '#ffc107' : '#dc3545';
+      const color =
+        r.similarity >= 0.95
+          ? '#28a745'
+          : r.similarity >= 0.8
+            ? '#ffc107'
+            : '#dc3545';
       return `
         <div class="bar-row">
           <span class="bar-label">${r.fixtureId}</span>
@@ -115,7 +120,8 @@ function buildHtmlReport(
     .map(([feature, scores]) => {
       const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
       const pct = (avg * 100).toFixed(1);
-      const color = avg >= 0.95 ? '#28a745' : avg >= 0.8 ? '#ffc107' : '#dc3545';
+      const color =
+        avg >= 0.95 ? '#28a745' : avg >= 0.8 ? '#ffc107' : '#dc3545';
       return `
         <div class="bar-row">
           <span class="bar-label">${feature}</span>
@@ -132,10 +138,13 @@ function buildHtmlReport(
   const details = sorted
     .map((r) => {
       const pct = (r.similarity * 100).toFixed(1);
-      const aaTag = r.perceivedEqual !== undefined
-        ? `<span class="tag ${r.perceivedEqual ? 'tag-ok' : 'tag-warn'}">AA复核: ${r.perceivedEqual ? '通过' : '仍有差异'}</span>`
+      const aaTag =
+        r.perceivedEqual !== undefined
+          ? `<span class="tag ${r.perceivedEqual ? 'tag-ok' : 'tag-warn'}">AA复核: ${r.perceivedEqual ? '通过' : '仍有差异'}</span>`
+          : '';
+      const resizeTag = r.resized
+        ? '<span class="tag tag-info">尺寸已对齐</span>'
         : '';
-      const resizeTag = r.resized ? '<span class="tag tag-info">尺寸已对齐</span>' : '';
       return `
         <div class="detail-card">
           <h3>${r.fixtureId} — ${pct}%</h3>

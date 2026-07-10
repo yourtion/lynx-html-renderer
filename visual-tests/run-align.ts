@@ -9,21 +9,22 @@
  *
  * 用法：pnpm test:visual:align（需先手动启动 rspeedy dev）
  */
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compareImages } from './compare/compare-images.js';
+import type { ComparisonResult } from './compare/types.js';
 import { fixtures } from './fixtures/index.js';
 import { createProviders } from './providers/index.js';
 import type { Screenshot } from './providers/types.js';
-import { compareImages } from './compare/compare-images.js';
 import { generateReport } from './reports/generate-report.js';
-import type { ComparisonResult } from './compare/types.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const TEMP_DIR = resolve(__dirname, '.tmp-screenshots');
 
 const VIEWPORT = { width: 375, height: 812 };
-const LYNX_WEB_BASE = 'http://localhost:3000/__web_preview?casename=index.web.bundle';
+const LYNX_WEB_BASE =
+  'http://localhost:3000/__web_preview?casename=index.web.bundle';
 
 async function main() {
   console.log('🎨 视觉对齐评估启动\n');
@@ -43,7 +44,10 @@ async function main() {
   await mkdir(TEMP_DIR, { recursive: true });
 
   const results: ComparisonResult[] = [];
-  const screenshotPaths = new Map<string, { baseline?: string; candidate?: string }>();
+  const screenshotPaths = new Map<
+    string,
+    { baseline?: string; candidate?: string }
+  >();
 
   try {
     for (const fixture of fixtures) {
@@ -57,7 +61,10 @@ async function main() {
         screenshots.set(provider.name, shot);
 
         // 保存临时文件
-        const filePath = resolve(TEMP_DIR, `${fixture.id}-${provider.name}.png`);
+        const filePath = resolve(
+          TEMP_DIR,
+          `${fixture.id}-${provider.name}.png`,
+        );
         await writeFile(filePath, shot.buffer);
 
         // 记录路径（chromium 为 baseline，其余为 candidate）
@@ -93,9 +100,10 @@ async function main() {
         results.push(result);
 
         const pct = (result.similarity * 100).toFixed(1);
-        const aa = result.perceivedEqual !== undefined
-          ? ` (AA: ${result.perceivedEqual ? '通过' : '仍有差异'})`
-          : '';
+        const aa =
+          result.perceivedEqual !== undefined
+            ? ` (AA: ${result.perceivedEqual ? '通过' : '仍有差异'})`
+            : '';
         console.log(` ${pct}%${aa}`);
       }
     }

@@ -1,6 +1,6 @@
-import type { ScreenshotProvider, Screenshot, Viewport } from './types.js';
-import { ProviderNotImplementedError } from './types.js';
 import type { Fixture } from '../fixtures/types.js';
+import type { Screenshot, ScreenshotProvider, Viewport } from './types.js';
+import { ProviderNotImplementedError } from './types.js';
 
 /**
  * Lynx Android 原生渲染 provider（预留）。

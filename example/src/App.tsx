@@ -42,11 +42,16 @@ export function App(props: { onRender?: () => void }) {
       const params = new URLSearchParams(window.location.search);
       fixtureId = params.get('fixture') ?? undefined;
     }
-    if (fixtureId && (VISUAL_FIXTURES as readonly string[]).includes(fixtureId)) {
+    if (
+      fixtureId &&
+      (VISUAL_FIXTURES as readonly string[]).includes(fixtureId)
+    ) {
       fetch(`/fixtures/${fixtureId}.html`)
         .then((res) => res.text())
         .then(setFixtureHtml)
-        .catch((err) => console.error(`Failed to load fixture: ${fixtureId}`, err));
+        .catch((err) =>
+          console.error(`Failed to load fixture: ${fixtureId}`, err),
+        );
     }
   }, []);
 

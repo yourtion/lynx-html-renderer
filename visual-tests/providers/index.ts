@@ -1,8 +1,8 @@
-import type { ScreenshotProvider } from './types.js';
 import { ChromiumProvider } from './chromium-provider.js';
-import { LynxWebProvider } from './lynx-web-provider.js';
-import { LynxIOSProvider } from './lynx-ios-provider.js';
 import { LynxAndroidProvider } from './lynx-android-provider.js';
+import { LynxIOSProvider } from './lynx-ios-provider.js';
+import { LynxWebProvider } from './lynx-web-provider.js';
+import type { ScreenshotProvider } from './types.js';
 
 /**
  * 创建所有 provider 实例。

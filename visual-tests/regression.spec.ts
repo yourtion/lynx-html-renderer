@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { fixtures } from './fixtures/index.js';
 
 /**
@@ -7,7 +7,8 @@ import { fixtures } from './fixtures/index.js';
  *
  * 更新 baseline：pnpm test:visual:update
  */
-const WEB_PREVIEW_BASE = 'http://localhost:3000/__web_preview?casename=index.web.bundle';
+const WEB_PREVIEW_BASE =
+  'http://localhost:3000/__web_preview?casename=index.web.bundle';
 
 for (const fixture of fixtures) {
   test(`regression: ${fixture.id}`, async ({ page }) => {

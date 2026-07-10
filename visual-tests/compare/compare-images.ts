@@ -1,8 +1,8 @@
-import pixelmatch from 'pixelmatch';
 import looksSame from 'looks-same';
+import pixelmatch from 'pixelmatch';
 import sharp from 'sharp';
-import type { ComparisonResult } from './types.js';
 import { compareConfig, shouldReviewAA } from './config.js';
+import type { ComparisonResult } from './types.js';
 
 /**
  * 对比两张截图，返回相似度分数 + diff 图。
@@ -28,10 +28,10 @@ export async function compareImages(
   const baselineMeta = await sharp(baselineImg).metadata();
   const candidateMeta = await sharp(candidateImg).metadata();
 
-  const baselineW = baselineMeta.width!;
-  const baselineH = baselineMeta.height!;
-  const candidateW = candidateMeta.width!;
-  const candidateH = candidateMeta.height!;
+  const baselineW = baselineMeta.width ?? 0;
+  const baselineH = baselineMeta.height ?? 0;
+  const candidateW = candidateMeta.width ?? 0;
+  const candidateH = candidateMeta.height ?? 0;
 
   // 以 baseline 尺寸为基准，candidate 缩放对齐
   let resizedCandidate = candidateImg;
@@ -44,14 +44,8 @@ export async function compareImages(
   }
 
   // 2. 转为 RGBA raw buffer
-  const raw1 = await sharp(baselineImg)
-    .ensureAlpha()
-    .raw()
-    .toBuffer();
-  const raw2 = await sharp(resizedCandidate)
-    .ensureAlpha()
-    .raw()
-    .toBuffer();
+  const raw1 = await sharp(baselineImg).ensureAlpha().raw().toBuffer();
+  const raw2 = await sharp(resizedCandidate).ensureAlpha().raw().toBuffer();
 
   const totalPixels = baselineW * baselineH;
   const diffRaw = Buffer.alloc(totalPixels * 4);

@@ -8,7 +8,7 @@ export const compareConfig = {
   },
   /** 触发 looks-same AA 复核的相似度区间 */
   aaReviewRange: {
-    min: 0.80,
+    min: 0.8,
     max: 0.95,
   },
 } as const;
