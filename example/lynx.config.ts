@@ -16,6 +16,10 @@ export default defineConfig({
         from: 'html',
         to: 'html',
       },
+      {
+        from: '../visual-tests/fixtures',
+        to: 'fixtures',
+      },
     ],
   },
   plugins: [
