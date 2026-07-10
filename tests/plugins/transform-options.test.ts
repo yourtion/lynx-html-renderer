@@ -1,5 +1,5 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   getPluginInfo,
   getPluginInfoByName,
@@ -216,7 +216,10 @@ describe('Plugin Info API', () => {
           name: 'test-capability',
           phase: 'capability' as const,
           order: 10,
-          apply: () => executionOrder.push('capability'),
+          registerCapabilityHandlers: () => {
+            executionOrder.push('capability');
+            return new Map();
+          },
         },
       ];
 
@@ -300,6 +303,222 @@ describe('Plugin Info API', () => {
       expect(capturedMetadata.removeAllClass).toBe(false);
       expect(capturedMetadata.removeAllStyle).toBe(true);
       expect(capturedMetadata.styleMode).toBe('css-class');
+    });
+
+    it('should ignore rootClassName in transform metadata', () => {
+      let capturedMetadata: Record<string, unknown> = {};
+
+      const inspector = {
+        name: 'inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: { metadata: Record<string, unknown> }) => {
+          capturedMetadata = { ...ctx.metadata };
+        },
+      };
+
+      transformHTML('<div>test</div>', {
+        rootClassName: 'custom-root',
+        plugins: { extra: [inspector] },
+      });
+
+      expect('rootClassName' in capturedMetadata).toBe(false);
+    });
+  });
+
+  describe('Debug Mode', () => {
+    it('should collect plugin timing metrics when debug=true', () => {
+      let capturedMetrics:
+        | {
+            pluginTimings: Map<string, number>;
+            nodeCount: number;
+          }
+        | undefined;
+
+      const inspector = {
+        name: 'metrics-inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: {
+          metrics?: { pluginTimings: Map<string, number>; nodeCount: number };
+        }) => {
+          capturedMetrics = ctx.metrics;
+        },
+      };
+
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      transformHTML('<div><p>hello</p><strong>world</strong></div>', {
+        debug: true,
+        plugins: { extra: [inspector] },
+      });
+
+      expect(capturedMetrics).toBeDefined();
+      expect(capturedMetrics?.pluginTimings.size).toBeGreaterThan(0);
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+
+      debugSpy.mockRestore();
+    });
+
+    it('should not collect metrics or emit debug logs when debug is disabled', () => {
+      let capturedMetrics:
+        | {
+            pluginTimings: Map<string, number>;
+            nodeCount: number;
+          }
+        | undefined;
+
+      const inspector = {
+        name: 'metrics-inspector',
+        phase: 'finalize' as const,
+        order: 999,
+        apply: (ctx: {
+          metrics?: { pluginTimings: Map<string, number>; nodeCount: number };
+        }) => {
+          capturedMetrics = ctx.metrics;
+        },
+      };
+
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      transformHTML('<div>no debug</div>', {
+        plugins: { extra: [inspector] },
+      });
+
+      expect(capturedMetrics).toBeUndefined();
+      expect(debugSpy).not.toHaveBeenCalled();
+
+      debugSpy.mockRestore();
+    });
+  });
+
+  describe('Capability Handler Replacements', () => {
+    it('should apply text replacements in a single capability traversal', () => {
+      const uppercasePlugin = {
+        name: 'uppercase-text',
+        phase: 'capability' as const,
+        order: 5,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              (node: {
+                kind: string;
+                content?: string;
+              }): undefined | { kind: 'text'; content: string } => {
+                if (node.kind !== 'text' || node.content === undefined) {
+                  return undefined;
+                }
+                return { kind: 'text', content: node.content.toUpperCase() };
+              },
+            ],
+          ]),
+        apply: () => {},
+      };
+
+      const result = transformHTML('<div>one<span>two</span>three</div>', {
+        plugins: { extra: [uppercasePlugin] },
+      });
+
+      const collectText = (
+        nodes: Array<{ kind: string; content?: string; children?: unknown[] }>,
+      ): string => {
+        let output = '';
+        for (const node of nodes) {
+          if (node.kind === 'text' && node.content) {
+            output += node.content;
+          } else if (node.kind === 'element' && Array.isArray(node.children)) {
+            output += collectText(
+              node.children as Array<{
+                kind: string;
+                content?: string;
+                children?: unknown[];
+              }>,
+            );
+          }
+        }
+        return output;
+      };
+
+      expect(
+        collectText(
+          result as Array<{
+            kind: string;
+            content?: string;
+            children?: unknown[];
+          }>,
+        ),
+      ).toBe('ONETWOTHREE');
+    });
+
+    it('should handle capability handler that replaces root node', () => {
+      const replaceRootPlugin = {
+        name: 'replace-root',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'root',
+              () => ({
+                kind: 'element',
+                tag: 'view',
+                props: {},
+                children: [{ kind: 'text', content: 'replaced root' }],
+              }),
+            ],
+          ]),
+      };
+
+      const result = transformHTML('<div>test</div>', {
+        plugins: { extra: [replaceRootPlugin] },
+      });
+
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('Layout capability skip', () => {
+    it('should skip element that already has capabilities', () => {
+      let checkedCount = 0;
+      const inspectPlugin = {
+        name: 'inspect-capabilities',
+        phase: 'finalize' as const,
+        order: 999,
+        apply(ctx: {
+          root: { kind: string; children: unknown[]; capabilities?: unknown };
+        }) {
+          if (ctx.root.kind !== 'element') return;
+          for (const child of ctx.root.children) {
+            if (child && typeof child === 'object' && 'capabilities' in child) {
+              checkedCount++;
+            }
+          }
+        },
+      };
+
+      // Pre-set capabilities via a plugin before layout-capability runs
+      const preCapPlugin = {
+        name: 'pre-capabilities',
+        phase: 'capability' as const,
+        order: 5, // runs before layout-capability (order 20)
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'view',
+              (node: { kind: string; capabilities?: unknown }) => {
+                if (node.kind === 'element') {
+                  node.capabilities = { layout: 'flex', isVoid: false };
+                }
+              },
+            ],
+          ]),
+      };
+
+      transformHTML('<div>test</div>', {
+        plugins: { extra: [preCapPlugin, inspectPlugin] },
+      });
+
+      expect(checkedCount).toBeGreaterThan(0);
     });
   });
 });

@@ -43,7 +43,7 @@ It is **not a browser**, but a **native-oriented, safe HTML rendering solution**
 ```bash
 npm install lynx-html-renderer
 # 或
-pnpm install lynx-html-renderer
+pnpm add lynx-html-renderer
 ```
 
 ### 基本使用 | Basic Usage
@@ -117,7 +117,8 @@ import 'lynx-html-renderer/dist/styles.css';
 <HTMLRenderer html={html} styleMode="css-class" />
 
 // 方式2：动态生成 CSS
-import { HTMLRenderer, generateCSS } from 'lynx-html-renderer';
+import { HTMLRenderer } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 const css = generateCSS('my-root-class');
 <style>{css}</style>
@@ -130,7 +131,7 @@ const css = generateCSS('my-root-class');
 2. HTML 的 `class` 属性
 3. TAG_MAP 的 `defaultStyle`（通过 `.lhr-{tag}` 类应用）
 
-详细的 CSS 类模式文档请参考：[CSS 类模式指南](./docs/css-class-mode.md)
+详细的 CSS 类模式文档请参考：[CSS 类模式指南](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/css-class-mode.md)
 
 ## 🚫 非目标 | Non-goals
 
@@ -143,12 +144,12 @@ const css = generateCSS('my-root-class');
 
 ## 🧠 核心思想 | Core Concepts
 
-参考 [Architecture](./docs/architecture.md)
+参考 [Architecture](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/architecture.md)
 
 ## 📦 功能特性 | Features
 
 - ✅ HTML 标签 → Lynx 组件映射
-- ✅ CSS style 安全集解析（白名单）
+- ✅ CSS style 安全集解析（受支持属性集）
 - ✅ 文本语义（strong / em / code）
 - ✅ 基础表格支持（table / tr / td）
 - ✅ 用户自定义渲染组件
@@ -179,6 +180,10 @@ interface HTMLRendererProps {
   removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
   styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
   rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
+  darkMode?: boolean;               // 是否启用暗色模式（默认：false）
+  linkStyle?: Record<string, string | number>; // 自定义链接样式，仅 inline 模式生效
+  debug?: boolean;                  // 是否启用 transform 调试日志（默认：false）
+  adapterRegistry?: AdapterRegistry; // 可选：组件级适配器注册表（默认使用全局注册表）
 }
 ```
 
@@ -196,9 +201,11 @@ interface TransformOptions {
   removeAllClass?: boolean;   // 是否删除所有 HTML 的 class 属性，默认为 true
   removeAllStyle?: boolean;   // 是否删除所有 HTML 的 style 属性，默认为 false
   styleMode?: 'inline' | 'css-class';  // 样式模式
-  rootClassName?: string;     // CSS类模式下的根容器类名
+  debug?: boolean;            // 是否启用 transform 调试日志
 }
 ```
+
+`rootClassName` 属于渲染层（`HTMLRenderer`）配置，`transformHTML` 会忽略该字段（保留仅为兼容）。
 
 ### CSS 工具函数
 
@@ -207,7 +214,7 @@ interface TransformOptions {
 生成完整的 CSS 字符串。
 
 ```tsx
-import { generateCSS } from 'lynx-html-renderer';
+import { generateCSS } from 'lynx-html-renderer/styles';
 
 // 使用默认根类名
 const css = generateCSS();
@@ -221,7 +228,7 @@ const customCSS = generateCSS('my-app');
 获取 HTML 标签对应的 CSS 类名。
 
 ```tsx
-import { getClassNameForTag } from 'lynx-html-renderer';
+import { getClassNameForTag } from 'lynx-html-renderer/styles';
 
 getClassNameForTag('p');    // => 'lhr-p'
 getClassNameForTag('h1');   // => 'lhr-h1'
@@ -250,4 +257,3 @@ Contributions, issues, and discussions are welcome.
 ---
 
 > This project is designed as a **long-term maintainable HTML-to-Native rendering pipeline**, not a one-off rich text solution.
-

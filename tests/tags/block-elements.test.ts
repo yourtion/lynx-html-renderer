@@ -177,4 +177,21 @@ describe('Block Elements', () => {
       expect(result[0].props?.className).toBeUndefined();
     });
   });
+
+  describe('List Structure', () => {
+    it('should merge list markers into the first text node', () => {
+      const html = '<ul><li>Item</li></ul>';
+      const result = transformHTML(html);
+      const listItem = result[0].children[0];
+
+      expect(listItem.kind).toBe('element');
+      if (listItem.kind === 'element') {
+        // 标记与首个文本合并为单个文本节点，保证渲染时在同一 <text>（同行）
+        expect(listItem.children[0]).toMatchObject({
+          kind: 'text',
+          content: '• Item',
+        });
+      }
+    });
+  });
 });

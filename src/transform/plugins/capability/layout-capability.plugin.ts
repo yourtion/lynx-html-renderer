@@ -43,32 +43,4 @@ export const layoutCapabilityPlugin: TransformPlugin = {
 
     return handlers;
   },
-
-  // OLD: 传统 apply() 方法（向后兼容）
-  apply(ctx) {
-    // 确保所有元素节点都有 capabilities
-    ensureCapabilities(ctx.root);
-  },
 };
-
-/**
- * 递归确保节点有 capabilities（传统方式，保留作为向后兼容）
- */
-function ensureCapabilities(node: LynxNode): void {
-  if (node.kind === 'element') {
-    const element = node as LynxElementNode;
-
-    // 如果没有 capabilities，添加默认值
-    if (!element.capabilities) {
-      element.capabilities = {
-        layout: 'flex',
-        isVoid: false,
-      };
-    }
-
-    // 递归处理子节点
-    for (const child of element.children) {
-      ensureCapabilities(child);
-    }
-  }
-}

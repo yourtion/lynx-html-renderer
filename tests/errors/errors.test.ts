@@ -291,6 +291,65 @@ describe('Error Classes', () => {
     });
   });
 
+  describe('HTMLTransformError constructor branches', () => {
+    it('should handle options as string (old signature with html)', () => {
+      const error = new HTMLTransformError('msg', 'parse', '<html>');
+      expect(error.html).toBe('<html>');
+      expect(error.code).toBe('PARSE_ERROR');
+    });
+
+    it('should handle options as string with causeOrHtml as Error', () => {
+      const cause = new Error('original');
+      const error = new HTMLTransformError('msg', 'parse', '<html>', cause);
+      expect(error.html).toBe('<html>');
+      expect(error.cause).toBe(cause);
+    });
+
+    it('should handle options as undefined with causeOrHtml', () => {
+      const cause = new Error('cause');
+      const error = new HTMLTransformError('msg', 'parse', undefined, cause);
+      expect(error.cause).toBe(cause);
+    });
+
+    it('should handle options as Error (old signature with cause)', () => {
+      const cause = new Error('direct cause');
+      const error = new HTMLTransformError('msg', 'parse', cause);
+      expect(error.cause).toBe(cause);
+    });
+
+    it('should handle options object with causeOrHtml as string', () => {
+      const error = new HTMLTransformError(
+        'msg',
+        'parse',
+        { code: 'STYLE_ERROR', cause: undefined },
+        '<html-content>',
+      );
+      expect(error.html).toBe('<html-content>');
+      expect(error.code).toBe('STYLE_ERROR');
+    });
+
+    it('should handle options object with causeOrHtml as Error', () => {
+      const cause = new Error('obj cause');
+      const error = new HTMLTransformError(
+        'msg',
+        'parse',
+        { code: 'VALIDATION_ERROR' },
+        cause,
+      );
+      expect(error.cause).toBe(cause);
+      expect(error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should handle options object without causeOrHtml', () => {
+      const error = new HTMLTransformError('msg', 'parse', {
+        code: 'RENDER_ERROR',
+        html: '<html>',
+      });
+      expect(error.html).toBe('<html>');
+      expect(error.code).toBe('RENDER_ERROR');
+    });
+  });
+
   describe('Error Factory Functions', () => {
     describe('createParseError', () => {
       it('should create PARSE_ERROR type error', () => {

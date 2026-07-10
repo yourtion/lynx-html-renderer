@@ -1,10 +1,13 @@
 import { parseDocument } from 'htmlparser2';
+import { createParseError, createPluginError, PluginError } from '../errors';
 import { createRootNode } from '../lynx/factory';
+import { validateLynxNodes } from '../validate/lynx-node';
 import { createTransformContext, type TransformContextImpl } from './context';
 import { TransformPluginResolver } from './resolver';
 import type {
   HtmlAstNode,
   LynxNode,
+  NodeCapabilityHandler,
   TransformOptions,
   TransformPhase,
   TransformPlugin,
@@ -20,20 +23,51 @@ const PHASES: TransformPhase[] = [
   'finalize',
 ];
 
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && performance.now) {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function recordPluginTiming(
+  ctx: TransformContextImpl,
+  pluginName: string,
+  durationMs: number,
+): void {
+  if (!ctx.metrics) return;
+
+  const current = ctx.metrics.pluginTimings.get(pluginName) ?? 0;
+  ctx.metrics.pluginTimings.set(pluginName, current + durationMs);
+}
+
+function countLynxNodes(node: LynxNode): number {
+  if (node.kind !== 'element') return 1;
+
+  let total = 1;
+  for (const child of node.children) {
+    total += countLynxNodes(child);
+  }
+  return total;
+}
+
 /**
  * 遍历 LynxNode 树
  * 用于批量处理能力阶段
  */
 function walkLynxNodeTree(
   node: LynxNode,
-  callback: (node: LynxNode) => void,
+  callback: (node: LynxNode, parent: LynxNode | null, index: number) => void,
+  parent: LynxNode | null = null,
+  index = -1,
 ): void {
-  callback(node);
+  callback(node, parent, index);
 
   // 只有元素节点有子节点
   if (node.kind === 'element' && node.children) {
-    for (const child of node.children) {
-      walkLynxNodeTree(child, callback);
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i];
+      walkLynxNodeTree(child, callback, node, i);
     }
   }
 }
@@ -41,11 +75,9 @@ function walkLynxNodeTree(
 /**
  * 执行能力阶段（批量处理优化）
  *
- * 如果插件实现了 registerCapabilityHandlers，则使用批量处理：
+ * capability 阶段使用 registerCapabilityHandlers 批量处理：
  * - 所有处理器在一次遍历中调用
  * - 减少树遍历次数从 3 次到 1 次
- *
- * 否则回退到传统方式：调用每个插件的 apply() 方法
  */
 function executeCapabilityPhaseWithBatching(
   getPlugins: (phase: TransformPhase) => TransformPlugin[],
@@ -54,23 +86,70 @@ function executeCapabilityPhaseWithBatching(
   const capabilityPlugins = getPlugins('capability');
 
   // 步骤 1: 注册所有处理器
+  // 收集使用 apply 的插件（向后兼容）
+  const applyOnlyPlugins: TransformPlugin[] = [];
+
   for (const plugin of capabilityPlugins) {
-    if (plugin.registerCapabilityHandlers) {
-      const handlers = plugin.registerCapabilityHandlers(ctx);
-      for (const [nodeKind, handler] of handlers) {
-        ctx.utils.registerHandler(nodeKind, handler);
+    if (!plugin.registerCapabilityHandlers) {
+      // 向后兼容：允许 capability 阶段插件仅实现 apply
+      if (plugin.apply) {
+        applyOnlyPlugins.push(plugin);
+        continue;
       }
-    } else {
-      // 回退：使用传统 apply() 方法
-      plugin.apply(ctx);
+      throw createPluginError(
+        plugin.name,
+        'Capability plugins must implement registerCapabilityHandlers() or apply()',
+        'capability',
+      );
+    }
+
+    let handlers: Map<string, NodeCapabilityHandler>;
+    const registerStart = nowMs();
+    try {
+      handlers = plugin.registerCapabilityHandlers(ctx);
+    } catch (error) {
+      if (error instanceof PluginError) {
+        throw error;
+      }
+      throw createPluginError(
+        plugin.name,
+        error instanceof Error
+          ? error.message
+          : 'registerCapabilityHandlers() failed',
+        'capability',
+        error instanceof Error ? error : undefined,
+      );
+    }
+    recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
+    for (const [nodeKind, handler] of handlers) {
+      ctx.utils.registerHandler(nodeKind, (node, context) => {
+        const handlerStart = nowMs();
+        try {
+          const result = handler(node, context);
+          recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
+          return result;
+        } catch (error) {
+          if (error instanceof PluginError) {
+            throw error;
+          }
+          throw createPluginError(
+            plugin.name,
+            error instanceof Error
+              ? error.message
+              : 'capability handler failed',
+            'capability',
+            error instanceof Error ? error : undefined,
+          );
+        }
+      });
     }
   }
 
-  // 步骤 2: 收集替换请求（延迟应用）
-  const replacements: Array<{ target: LynxNode; next: LynxNode }> = [];
+  // 步骤 2: 收集替换操作（延迟应用）
+  const replacementOps: Array<() => void> = [];
 
   if (ctx._handlerRegistry && ctx._handlerRegistry.size > 0) {
-    walkLynxNodeTree(ctx.root, (node) => {
+    walkLynxNodeTree(ctx.root, (node, parent, index) => {
       // 对于元素节点，使用 tag 来匹配处理器
       // 对于文本节点，使用 'text' 来匹配
       const key = node.kind === 'element' ? node.tag : node.kind;
@@ -79,18 +158,46 @@ function executeCapabilityPhaseWithBatching(
       for (const handler of handlers) {
         const result = handler(node, ctx);
         if (result && result !== node) {
-          // 收集替换请求，不立即执行
-          replacements.push({ target: node, next: result });
+          // 收集替换操作，不立即执行
+          replacementOps.push(() => {
+            if (!parent) {
+              ctx.root = result;
+              return;
+            }
+
+            if (parent.kind === 'element' && index >= 0) {
+              parent.children[index] = result;
+            }
+          });
         }
       }
     });
 
     // 步骤 3: 遍历完成后统一应用替换
-    for (const { target, next } of replacements) {
-      ctx.utils.replaceNode(target, next);
+    for (const applyReplacement of replacementOps) {
+      applyReplacement();
     }
 
     ctx._handlerRegistry.clear();
+  }
+
+  // 步骤 4: 执行仅使用 apply 的插件（向后兼容）
+  for (const plugin of applyOnlyPlugins) {
+    const applyStart = nowMs();
+    try {
+      plugin.apply?.(ctx);
+    } catch (error) {
+      if (error instanceof PluginError) {
+        throw error;
+      }
+      throw createPluginError(
+        plugin.name,
+        error instanceof Error ? error.message : 'Plugin apply() failed',
+        'capability',
+        error instanceof Error ? error : undefined,
+      );
+    }
+    recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
   }
 }
 
@@ -103,7 +210,16 @@ export function transformHTML(
   options?: TransformOptions,
 ): LynxNode[] {
   // 1. 解析 HTML 为 AST
-  const ast = parseDocument(html) as unknown as HtmlAstNode;
+  let ast: HtmlAstNode;
+  try {
+    ast = parseDocument(html) as unknown as HtmlAstNode;
+  } catch (error) {
+    throw createParseError(
+      error instanceof Error ? error.message : 'Failed to parse HTML',
+      html,
+      error instanceof Error ? error : undefined,
+    );
+  }
 
   // 2. 创建初始根节点（容器）
   const root = createRootNode();
@@ -119,8 +235,14 @@ export function transformHTML(
     ctx.metadata.removeAllClass = options.removeAllClass ?? true;
     ctx.metadata.removeAllStyle = options.removeAllStyle ?? false;
     ctx.metadata.styleMode = options.styleMode ?? 'inline';
-    ctx.metadata.rootClassName = options.rootClassName ?? 'lynx-html-renderer';
     ctx.metadata.linkStyle = options.linkStyle;
+  }
+
+  if (options?.debug) {
+    ctx.metrics = {
+      pluginTimings: new Map(),
+      nodeCount: 0,
+    };
   }
 
   // 6. 按阶段执行插件
@@ -135,11 +257,53 @@ export function transformHTML(
       // 其他阶段使用传统方式
       const plugins = resolver.getPluginsByPhase(phase);
       for (const plugin of plugins) {
-        plugin.apply(ctx);
+        if (!plugin.apply) {
+          throw createPluginError(
+            plugin.name,
+            `Plugins in phase "${phase}" must implement apply()`,
+            phase,
+          );
+        }
+        const applyStart = nowMs();
+        try {
+          plugin.apply(ctx);
+        } catch (error) {
+          if (error instanceof PluginError) {
+            throw error;
+          }
+          throw createPluginError(
+            plugin.name,
+            error instanceof Error ? error.message : 'Plugin apply() failed',
+            phase,
+            error instanceof Error ? error : undefined,
+          );
+        }
+        recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
       }
     }
   }
 
+  if (ctx.metrics) {
+    ctx.metrics.nodeCount = countLynxNodes(ctx.root);
+
+    if (options?.debug) {
+      const timingSummary = [...ctx.metrics.pluginTimings.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, duration]) => `${name}: ${duration.toFixed(3)}ms`)
+        .join(', ');
+
+      console.debug(
+        `[lynx-html-renderer] transform completed, nodeCount=${ctx.metrics.nodeCount}, pluginTimings={${timingSummary}}`,
+      );
+    }
+  }
+
   // 7. 返回根节点的子节点
-  return root.children;
+  const result = ctx.root.kind === 'element' ? ctx.root.children : [];
+
+  if (options?.debug) {
+    validateLynxNodes(result);
+  }
+
+  return result;
 }

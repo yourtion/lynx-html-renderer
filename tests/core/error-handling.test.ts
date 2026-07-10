@@ -1,6 +1,6 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { describe, expect, it } from 'vitest';
-import { LynxRenderError } from '../../src/errors';
+import { describe, expect, it, vi } from 'vitest';
+import { LynxRenderError, PluginError } from '../../src/errors';
 import type {
   LynxElementNode,
   LynxNode,
@@ -32,7 +32,190 @@ function findTextContent(nodes: LynxNode[]): string[] {
 }
 
 describe('Error Handling Tests', () => {
+  describe('Transform Pipeline Errors', () => {
+    it('should wrap thrown apply errors as PluginError', () => {
+      const brokenPlugin = {
+        name: 'broken-apply',
+        phase: 'finalize' as const,
+        apply: () => {
+          throw new Error('apply exploded');
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow('broken-apply failed in phase finalize: apply exploded');
+    });
+
+    it('should wrap thrown capability handler errors as PluginError', () => {
+      const brokenPlugin = {
+        name: 'broken-capability',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              () => {
+                throw new Error('handler exploded');
+              },
+            ],
+          ]),
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [brokenPlugin] },
+        }),
+      ).toThrow(
+        'broken-capability failed in phase capability: handler exploded',
+      );
+    });
+
+    it('should validate output nodes in debug mode', () => {
+      const invalidOutputPlugin = {
+        name: 'invalid-output',
+        phase: 'finalize' as const,
+        apply: (ctx: { root: LynxNode }) => {
+          if (ctx.root.kind !== 'element') {
+            return;
+          }
+
+          ctx.root.children.push({
+            kind: 'text',
+            content: 123,
+          } as unknown as LynxNode);
+        },
+      };
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      expect(() =>
+        transformHTML('<div>debug validation</div>', {
+          debug: true,
+          plugins: { extra: [invalidOutputPlugin] },
+        }),
+      ).toThrow(LynxRenderError);
+
+      expect(() =>
+        transformHTML('<div>debug validation</div>', {
+          debug: true,
+          plugins: { extra: [invalidOutputPlugin] },
+        }),
+      ).toThrow('Invalid node at index');
+
+      debugSpy.mockRestore();
+    });
+  });
+
   describe('Malformed HTML', () => {
+    it('should throw PluginError for plugin without apply method in non-capability phase', () => {
+      const noApplyPlugin = {
+        name: 'no-apply',
+        phase: 'normalize' as const,
+        // intentionally no apply method
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [noApplyPlugin] },
+        }),
+      ).toThrow(PluginError);
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [noApplyPlugin] },
+        }),
+      ).toThrow('no-apply failed in phase normalize');
+    });
+
+    it('should fall back to apply for capability plugin without registerCapabilityHandlers', () => {
+      let applyCalled = false;
+      const noRegisterPlugin = {
+        name: 'no-register',
+        phase: 'capability' as const,
+        apply: () => {
+          applyCalled = true;
+        },
+      };
+
+      transformHTML('<div>test</div>', {
+        plugins: { extra: [noRegisterPlugin] },
+      });
+      expect(applyCalled).toBe(true);
+    });
+
+    it('should re-throw PluginError from apply without wrapping', () => {
+      const directPluginError = new PluginError('direct', 'plugin', 'finalize');
+      const throwPlugin: TransformPlugin = {
+        name: 'thrower',
+        phase: 'finalize' as const,
+        apply: () => {
+          throw directPluginError;
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [throwPlugin] },
+        }),
+      ).toThrow(directPluginError);
+    });
+
+    it('should re-throw PluginError from capability handler without wrapping', () => {
+      const directPluginError = new PluginError(
+        'direct',
+        'cap-plugin',
+        'capability',
+      );
+      const throwPlugin = {
+        name: 'cap-thrower',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () =>
+          new Map([
+            [
+              'text',
+              () => {
+                throw directPluginError;
+              },
+            ],
+          ]),
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [throwPlugin] },
+        }),
+      ).toThrow(directPluginError);
+    });
+
+    it('should throw PluginError for non-Error thrown from registerCapabilityHandlers', () => {
+      const stringThrower = {
+        name: 'string-thrower',
+        phase: 'capability' as const,
+        registerCapabilityHandlers: () => {
+          throw 'string error';
+        },
+      };
+
+      expect(() =>
+        transformHTML('<div>test</div>', {
+          plugins: { extra: [stringThrower] },
+        }),
+      ).toThrow(PluginError);
+    });
     it('should handle unclosed tags and preserve text content', () => {
       const html = '<div><p>Unclosed paragraph';
       const result = transformHTML(html);

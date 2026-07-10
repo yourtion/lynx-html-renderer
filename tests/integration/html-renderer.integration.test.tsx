@@ -6,9 +6,13 @@
  */
 
 import '@testing-library/jest-dom';
-import { HTMLRenderer } from '@lynx-html-renderer/index';
+import {
+  createDefaultRegistry,
+  HTMLRenderer,
+  type LynxRenderAdapter,
+} from '@lynx-html-renderer/index';
 import { render } from '@lynx-js/react/testing-library';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('HTMLRenderer Integration Tests', () => {
   describe('Basic Rendering', () => {
@@ -211,6 +215,47 @@ describe('HTMLRenderer Integration Tests', () => {
       rerender(<HTMLRenderer html={html} />);
 
       expect(container.textContent).toContain('Memoized');
+    });
+  });
+
+  describe('Debug Option', () => {
+    it('should pass debug option through to transform pipeline', () => {
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+      render(<HTMLRenderer html="<div>debug</div>" debug />);
+
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+      debugSpy.mockRestore();
+    });
+  });
+
+  describe('Adapter Registry Isolation', () => {
+    it('should use instance-level adapterRegistry without mutating global behavior', () => {
+      const customRegistry = createDefaultRegistry();
+      const customTextAdapter: LynxRenderAdapter = {
+        render(node, ctx) {
+          return (
+            <view className="custom-text-adapter">
+              {ctx.renderChildren(node)}
+            </view>
+          );
+        },
+      };
+      customRegistry.registerByTag('text', customTextAdapter);
+
+      const html = '<p>Custom text adapter</p>';
+
+      const { container: customContainer } = render(
+        <HTMLRenderer html={html} adapterRegistry={customRegistry} />,
+      );
+      expect(
+        customContainer.querySelector('.custom-text-adapter'),
+      ).toBeDefined();
+
+      const { container: defaultContainer } = render(
+        <HTMLRenderer html={html} />,
+      );
+      expect(defaultContainer.querySelector('.custom-text-adapter')).toBeNull();
     });
   });
 });

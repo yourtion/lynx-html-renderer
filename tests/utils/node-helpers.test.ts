@@ -174,6 +174,26 @@ describe('node-helpers', () => {
       expect(result[0].content).toBe('Bold and italic');
       expect(result[0].marks).toEqual({ bold: true, italic: true });
     });
+
+    it('should not merge li-marker text nodes with adjacent text', () => {
+      const nodes: LynxNode[] = [
+        { kind: 'text', content: '• ', meta: { source: 'li-marker' } },
+        { kind: 'text', content: 'Item text' },
+      ];
+      const result = mergeAdjacentTextNodes(nodes);
+      expect(result).toHaveLength(2);
+      expect(result[0].content).toBe('• ');
+      expect(result[1].content).toBe('Item text');
+    });
+
+    it('should not merge adjacent text into li-marker node', () => {
+      const nodes: LynxNode[] = [
+        { kind: 'text', content: 'Text before' },
+        { kind: 'text', content: '• ', meta: { source: 'li-marker' } },
+      ];
+      const result = mergeAdjacentTextNodes(nodes);
+      expect(result).toHaveLength(2);
+    });
   });
 
   describe('applyPostProcessors', () => {

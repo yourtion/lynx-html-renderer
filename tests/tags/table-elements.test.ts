@@ -65,6 +65,38 @@ describe('Table Elements', () => {
     expect(result[0].children).toHaveLength(3);
   });
 
+  it('should flatten table sections with multiple rows', () => {
+    const html = `
+      <table>
+        <tbody>
+          <tr><td>Row 1</td></tr>
+          <tr><td>Row 2</td></tr>
+        </tbody>
+      </table>
+    `;
+    const result = transformHTML(html);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].children).toHaveLength(2);
+    expect(result[0].children[0].meta?.sourceTag).toBe('tr');
+    expect(result[0].children[1].meta?.sourceTag).toBe('tr');
+  });
+
+  it('should preserve rowSpan and colSpan on table cells', () => {
+    const html = `
+      <table>
+        <tr>
+          <td rowspan="2" colspan="3">Merged</td>
+        </tr>
+      </table>
+    `;
+    const result = transformHTML(html);
+    const cell = result[0].children[0].children[0];
+
+    expect(cell.props.rowSpan).toBe(2);
+    expect(cell.props.colSpan).toBe(3);
+  });
+
   it('should render table elements with correct roles', () => {
     // 测试表格元素渲染，确保生成的节点具有正确的role属性
     const html = `

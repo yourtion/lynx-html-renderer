@@ -1,4 +1,5 @@
 import type { CSSProperties } from '../transform/types';
+import { isInheritableProperty } from './style-schema';
 
 /**
  * Pre-compiled regex for kebab-case to camelCase conversion
@@ -67,23 +68,4 @@ export function parseStyleString(style: string): CSSProperties {
   return result;
 }
 
-/**
- * Check if a CSS property value is inheritable
- * Used for optimizing style inheritance propagation
- */
-const INHERITABLE_PROPERTIES: Set<string> = new Set([
-  'color',
-  'fontFamily',
-  'fontSize',
-  'fontStyle',
-  'fontWeight',
-  'lineHeight',
-  'textAlign',
-  'textDecoration',
-  'letterSpacing',
-  'wordSpacing',
-]);
-
-export function isInheritableProperty(prop: string): boolean {
-  return INHERITABLE_PROPERTIES.has(prop);
-}
+export { isInheritableProperty };

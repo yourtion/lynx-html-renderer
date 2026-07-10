@@ -161,7 +161,7 @@ function measurePerformance(
   performance.clearMeasures(measureName);
 
   const endMemory = process.memoryUsage().heapUsed;
-  const memoryUsed = endMemory - startMemory;
+  const memoryUsed = Math.max(0, endMemory - startMemory);
 
   return {
     name,

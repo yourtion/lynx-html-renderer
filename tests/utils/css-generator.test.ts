@@ -114,6 +114,13 @@ describe('CSS Generator', () => {
       expect(css).toContain('font-family: monospace');
       expect(css).toContain('color: blue');
     });
+
+    it('should not add px to unitless properties like flex-grow', () => {
+      const css = generateCSS();
+      // flex-grow is unitless (number value without px)
+      expect(css).toMatch(/flex-grow:\s*1/);
+      expect(css).not.toMatch(/flex-grow:\s*1px/);
+    });
   });
 
   describe('Dark Mode CSS Variables', () => {

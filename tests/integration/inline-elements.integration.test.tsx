@@ -171,8 +171,8 @@ describe('Inline Elements Integration Tests', () => {
       expect(text?.textContent).toContain('Link text');
       const style = text?.getAttribute('style');
       expect(style).toContain('color');
-      // text-decoration is not an inheritable property, so it's not passed to text nodes
-      expect(style).not.toContain('text-decoration');
+      // Link element preserves its wrapper to keep data-href, so text-decoration is retained
+      expect(style).toContain('text-decoration');
     });
 
     it('should render a with href attribute', () => {

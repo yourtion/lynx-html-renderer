@@ -47,20 +47,13 @@ function flattenTableChildren(children: LynxNode[]): LynxNode[] {
       const childElement = child as LynxElementNode;
       const sourceTag = childElement.meta?.sourceTag;
 
-      // 如果是 thead/tbody/tfoot，只保留单个子节点或保留包装器
+      // 如果是 thead/tbody/tfoot，将子节点统一提升到 table 下一级
       if (
         sourceTag === 'thead' ||
         sourceTag === 'tbody' ||
         sourceTag === 'tfoot'
       ) {
-        const sectionChildren = childElement.children;
-        // 如果只有一个子节点，直接返回（展开）
-        if (sectionChildren.length === 1) {
-          result.push(sectionChildren[0]);
-        } else {
-          // 如果有多个子节点，保留包装的 view（虽然很少见）
-          result.push(child);
-        }
+        result.push(...childElement.children);
       } else {
         result.push(child);
       }

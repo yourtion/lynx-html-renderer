@@ -2,7 +2,6 @@ import { parseStyleString } from '../../../utils/style-parser';
 import type {
   CSSProperties,
   LynxElementNode,
-  LynxNode,
   NodeCapabilityHandler,
   TransformPlugin,
 } from '../../types';
@@ -24,10 +23,26 @@ function processElementStyleAndClass(
   // 处理 style 属性
   if (!options.removeAllStyle && sourceAttrs.style) {
     const styleFromAttr = parseStyleString(sourceAttrs.style);
+
+    // 检测内联样式中是否显式设置了 flexDirection
+    const hasExplicitFlexDirection = Object.keys(styleFromAttr).some(
+      (key) => key === 'flexDirection' || key === 'flex-direction',
+    );
+
     element.props.style = {
       ...(element.props.style as CSSProperties),
       ...styleFromAttr,
     } as CSSProperties;
+
+    // 当内联样式设置 display: flex（或 inline-flex）但未指定 flex-direction 时，
+    // 使用 CSS 标准默认值 row，而非块级元素的 column 默认值
+    const finalStyle = element.props.style as CSSProperties;
+    if (
+      !hasExplicitFlexDirection &&
+      (finalStyle.display === 'flex' || finalStyle.display === 'inline-flex')
+    ) {
+      finalStyle.flexDirection = 'row';
+    }
   }
 
   // 处理 class 属性
@@ -86,62 +101,4 @@ export const styleCapabilityPlugin: TransformPlugin = {
 
     return handlers;
   },
-
-  // OLD: 传统 apply() 方法（向后兼容）
-  apply(ctx) {
-    const removeAllStyle = (ctx.metadata.removeAllStyle as boolean) ?? false;
-    const removeAllClass = (ctx.metadata.removeAllClass as boolean) ?? true;
-    const styleMode =
-      (ctx.metadata.styleMode as 'inline' | 'css-class') ?? 'inline';
-
-    // 遍历所有节点，处理样式
-    processStyles(ctx.root, { removeAllStyle, removeAllClass, styleMode });
-  },
 };
-
-/**
- * 递归处理节点样式（传统方式，保留作为向后兼容）
- */
-function processStyles(
-  lynxNode: LynxNode,
-  options: {
-    removeAllStyle: boolean;
-    removeAllClass: boolean;
-    styleMode: 'inline' | 'css-class';
-  },
-): void {
-  if (lynxNode.kind === 'element') {
-    const element = lynxNode as LynxElementNode;
-    const sourceAttrs = element.meta?.sourceAttrs as
-      | Record<string, string>
-      | undefined;
-
-    // 处理 style 属性
-    if (!options.removeAllStyle && sourceAttrs?.style) {
-      const styleFromAttr = parseStyleString(sourceAttrs.style);
-      // 合并到现有 style
-      element.props.style = {
-        ...(element.props.style as CSSProperties),
-        ...styleFromAttr,
-      } as CSSProperties;
-    }
-
-    // 处理 class 属性
-    if (!options.removeAllClass && sourceAttrs?.class) {
-      // 如果已经有className（来自defaultStyle的CSS类），需要合并
-      const existingClass = (element.props as { className?: string }).className;
-      if (existingClass) {
-        // 合并defaultStyle的className和HTML的class属性
-        (element.props as { className: string }).className =
-          `${existingClass} ${sourceAttrs.class}`;
-      } else {
-        (element.props as { className: string }).className = sourceAttrs.class;
-      }
-    }
-
-    // 递归处理子节点
-    for (const child of element.children) {
-      processStyles(child, options);
-    }
-  }
-}

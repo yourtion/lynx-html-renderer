@@ -1,9 +1,12 @@
+import { createLynxNode } from '../../../lynx/factory';
 import type {
   LynxElementNode,
   LynxNode,
   LynxTextNode,
   TransformPlugin,
 } from '../../types';
+import { extractInheritableStyles } from '../../utils/inheritable-properties';
+import { BLOCK_TAG_MAP } from './tag-config';
 
 /**
  * 列表结构插件
@@ -55,33 +58,37 @@ function addListMarkers(listElement: LynxElementNode): void {
       const marker = isOrdered ? `${counter}. ` : '• ';
       counter++;
 
-      // 尝试合并标记与第一个文本子节点
-      if (
-        liElement.children.length > 0 &&
-        liElement.children[0].kind === 'text'
-      ) {
-        const firstText = liElement.children[0] as LynxTextNode;
-        return {
-          ...liElement,
-          children: [
-            {
-              ...firstText,
-              content: marker + firstText.content,
-            },
-            ...liElement.children.slice(1),
-          ],
+      const firstTextIndex = liElement.children.findIndex(
+        (node): node is LynxTextNode => node.kind === 'text',
+      );
+
+      // 有文本子节点：把标记合并进首个文本，保证标记与内容在同一 <text> 内（同行渲染）
+      if (firstTextIndex >= 0) {
+        const firstText = liElement.children[firstTextIndex] as LynxTextNode;
+        const mergedChildren = [...liElement.children];
+        mergedChildren[firstTextIndex] = {
+          ...firstText,
+          content: marker + firstText.content,
         };
+        return { ...liElement, children: mergedChildren };
       }
 
-      // 如果没有文本子节点，添加标记作为新文本节点
+      // 无文本子节点：标记作为独立文本节点（携带 li 可继承样式）
+      const fallbackStyles = extractInheritableStyles(
+        BLOCK_TAG_MAP.li.defaultStyle,
+      );
       return {
         ...liElement,
         children: [
-          {
+          createLynxNode({
             kind: 'text',
             content: marker,
+            inheritableStyles:
+              Object.keys(fallbackStyles).length > 0
+                ? fallbackStyles
+                : undefined,
             meta: { source: 'li-marker' },
-          },
+          }),
           ...liElement.children,
         ],
       };

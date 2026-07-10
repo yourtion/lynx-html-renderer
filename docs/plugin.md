@@ -42,13 +42,13 @@ HTML AST
 │   Transform Pipeline     │
 │                          │
 │  normalize Phase         │
-│  ├─ html-normalize       │
-│  └─ text-merge           │
+│  └─ html-normalize       │
 │                          │
 │  structure Phase         │
 │  ├─ block-structure      │
 │  ├─ list-structure       │
-│  └─ table-structure      │
+│  ├─ table-structure      │
+│  └─ text-merge           │
 │                          │
 │  capability Phase        │
 │  ├─ style-capability     │
@@ -56,7 +56,7 @@ HTML AST
 │  └─ media-capability     │
 │                          │
 │  finalize Phase          │
-│  (reserved)              │
+│  └─ text-normalize-finalize │
 └──────────────────────────┘
    ↓
 LynxNode Tree (IR)
@@ -95,19 +95,17 @@ export interface TransformPlugin {
   /** 是否默认启用 */
   enabledByDefault?: boolean;
 
-  /** 可选：注册能力处理器（推荐用于 capability 阶段）
+  /** capability 阶段必需：注册能力处理器
    *
    * 返回一个 Map，key 是节点类型（tag），value 是对应的处理器
    * 引擎会在一次遍历中调用所有相关的处理器，提高性能
-   *
-   * 如果此方法存在，将优先于 apply() 使用
    */
   registerCapabilityHandlers?: (
     ctx: TransformContext,
   ) => Map<string, NodeCapabilityHandler>;
 
-  /** 插件执行入口（传统方式，向后兼容） */
-  apply(ctx: TransformContext): void;
+  /** normalize/structure/finalize 阶段执行入口 */
+  apply?: (ctx: TransformContext) => void;
 }
 
 /** 节点能力处理器类型 */
@@ -189,7 +187,11 @@ plugins.sort((a, b) => {
 for (const phase of ["normalize", "structure", "capability", "finalize"]) {
   const plugins = resolver.getPluginsByPhase(phase);
   for (const plugin of plugins) {
-    plugin.apply(ctx);
+    if (phase === "capability") {
+      // capability 阶段要求 registerCapabilityHandlers
+    } else {
+      plugin.apply?.(ctx);
+    }
   }
 }
 ```
@@ -215,7 +217,7 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 - 遍历 AST，标记纯空白文本节点（通过 `isWhitespace` 标记）
 - 后续 `block-structure` 会过滤这些节点，避免产生无意义的 `<text> </text>` 节点
 
-#### 5.1.2 text-merge 插件
+#### 5.1.2 text-merge 插件（在 structure phase 执行）
 
 **职责：** 合并相邻文本节点
 
@@ -225,6 +227,7 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 
 - 合并相邻的文本节点，减少节点数量
 - 提升 Lynx 渲染性能
+- 插件 `phase = structure`，并使用较大 `order` 在结构处理后执行
 
 ---
 
@@ -377,13 +380,7 @@ const myCapabilityPlugin: TransformPlugin = {
     return handlers;
   },
 
-  // 传统 apply() 方法（向后兼容）
-  apply(ctx) {
-    // 如果 registerCapabilityHandlers 存在，此方法将被忽略
-    ctx.utils.walkAst((node) => {
-      // ... 传统实现 ...
-    });
-  },
+  // capability 插件不再支持 apply() 回退路径
 };
 ```
 
@@ -594,18 +591,20 @@ const myPlugin: TransformPlugin = {
 - ✅ 不牺牲 MVP 落地速度
 - ✅ 保持向后兼容性
 
-**内建插件清单（8 个）：**
+**内建插件清单（9 个）：**
 
 | Phase      | Plugin            | Order |
 | ---------- | ----------------- | ----- |
 | normalize  | html-normalize    | 10    |
-| normalize  | text-merge        | 20    |
+| structure  | text-merge        | 999   |
 | structure  | block-structure   | 10    |
 | structure  | list-structure    | 20    |
 | structure  | table-structure   | 30    |
+| structure  | text-merge        | 999   |
 | capability | style-capability  | 10    |
 | capability | layout-capability | 20    |
 | capability | media-capability  | 100   |
+| finalize   | text-normalize-finalize | 10 |
 
 ## 10. 相关文件
 
@@ -618,9 +617,10 @@ const myPlugin: TransformPlugin = {
 
 **内建插件：**
 
-- `src/transform/plugins/normalize/` - html-normalize、text-merge
+- `src/transform/plugins/normalize/` - html-normalize、text-merge（phase: structure）
 - `src/transform/plugins/structure/` - block-structure、list-structure、table-structure
 - `src/transform/plugins/capability/` - style-capability、layout-capability、media-capability
+- `src/transform/plugins/finalize/` - text-normalize-finalize
 
 **工具函数：**
 

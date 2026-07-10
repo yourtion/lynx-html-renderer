@@ -1,7 +1,32 @@
 {
   "name": "lynx-html-renderer",
-  "version": "0.5.0",
+  "version": "1.0.0",
+  "description": "A lightweight and extensible renderer that renders HTML strings into Lynx native components.",
+  "keywords": [
+    "lynx",
+    "lynx-js",
+    "html",
+    "html-renderer",
+    "rich-text",
+    "renderer",
+    "react"
+  ],
+  "homepage": "https://github.com/yourtion/lynx-html-renderer#readme",
+  "bugs": {
+    "url": "https://github.com/yourtion/lynx-html-renderer/issues"
+  },
+  "license": "MIT",
+  "author": "Yourtion <yourtion@gmail.com> (https://github.com/yourtion)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourtion/lynx-html-renderer.git"
+  },
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
   "exports": {
     ".": {
       "types": "./src/index.tsx",
@@ -18,28 +43,54 @@
       "import": "./src/transform/types.ts",
       "default": "./src/transform/types.ts"
     },
+    "./errors": {
+      "types": "./src/errors/index.ts",
+      "import": "./src/errors/index.ts",
+      "default": "./src/errors/index.ts"
+    },
+    "./styles": {
+      "types": "./src/styles.ts",
+      "import": "./src/styles.ts",
+      "default": "./src/styles.ts"
+    },
+    "./utils/node-helpers": {
+      "types": "./src/utils/node-helpers.ts",
+      "import": "./src/utils/node-helpers.ts",
+      "default": "./src/utils/node-helpers.ts"
+    },
+    "./validate/lynx-node": {
+      "types": "./src/validate/lynx-node.ts",
+      "import": "./src/validate/lynx-node.ts",
+      "default": "./src/validate/lynx-node.ts"
+    },
     "./dist/styles.css": "./dist/styles.css",
     "./dist/styles.min.css": "./dist/styles.min.css"
   },
   "scripts": {
-    "build-example": "pnpm generate:css && cd example && rspeedy build",
-    "check": "biome check --write",
+    "build": "pnpm build:lib && node scripts/fix-esm-imports.mjs && pnpm generate:css",
+    "build:lib": "tsc -p tsconfig.build.json",
+    "build-example": "pnpm build && cd example && rspeedy build",
+    "check": "biome check",
+    "check:fix": "biome check --write",
     "dev": "cd example && rspeedy dev",
     "format": "biome format --write",
     "preview": "cd example && rspeedy preview",
     "test": "vitest run",
+    "test:perf": "vitest run tests/performance",
+    "typecheck": "tsc --noEmit",
     "coverage": "vitest run --coverage --coverage.include='src/**'",
     "coverage:ci": "vitest run --coverage --coverage.include='src/**' --reporter=junit --outputFile=test-report.junit.xml",
     "docs:dev": "rspress dev",
     "docs:build": "rspress build",
     "tag": "git tag v`node -p 'require(\"./package\").version'`",
     "postpublish": "pnpm tag && git push && git push --tags",
-    "prepublishOnly": "pnpm generate:css",
-    "generate:css": "tsx scripts/generate-css.ts"
+    "prepublishOnly": "pnpm build",
+    "generate:css": "node scripts/generate-css.mjs"
   },
   "files": [
     "src",
-    "dist"
+    "dist/styles.css",
+    "dist/styles.min.css"
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.115.1"
@@ -63,13 +114,9 @@
     "typescript": "~5.9.3",
     "vitest": "^3.2.4"
   },
+  "packageManager": "pnpm@10.26.2",
   "engines": {
     "node": ">=18"
-  },
-  "pnpm": {
-    "overrides": {
-      "esbuild": "0.18.20"
-    }
   },
   "dependencies": {
     "htmlparser2": "^10.0.0"
