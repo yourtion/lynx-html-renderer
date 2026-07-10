@@ -26,3 +26,6 @@ site
 
 # Vercel
 .vercel
+
+# Superpowers (local implementation plans, not tracked in git)
+docs/superpowers/
