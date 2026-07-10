@@ -2,5 +2,4 @@ reports/*
 !reports/.gitkeep
 # 源码需纳入版本控制（生成的 HTML/JSON/screenshots 仍忽略）
 !reports/*.ts
-__screenshots__/
 .tmp-screenshots/
