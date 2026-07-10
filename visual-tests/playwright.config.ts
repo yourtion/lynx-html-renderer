@@ -15,9 +15,10 @@ export default defineConfig({
 
   // webServer：自动启动 rspeedy dev
   webServer: {
-    command: 'cd ../example && rspeedy dev --port 3000',
+    command: 'rspeedy dev',
     port: 3000,
-    cwd: '../',
+    cwd: '../example',
+    env: { PORT: '3000' },
     reuseExistingServer: true,
     timeout: 120_000,
   },
