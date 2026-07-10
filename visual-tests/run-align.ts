@@ -23,7 +23,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const TEMP_DIR = resolve(__dirname, '.tmp-screenshots');
 
 const VIEWPORT = { width: 375, height: 812 };
-const LYNX_WEB_BASE = 'http://localhost:3000/__web_preview';
+const LYNX_WEB_BASE = 'http://localhost:3000/__web_preview?casename=index.web.bundle';
 
 async function main() {
   console.log('🎨 视觉对齐评估启动\n');

@@ -7,19 +7,19 @@ import { fixtures } from './fixtures/index.js';
  *
  * 更新 baseline：pnpm test:visual:update
  */
-const WEB_PREVIEW_BASE = 'http://localhost:3000/__web_preview';
+const WEB_PREVIEW_BASE = 'http://localhost:3000/__web_preview?casename=index.web.bundle';
 
 for (const fixture of fixtures) {
   test(`regression: ${fixture.id}`, async ({ page }) => {
-    await page.goto(`${WEB_PREVIEW_BASE}?fixture=${fixture.id}`, {
+    await page.goto(`${WEB_PREVIEW_BASE}&fixture=${fixture.id}`, {
       waitUntil: 'networkidle',
     });
 
-    // 等待 web-core 渲染出元素
+    // 等待 web-core 渲染出元素（内容在 lynx-view 的 Shadow DOM 中）
     await page.waitForFunction(
       () => {
-        const root = document.getElementById('root');
-        return root && root.children.length > 0;
+        const lynxView = document.querySelector('lynx-view');
+        return lynxView?.shadowRoot?.children.length > 1;
       },
       { timeout: 30_000 },
     );

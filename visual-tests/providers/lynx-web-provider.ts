@@ -42,14 +42,14 @@ export class LynxWebProvider implements ScreenshotProvider {
 
     try {
       // 通过 query param 指定 fixture，App.tsx 会 fetch 并渲染
-      const url = `${this.baseUrl}?fixture=${fixture.id}`;
+      const url = `${this.baseUrl}&fixture=${fixture.id}`;
       await page.goto(url, { waitUntil: 'networkidle' });
 
-      // 等待 web-core (wasm) 加载并渲染出元素
+      // 等待 web-core (wasm) 加载并渲染出元素（内容在 lynx-view 的 Shadow DOM 中）
       await page.waitForFunction(
         () => {
-          const root = document.getElementById('root');
-          return root && root.children.length > 0;
+          const lynxView = document.querySelector('lynx-view');
+          return lynxView?.shadowRoot?.children.length > 1;
         },
         { timeout: 30_000 },
       );

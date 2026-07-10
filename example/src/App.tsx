@@ -27,9 +27,21 @@ export function App(props: { onRender?: () => void }) {
     [lynx.__globalProps.theme],
   );
 
-  // 视觉测试模式：从 globalProps 读取 fixture id，fetch 加载 HTML
+  // 视觉测试模式：从 URL query param 或 globalProps 读取 fixture id，fetch 加载 HTML
+  // Web Preview 模式下 globalProps 不可用，通过 URL query param 传递
   useEffect(() => {
-    const fixtureId = lynx.__globalProps.fixture as string | undefined;
+    let fixtureId: string | undefined;
+    try {
+      // 优先从 globalProps 读取（原生模式）
+      fixtureId = lynx.__globalProps.fixture as string | undefined;
+    } catch {
+      // globalProps 在 Web 模式下可能不可用
+    }
+    // Web 模式下从 URL query param 读取
+    if (!fixtureId && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      fixtureId = params.get('fixture') ?? undefined;
+    }
     if (fixtureId && (VISUAL_FIXTURES as readonly string[]).includes(fixtureId)) {
       fetch(`/fixtures/${fixtureId}.html`)
         .then((res) => res.text())

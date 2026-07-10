@@ -28,4 +28,4 @@ site
 .vercel
 
 # Superpowers (local implementation plans, not tracked in git)
-docs/superpowers/
+docs/superpowers/test-results/
