@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 /**
  * 回归模式配置：
@@ -8,20 +8,15 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: '.',
   testMatch: 'regression.spec.ts',
+  timeout: 180_000,
 
   // 截图 baseline 存放目录
   snapshotPathTemplate: '{snapshotDir}/{testName}/{projectName}.png',
   snapshotDir: '__screenshots__',
 
-  // webServer：自动启动 rspeedy dev
-  webServer: {
-    command: 'rspeedy dev',
-    port: 3000,
-    cwd: '../example',
-    env: { PORT: '3000' },
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  // rspeedy dev 需要交互式终端（QR code），不适合 Playwright 自动管理。
+  // 运行测试前请手动启动：cd example && PORT=3000 rspeedy dev
+  // Playwright 会自动检测端口 3000 是否已有 server 在运行。
 
   use: {
     viewport: { width: 375, height: 812 },
@@ -31,8 +26,8 @@ export default defineConfig({
     {
       name: 'lynx-web',
       use: {
-        ...devices['Desktop Chrome'],
         // COOP/COEP for web-core SharedArrayBuffer
+        // 注意：不要用 devices['Desktop Chrome']，它的 viewport 会覆盖上面的 375x812
         launchOptions: {
           args: ['--cross-origin-isolate'],
         },

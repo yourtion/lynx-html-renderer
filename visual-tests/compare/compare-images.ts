@@ -33,6 +33,17 @@ export async function compareImages(
   const candidateW = candidateMeta.width ?? 0;
   const candidateH = candidateMeta.height ?? 0;
 
+  if (baselineW === 0 || baselineH === 0) {
+    throw new Error(
+      `Failed to decode baseline image dimensions for fixture "${fixtureId}"`,
+    );
+  }
+  if (candidateW === 0 || candidateH === 0) {
+    throw new Error(
+      `Failed to decode candidate image dimensions for fixture "${fixtureId}"`,
+    );
+  }
+
   // 以 baseline 尺寸为基准，candidate 缩放对齐
   let resizedCandidate = candidateImg;
   const resized = baselineW !== candidateW || baselineH !== candidateH;

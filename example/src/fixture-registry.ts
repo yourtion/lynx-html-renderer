@@ -16,10 +16,16 @@ import medium1 from '../../visual-tests/fixtures/medium-1.html';
 import v8Blog from '../../visual-tests/fixtures/v8-blog.html';
 import wikipedia from '../../visual-tests/fixtures/wikipedia.html';
 
-/** 从完整 HTML 文档中提取 body 内容 */
+/** 从完整 HTML 文档中提取 body 内容，并移除脚本/样式/iframe 等非正文标签 */
 function extractBody(html: string): string {
-  const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  return match ? match[1].trim() : html;
+  const match = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  let body = match ? match[1].trim() : html;
+  // 移除 script、style、iframe、noscript 标签（含内容）
+  body = body.replace(
+    /<(script|style|iframe|noscript)\b[^>]*>[\s\S]*?<\/\1>/gi,
+    '',
+  );
+  return body.trim();
 }
 
 export const fixtureRegistry: Record<string, string> = {

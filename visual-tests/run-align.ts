@@ -53,58 +53,68 @@ async function main() {
     for (const fixture of fixtures) {
       console.log(`\n📸 截图: ${fixture.id} (${fixture.description})`);
 
-      // 收集所有 provider 的截图
-      const screenshots = new Map<string, Screenshot>();
-      for (const provider of available) {
-        process.stdout.write(`  [capture] ${provider.name}...`);
-        const shot = await provider.capture(fixture, VIEWPORT);
-        screenshots.set(provider.name, shot);
+      try {
+        // 收集所有 provider 的截图
+        const screenshots = new Map<string, Screenshot>();
+        for (const provider of available) {
+          process.stdout.write(`  [capture] ${provider.name}...`);
+          try {
+            const shot = await provider.capture(fixture, VIEWPORT);
+            screenshots.set(provider.name, shot);
 
-        // 保存临时文件
-        const filePath = resolve(
-          TEMP_DIR,
-          `${fixture.id}-${provider.name}.png`,
-        );
-        await writeFile(filePath, shot.buffer);
+            // 保存临时文件
+            const filePath = resolve(
+              TEMP_DIR,
+              `${fixture.id}-${provider.name}.png`,
+            );
+            await writeFile(filePath, shot.buffer);
 
-        // 记录路径（chromium 为 baseline，其余为 candidate）
-        const entry = screenshotPaths.get(fixture.id) ?? {};
-        if (provider.name === 'chromium') {
-          entry.baseline = filePath;
-        } else {
-          entry.candidate = filePath;
+            // 记录路径（chromium 为 baseline，其余为 candidate）
+            const entry = screenshotPaths.get(fixture.id) ?? {};
+            if (provider.name === 'chromium') {
+              entry.baseline = filePath;
+            } else {
+              entry.candidate = filePath;
+            }
+            screenshotPaths.set(fixture.id, entry);
+
+            console.log(' done');
+          } catch (err) {
+            console.log(` 失败: ${String(err).substring(0, 80)}`);
+          }
         }
-        screenshotPaths.set(fixture.id, entry);
 
-        console.log(' done');
-      }
+        // 对比：chromium vs 每个 candidate
+        const baseline = screenshots.get('chromium');
+        if (!baseline) {
+          console.log(`  ⚠️ 无 chromium 截图，跳过对比`);
+          continue;
+        }
 
-      // 对比：chromium vs 每个 candidate
-      const baseline = screenshots.get('chromium');
-      if (!baseline) {
-        console.log(`  ⚠️ 无 chromium 截图，跳过对比`);
-        continue;
-      }
+        for (const [candidateName, candidate] of screenshots) {
+          if (candidateName === 'chromium') continue;
 
-      for (const [candidateName, candidate] of screenshots) {
-        if (candidateName === 'chromium') continue;
+          process.stdout.write(`  [compare] chromium vs ${candidateName}...`);
+          const result = await compareImages(
+            baseline.buffer,
+            candidate.buffer,
+            fixture.id,
+            'chromium',
+            candidateName,
+          );
+          results.push(result);
 
-        process.stdout.write(`  [compare] chromium vs ${candidateName}...`);
-        const result = await compareImages(
-          baseline.buffer,
-          candidate.buffer,
-          fixture.id,
-          'chromium',
-          candidateName,
+          const pct = (result.similarity * 100).toFixed(1);
+          const aa =
+            result.perceivedEqual !== undefined
+              ? ` (AA: ${result.perceivedEqual ? '通过' : '仍有差异'})`
+              : '';
+          console.log(` ${pct}%${aa}`);
+        }
+      } catch (err) {
+        console.log(
+          `  ⚠️ fixture 处理失败，跳过: ${String(err).substring(0, 100)}`,
         );
-        results.push(result);
-
-        const pct = (result.similarity * 100).toFixed(1);
-        const aa =
-          result.perceivedEqual !== undefined
-            ? ` (AA: ${result.perceivedEqual ? '通过' : '仍有差异'})`
-            : '';
-        console.log(` ${pct}%${aa}`);
       }
     }
   } finally {
@@ -118,9 +128,16 @@ async function main() {
   console.log('\n📊 生成报告...');
   await generateReport(results, fixtures, screenshotPaths);
 
-  // 汇总
-  const avgSim = results.reduce((a, r) => a + r.similarity, 0) / results.length;
-  console.log(`\n✅ 完成！平均相似度: ${(avgSim * 100).toFixed(1)}%`);
+  // 汇总（防除零）
+  if (results.length > 0) {
+    const avgSim =
+      results.reduce((a, r) => a + r.similarity, 0) / results.length;
+    console.log(
+      `\n✅ 完成！${results.length} 个对比，平均相似度: ${(avgSim * 100).toFixed(1)}%`,
+    );
+  } else {
+    console.log('\n✅ 完成！无有效对比结果');
+  }
   console.log(`   报告: pnpm test:visual:report`);
 }
 

@@ -211,12 +211,6 @@ function buildDiffViewer(results: ComparisonResult[]): string {
   const fixtureList = sorted
     .map((r) => {
       const pct = (r.similarity * 100).toFixed(1);
-      const color =
-        r.similarity >= 0.95
-          ? '#28a745'
-          : r.similarity >= 0.8
-            ? '#ffc107'
-            : '#dc3545';
       return `<option value="${r.fixtureId}">${r.fixtureId} (${pct}%)</option>`;
     })
     .join('');
