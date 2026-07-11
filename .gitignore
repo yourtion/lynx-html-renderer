@@ -28,4 +28,9 @@ site
 .vercel
 
 # Superpowers (local implementation plans, not tracked in git)
-docs/superpowers/test-results/
+docs/superpowers/
+
+# Visual test generated output
+test-results/
+visual-tests/align-report.*
+visual-tests/screenshots/

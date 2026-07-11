@@ -2,24 +2,23 @@ import { useEffect, useMemo, useState } from '@lynx-js/react';
 import './App.css';
 import { HTMLRenderer } from 'lynx-html-renderer';
 import htmlContent from '../html/showcase.html';
+import { fixtureRegistry } from './fixture-registry';
 
-// 视觉测试 fixture 列表（与 visual-tests/fixtures/index.ts 保持一致）
-const VISUAL_FIXTURES = [
-  'basic-tags-cleaning',
-  'base-url',
-  'ars-1',
-  'bbc-1',
-  'aclu',
-  'keep-tabular-data',
-  'v8-blog',
-  'medium-1',
-  'wikipedia',
-  'keep-images',
-] as const;
+// 从 globalProps 读取 fixture id（web-core 从 localStorage 'lynx-web-core-global-props' 传递）
+function getFixtureHtml(): string | null {
+  try {
+    const id = lynx.__globalProps.fixture as string | undefined;
+    if (id && id in fixtureRegistry) {
+      return fixtureRegistry[id];
+    }
+  } catch {
+    // globalProps 在某些环境下可能不可用
+  }
+  return null;
+}
 
 export function App(props: { onRender?: () => void }) {
   const [removeAllStyle, setRemoveAllStyle] = useState(false);
-  const [fixtureHtml, setFixtureHtml] = useState<string | null>(null);
 
   // 从 globalProps 获取主题状态
   const darkMode = useMemo(
@@ -27,33 +26,8 @@ export function App(props: { onRender?: () => void }) {
     [lynx.__globalProps.theme],
   );
 
-  // 视觉测试模式：从 URL query param 或 globalProps 读取 fixture id，fetch 加载 HTML
-  // Web Preview 模式下 globalProps 不可用，通过 URL query param 传递
-  useEffect(() => {
-    let fixtureId: string | undefined;
-    try {
-      // 优先从 globalProps 读取（原生模式）
-      fixtureId = lynx.__globalProps.fixture as string | undefined;
-    } catch {
-      // globalProps 在 Web 模式下可能不可用
-    }
-    // Web 模式下从 URL query param 读取
-    if (!fixtureId && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      fixtureId = params.get('fixture') ?? undefined;
-    }
-    if (
-      fixtureId &&
-      (VISUAL_FIXTURES as readonly string[]).includes(fixtureId)
-    ) {
-      fetch(`/fixtures/${fixtureId}.html`)
-        .then((res) => res.text())
-        .then(setFixtureHtml)
-        .catch((err) =>
-          console.error(`Failed to load fixture: ${fixtureId}`, err),
-        );
-    }
-  }, []);
+  // 视觉测试模式：通过 URL ?fixture=<id> 切换渲染内容
+  const fixtureHtml = useMemo(() => getFixtureHtml(), []);
 
   useEffect(() => {
     console.info(`Hello, ReactLynx ${JSON.stringify(lynx.__globalProps)}`);

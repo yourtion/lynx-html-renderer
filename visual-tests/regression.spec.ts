@@ -5,6 +5,9 @@ import { fixtures } from './fixtures/index.js';
  * 回归测试：对每个 fixture 截取 Lynx Web Preview 渲染结果，
  * 与已提交的 baseline 截图对比。
  *
+ * fixture 注入：web-core 从 localStorage key 'lynx-web-core-global-props'
+ * 读取 globalProps。在页面 JS 执行前设置此值即可传递 fixture id。
+ *
  * 更新 baseline：pnpm test:visual:update
  */
 const WEB_PREVIEW_BASE =
@@ -12,9 +15,11 @@ const WEB_PREVIEW_BASE =
 
 for (const fixture of fixtures) {
   test(`regression: ${fixture.id}`, async ({ page }) => {
-    await page.goto(`${WEB_PREVIEW_BASE}&fixture=${fixture.id}`, {
-      waitUntil: 'networkidle',
-    });
+    await page.addInitScript(`
+      localStorage.setItem('lynx-web-core-global-props', ${JSON.stringify(JSON.stringify({ fixture: fixture.id }))});
+    `);
+
+    await page.goto(WEB_PREVIEW_BASE, { waitUntil: 'networkidle' });
 
     // 等待 web-core 渲染出元素（内容在 lynx-view 的 Shadow DOM 中）
     await page.waitForFunction(
@@ -26,7 +31,7 @@ for (const fixture of fixtures) {
     );
 
     // 等待渲染稳定
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
 
     await expect(page).toHaveScreenshot(`${fixture.id}.png`, {
       fullPage: true,
