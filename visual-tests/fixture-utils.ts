@@ -79,7 +79,22 @@ export async function navigateWithFixture(
 
   // 等待渲染稳定（图片加载、布局计算）
   await page.waitForTimeout(2000);
-  return hasRenderedContent(page);
+  const textCount = await hasRenderedContent(page);
+  if (textCount === 0) return 0;
+
+  // web-core 用 Shadow DOM 渲染，Playwright 的 fullPage 看不到 shadow 内容高度。
+  // 手动测量实际内容高度，扩展视口以容纳全部内容。
+  const contentHeight = await measureShadowContentHeight(page);
+  const viewport = page.viewportSize();
+  if (viewport && contentHeight > viewport.height) {
+    await page.setViewportSize({
+      width: viewport.width,
+      height: contentHeight,
+    });
+    await page.waitForTimeout(300);
+  }
+
+  return textCount;
 }
 
 /**
