@@ -10,6 +10,10 @@ export default defineConfig({
       index: './src/index.tsx',
     },
   },
+  environments: {
+    lynx: {},
+    web: {},
+  },
   output: {
     copy: [
       {
