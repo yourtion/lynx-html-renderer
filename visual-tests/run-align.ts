@@ -9,6 +9,8 @@
  *
  * 用法：pnpm test:visual:align（需先手动启动 rspeedy dev）
  */
+
+import { execSync } from 'node:child_process';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +30,14 @@ const LYNX_WEB_BASE =
 
 async function main() {
   console.log('🎨 视觉对齐评估启动\n');
+
+  // 重新生成 CSS（用 tsx 从源码生成，不依赖 dist 编译）
+  console.log('[setup] 重新生成 CSS...');
+  execSync('node --import tsx scripts/generate-css.mjs', {
+    cwd: process.cwd(),
+    stdio: 'pipe',
+  });
+  console.log('[setup] CSS 生成完成\n');
 
   const providers = createProviders(LYNX_WEB_BASE);
   const available = providers.filter((p) => p.available);

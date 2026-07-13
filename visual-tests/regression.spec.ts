@@ -27,7 +27,7 @@ for (const fixture of fixtures) {
 
     await expect(page).toHaveScreenshot(`${fixture.id}.png`, {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.001,
     });
   });
 }

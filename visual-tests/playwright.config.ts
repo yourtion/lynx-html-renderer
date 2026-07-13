@@ -10,6 +10,9 @@ export default defineConfig({
   testMatch: 'regression.spec.ts',
   timeout: 180_000,
 
+  // 测试前重新生成 CSS（源码改动需要重新生成才能反映到 web bundle）
+  globalSetup: './global-setup.ts',
+
   // 截图 baseline 存放目录
   snapshotPathTemplate: '{snapshotDir}/{testName}/{projectName}.png',
   snapshotDir: '__screenshots__',
