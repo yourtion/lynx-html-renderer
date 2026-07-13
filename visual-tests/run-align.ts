@@ -9,7 +9,7 @@
  *
  * 用法：pnpm test:visual:align（需先手动启动 rspeedy dev）
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compareImages } from './compare/compare-images.js';
@@ -41,6 +41,8 @@ async function main() {
     await provider.setup();
   }
 
+  // 清空临时目录（避免上次运行的残留截图混入报告）
+  await rm(TEMP_DIR, { recursive: true, force: true });
   await mkdir(TEMP_DIR, { recursive: true });
 
   const results: ComparisonResult[] = [];

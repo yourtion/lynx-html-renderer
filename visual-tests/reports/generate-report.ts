@@ -1,4 +1,4 @@
-import { copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ComparisonResult } from '../compare/types.js';
@@ -25,10 +25,13 @@ export async function generateReport(
   screenshots: Map<string, ScreenshotPaths>,
 ): Promise<void> {
   const screenshotsDir = resolve(REPORTS_DIR, 'screenshots');
+  // 清理上次的截图，避免残留混入本次报告
+  await rm(screenshotsDir, { recursive: true, force: true });
   await mkdir(screenshotsDir, { recursive: true });
 
-  // 复制原始截图到报告目录
+  // 只复制本次成功采集的 fixture 截图（baseline 和 candidate 都必须有）
   for (const [fixtureId, paths] of screenshots) {
+    if (!paths.baseline || !paths.candidate) continue;
     const fixtureDir = resolve(screenshotsDir, fixtureId);
     await mkdir(fixtureDir, { recursive: true });
 
