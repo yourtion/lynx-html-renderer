@@ -82,8 +82,6 @@
     "coverage:ci": "vitest run --coverage --coverage.include='src/**' --reporter=junit --outputFile=test-report.junit.xml",
     "docs:dev": "rspress dev",
     "docs:build": "rspress build",
-    "tag": "git tag v`node -p 'require(\"./package\").version'`",
-    "postpublish": "pnpm tag && git push && git push --tags",
     "prepublishOnly": "pnpm build",
     "generate:css": "node scripts/generate-css.mjs"
   },

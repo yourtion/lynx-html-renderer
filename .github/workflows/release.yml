@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          if [ "$(jq -r .version package.json)" != "${tag#v}" ]; then
+            echo "tag $tag does not match package.json version" && exit 1
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "release $tag already exists, skip create"
+          else
+            gh release create "$tag" --verify-tag --title "$tag" --generate-notes
+          fi
+      - name: Publish to npm
+        run: |
+          version="${GITHUB_REF#refs/tags/v}"
+          if [ "$(npm view "lynx-html-renderer@$version" version 2>/dev/null)" = "$version" ]; then
+            echo "lynx-html-renderer@$version already on npm, skip publish"
+            exit 0
+          fi
+          npm publish --access public
