@@ -1,6 +1,7 @@
 import { getMarkStyles } from '../../lynx/text-styles';
 import type { CSSProperties, LynxNode } from '../../lynx/types';
 import { getTextClassNameForTag } from '../../utils/css-generator';
+import { hasOwn } from '../../utils/has-own-property';
 import { parseStyleString } from '../../utils/style-parser';
 import { extractInheritableStyles } from './inheritable-properties';
 
@@ -46,7 +47,7 @@ export function inheritTextStyles(
     const resolved = { ...styles, ...own };
     if (node.tag === 'text' && Object.keys(resolved).length) {
       node.props.style = { ...resolved, ...node.props.style, ...own };
-      if (!Object.hasOwn(own, 'color') && styles.color)
+      if (!hasOwn(own, 'color') && styles.color)
         node.props.style.color = styles.color;
     }
     const ownClass =

@@ -1,5 +1,6 @@
 import { isTagNode, isTextNode, isWhitespaceNode } from '../../../ast/types';
 import { createLynxNode } from '../../../lynx/factory';
+import { hasOwn } from '../../../utils/has-own-property';
 import type {
   HtmlAstNode,
   LynxNode,
@@ -33,9 +34,18 @@ function convertChildren(
   ctx: TransformContext,
   marks?: LynxTextNode['marks'],
 ): LynxNode[] {
-  return children.flatMap((child, index) =>
-    convertAstNode(child, ctx, marks, children, index),
-  );
+  const nodes: LynxNode[] = [];
+  for (let index = 0; index < children.length; index++) {
+    for (const node of convertAstNode(
+      children[index],
+      ctx,
+      marks,
+      children,
+      index,
+    ))
+      nodes.push(node);
+  }
+  return nodes;
 }
 
 function convertAstNode(
@@ -73,12 +83,12 @@ function convertAstNode(
   }
 
   const customMappings = ctx.metadata.tagMappings;
-  const isCustom = !!customMappings && Object.hasOwn(customMappings, tag);
+  const isCustom = !!customMappings && hasOwn(customMappings, tag);
   let mapping: TagMapping | undefined = isCustom
     ? customMappings?.[tag]
     : isDocumentWrapper
       ? BLOCK_TAG_MAP.div
-      : Object.hasOwn(BLOCK_TAG_MAP, tag)
+      : hasOwn(BLOCK_TAG_MAP, tag)
         ? BLOCK_TAG_MAP[tag]
         : undefined;
   if (!mapping) {
@@ -152,7 +162,7 @@ function convertAstNode(
       if (value) node.props[prop] = Number.parseInt(value, 10);
     }
   }
-  if (isCustom || !Object.hasOwn(BLOCK_TAG_MAP, tag)) {
+  if (isCustom || !hasOwn(BLOCK_TAG_MAP, tag)) {
     for (const [key, value] of Object.entries(astNode.attribs ?? {})) {
       if (key !== 'style' && key !== 'class') node.props[key] = value;
     }
@@ -234,6 +244,6 @@ function resolveMapping(
   ctx: TransformContext,
 ): TagMapping | undefined {
   const custom = ctx.metadata.tagMappings;
-  if (custom && Object.hasOwn(custom, tag)) return custom[tag];
-  return Object.hasOwn(BLOCK_TAG_MAP, tag) ? BLOCK_TAG_MAP[tag] : undefined;
+  if (custom && hasOwn(custom, tag)) return custom[tag];
+  return hasOwn(BLOCK_TAG_MAP, tag) ? BLOCK_TAG_MAP[tag] : undefined;
 }

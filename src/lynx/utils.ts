@@ -7,11 +7,12 @@ import type { LynxNode, LynxTextNode } from './types';
 function compareProperties(
   a: Record<string, unknown> | undefined,
   b: Record<string, unknown> | undefined,
+  ignoredKey?: string,
 ): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
+  const keysA = Object.keys(a).filter((key) => key !== ignoredKey);
+  const keysB = Object.keys(b).filter((key) => key !== ignoredKey);
   if (keysA.length !== keysB.length) return false;
   return keysA.every((key) => a[key] === b[key]);
 }
@@ -47,14 +48,7 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
           node.inheritableStyles ?? {},
         ) &&
         last.inheritableClasses === node.inheritableClasses &&
-        compareProperties(
-          Object.fromEntries(
-            Object.entries(last.meta ?? {}).filter(([key]) => key !== 'source'),
-          ),
-          Object.fromEntries(
-            Object.entries(node.meta ?? {}).filter(([key]) => key !== 'source'),
-          ),
-        );
+        compareProperties(last.meta ?? {}, node.meta ?? {}, 'source');
 
       if (marksAreSame) {
         // Special handling for br tags: clean up whitespace around newlines

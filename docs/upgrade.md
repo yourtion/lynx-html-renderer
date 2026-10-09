@@ -25,6 +25,11 @@ React 与 types peer 范围分别为 `^0.126.2`、`^4.3.0`；更早版本未纳�
 这是模板所需的最低引擎版本，与 React npm、types npm 和宿主原生 SDK 版本分别管理。
 该工具链的编码器仍不接受 `engineVersion: '4.0'`，因此没有启用 4.0 的动态元素或媒体查询能力。
 
+`engineVersion` 和 TypeScript 的 lib 配置不保证宿主 JavaScript API 可用。
+转换器使用 `Object.prototype.hasOwnProperty.call` 检查标签映射及文本样式，
+不依赖 `Object.hasOwn`；文本合并也不依赖 `Object.fromEntries`。
+回归测试在这两个 API 缺失时验证转换、继承、自定义标签和文本合并。
+
 ## 行为与扩展变化
 
 - 文本容器保留 margin、padding、背景、边框、class 和交互属性；段落与标题会保留额外容器节点。
