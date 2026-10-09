@@ -12,6 +12,7 @@ import type {
   TransformPhase,
   TransformPlugin,
 } from './types';
+import { inheritTextStyles } from './utils/text-inheritance';
 
 /**
  * 转换阶段执行顺序
@@ -51,66 +52,83 @@ function countLynxNodes(node: LynxNode): number {
   return total;
 }
 
-/**
- * 遍历 LynxNode 树
- * 用于批量处理能力阶段
- */
-function walkLynxNodeTree(
-  node: LynxNode,
-  callback: (node: LynxNode, parent: LynxNode | null, index: number) => void,
-  parent: LynxNode | null = null,
-  index = -1,
-): void {
-  callback(node, parent, index);
-
-  // 只有元素节点有子节点
-  if (node.kind === 'element' && node.children) {
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i];
-      walkLynxNodeTree(child, callback, node, i);
-    }
-  }
-}
-
-/**
- * 执行能力阶段（批量处理优化）
- *
- * capability 阶段使用 registerCapabilityHandlers 批量处理：
- * - 所有处理器在一次遍历中调用
- * - 减少树遍历次数从 3 次到 1 次
- */
+/** Consecutive handler plugins share a preorder walk. apply is a batch boundary. */
 function executeCapabilityPhaseWithBatching(
   getPlugins: (phase: TransformPhase) => TransformPlugin[],
   ctx: TransformContextImpl,
 ): void {
-  const capabilityPlugins = getPlugins('capability');
+  const groups: Array<Map<string, NodeCapabilityHandler[]>> = [];
 
-  // 步骤 1: 注册所有处理器
-  // 收集使用 apply 的插件（向后兼容）
-  const applyOnlyPlugins: TransformPlugin[] = [];
-
-  for (const plugin of capabilityPlugins) {
-    if (!plugin.registerCapabilityHandlers) {
-      // 向后兼容：允许 capability 阶段插件仅实现 apply
-      if (plugin.apply) {
-        applyOnlyPlugins.push(plugin);
-        continue;
+  function flush() {
+    if (!groups.length) return;
+    const stack: Array<{
+      node: LynxNode;
+      parent: LynxNode | null;
+      index: number;
+    }> = [{ node: ctx.root, parent: null, index: -1 }];
+    while (stack.length) {
+      const entry = stack.pop();
+      if (!entry) break;
+      let current = entry.node;
+      for (const handlers of groups) {
+        const key = current.kind === 'element' ? current.tag : current.kind;
+        for (const handler of [
+          ...(handlers.get(key) ?? []),
+          ...(handlers.get('*') ?? []),
+        ]) {
+          const result = handler(current, ctx);
+          if (result) current = result;
+        }
       }
-      throw createPluginError(
-        plugin.name,
-        'Capability plugins must implement registerCapabilityHandlers() or apply()',
-        'capability',
-      );
+      if (!entry.parent) ctx.root = current;
+      else if (entry.parent.kind === 'element')
+        entry.parent.children[entry.index] = current;
+      // Visit the replacement's children, never the discarded subtree.
+      if (current.kind === 'element') {
+        for (let i = current.children.length - 1; i >= 0; i--) {
+          stack.push({ node: current.children[i], parent: current, index: i });
+        }
+      }
+    }
+    groups.length = 0;
+  }
+
+  if (ctx._handlerRegistry.size) {
+    groups.push(new Map(ctx._handlerRegistry));
+    ctx._handlerRegistry.clear();
+  }
+  for (const plugin of getPlugins('capability')) {
+    if (!plugin.registerCapabilityHandlers) {
+      if (!plugin.apply) {
+        throw createPluginError(
+          plugin.name,
+          'Capability plugins must implement registerCapabilityHandlers() or apply()',
+          'capability',
+        );
+      }
+      flush();
+      const start = ctx.metrics ? nowMs() : 0;
+      try {
+        plugin.apply(ctx);
+      } catch (error) {
+        if (error instanceof PluginError) throw error;
+        throw createPluginError(
+          plugin.name,
+          error instanceof Error ? error.message : 'Plugin apply() failed',
+          'capability',
+          error instanceof Error ? error : undefined,
+        );
+      }
+      if (ctx.metrics) recordPluginTiming(ctx, plugin.name, nowMs() - start);
+      continue;
     }
 
-    let handlers: Map<string, NodeCapabilityHandler>;
-    const registerStart = nowMs();
+    const start = ctx.metrics ? nowMs() : 0;
+    let registered: Map<string, NodeCapabilityHandler>;
     try {
-      handlers = plugin.registerCapabilityHandlers(ctx);
+      registered = plugin.registerCapabilityHandlers(ctx);
     } catch (error) {
-      if (error instanceof PluginError) {
-        throw error;
-      }
+      if (error instanceof PluginError) throw error;
       throw createPluginError(
         plugin.name,
         error instanceof Error
@@ -120,18 +138,14 @@ function executeCapabilityPhaseWithBatching(
         error instanceof Error ? error : undefined,
       );
     }
-    recordPluginTiming(ctx, plugin.name, nowMs() - registerStart);
-    for (const [nodeKind, handler] of handlers) {
-      ctx.utils.registerHandler(nodeKind, (node, context) => {
-        const handlerStart = nowMs();
+    if (ctx.metrics) recordPluginTiming(ctx, plugin.name, nowMs() - start);
+    for (const [key, handler] of registered) {
+      ctx.utils.registerHandler(key, (node, context) => {
+        const handlerStart = ctx.metrics ? nowMs() : 0;
         try {
-          const result = handler(node, context);
-          recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
-          return result;
+          return handler(node, context);
         } catch (error) {
-          if (error instanceof PluginError) {
-            throw error;
-          }
+          if (error instanceof PluginError) throw error;
           throw createPluginError(
             plugin.name,
             error instanceof Error
@@ -140,65 +154,16 @@ function executeCapabilityPhaseWithBatching(
             'capability',
             error instanceof Error ? error : undefined,
           );
+        } finally {
+          if (ctx.metrics)
+            recordPluginTiming(ctx, plugin.name, nowMs() - handlerStart);
         }
       });
     }
-  }
-
-  // 步骤 2: 收集替换操作（延迟应用）
-  const replacementOps: Array<() => void> = [];
-
-  if (ctx._handlerRegistry && ctx._handlerRegistry.size > 0) {
-    walkLynxNodeTree(ctx.root, (node, parent, index) => {
-      // 对于元素节点，使用 tag 来匹配处理器
-      // 对于文本节点，使用 'text' 来匹配
-      const key = node.kind === 'element' ? node.tag : node.kind;
-      const handlers = ctx._handlerRegistry?.get(key) || [];
-
-      for (const handler of handlers) {
-        const result = handler(node, ctx);
-        if (result && result !== node) {
-          // 收集替换操作，不立即执行
-          replacementOps.push(() => {
-            if (!parent) {
-              ctx.root = result;
-              return;
-            }
-
-            if (parent.kind === 'element' && index >= 0) {
-              parent.children[index] = result;
-            }
-          });
-        }
-      }
-    });
-
-    // 步骤 3: 遍历完成后统一应用替换
-    for (const applyReplacement of replacementOps) {
-      applyReplacement();
-    }
-
+    groups.push(new Map(ctx._handlerRegistry));
     ctx._handlerRegistry.clear();
   }
-
-  // 步骤 4: 执行仅使用 apply 的插件（向后兼容）
-  for (const plugin of applyOnlyPlugins) {
-    const applyStart = nowMs();
-    try {
-      plugin.apply?.(ctx);
-    } catch (error) {
-      if (error instanceof PluginError) {
-        throw error;
-      }
-      throw createPluginError(
-        plugin.name,
-        error instanceof Error ? error.message : 'Plugin apply() failed',
-        'capability',
-        error instanceof Error ? error : undefined,
-      );
-    }
-    recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
-  }
+  flush();
 }
 
 /**
@@ -236,6 +201,8 @@ export function transformHTML(
     ctx.metadata.removeAllStyle = options.removeAllStyle ?? false;
     ctx.metadata.styleMode = options.styleMode ?? 'inline';
     ctx.metadata.linkStyle = options.linkStyle;
+    ctx.metadata.tagMappings = options.tagMappings;
+    ctx.metadata.unknownTagPolicy = options.unknownTagPolicy ?? 'drop';
   }
 
   if (options?.debug) {
@@ -253,6 +220,11 @@ export function transformHTML(
         resolver.getPluginsByPhase.bind(resolver),
         ctx,
       );
+      inheritTextStyles(
+        ctx.root,
+        ctx.metadata.styleMode,
+        ctx.metadata.removeAllStyle,
+      );
     } else {
       // 其他阶段使用传统方式
       const plugins = resolver.getPluginsByPhase(phase);
@@ -264,7 +236,7 @@ export function transformHTML(
             phase,
           );
         }
-        const applyStart = nowMs();
+        const applyStart = ctx.metrics ? nowMs() : 0;
         try {
           plugin.apply(ctx);
         } catch (error) {
@@ -278,7 +250,8 @@ export function transformHTML(
             error instanceof Error ? error : undefined,
           );
         }
-        recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
+        if (ctx.metrics)
+          recordPluginTiming(ctx, plugin.name, nowMs() - applyStart);
       }
     }
   }
@@ -299,7 +272,7 @@ export function transformHTML(
   }
 
   // 7. 返回根节点的子节点
-  const result = ctx.root.kind === 'element' ? ctx.root.children : [];
+  const result = ctx.root.kind === 'element' ? ctx.root.children : [ctx.root];
 
   if (options?.debug) {
     validateLynxNodes(result);

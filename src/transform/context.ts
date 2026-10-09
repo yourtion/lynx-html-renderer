@@ -14,6 +14,7 @@ import type {
 export class TransformContextImpl implements ITransformContext {
   readonly ast: HtmlAstNode;
   root: LynxNode;
+  metrics?: ITransformContext['metrics'];
   metadata: TransformMetadata = {
     removeAllClass: true,
     removeAllStyle: false,
@@ -33,6 +34,10 @@ export class TransformContextImpl implements ITransformContext {
     },
 
     replaceNode: (target: LynxNode, next: LynxNode) => {
+      if (this.root === target) {
+        this.root = next;
+        return;
+      }
       replaceLynxNode(this.root, target, next);
     },
 

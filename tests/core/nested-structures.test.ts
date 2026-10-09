@@ -10,11 +10,13 @@ describe('Nested Structures', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           {
             kind: 'element',
             tag: 'view',
+            role: 'block',
             props: { style: { flexDirection: 'column' } },
             children: [
               {
@@ -45,11 +47,13 @@ describe('Nested Structures', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           {
             kind: 'element',
             tag: 'text',
+            role: 'textContainer',
             props: {
               style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
             },
@@ -84,6 +88,7 @@ describe('Nested Structures', () => {
           {
             kind: 'element',
             tag: 'image',
+            role: 'image',
             props: {
               src: 'test.jpg',
               style: { width: '100%', height: 'auto' },

@@ -47,16 +47,18 @@ HTML AST
 │  structure Phase         │
 │  ├─ block-structure      │
 │  ├─ list-structure       │
-│  ├─ table-structure      │
-│  └─ text-merge           │
+│  └─ table-structure      │
 │                          │
 │  capability Phase        │
 │  ├─ style-capability     │
 │  ├─ layout-capability    │
 │  └─ media-capability     │
 │                          │
+│  resolve text inheritance │
+│                          │
 │  finalize Phase          │
-│  └─ text-normalize-finalize │
+│  ├─ text-normalize-finalize │
+│  └─ text-merge           │
 └──────────────────────────┘
    ↓
 LynxNode Tree (IR)
@@ -217,7 +219,7 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 - 遍历 AST，标记纯空白文本节点（通过 `isWhitespace` 标记）
 - 后续 `block-structure` 会过滤这些节点，避免产生无意义的 `<text> </text>` 节点
 
-#### 5.1.2 text-merge 插件（在 structure phase 执行）
+#### 5.1.2 text-merge 插件（在 finalize phase 执行）
 
 **职责：** 合并相邻文本节点
 
@@ -227,7 +229,8 @@ for (const phase of ["normalize", "structure", "capability", "finalize"]) {
 
 - 合并相邻的文本节点，减少节点数量
 - 提升 Lynx 渲染性能
-- 插件 `phase = structure`，并使用较大 `order` 在结构处理后执行
+- 插件 `phase = finalize`、`order = 20`，在样式与继承确定后执行
+- 仅合并 marks、最终样式、class 和扩展语义相同的文本片段
 
 ---
 
@@ -596,15 +599,14 @@ const myPlugin: TransformPlugin = {
 | Phase      | Plugin            | Order |
 | ---------- | ----------------- | ----- |
 | normalize  | html-normalize    | 10    |
-| structure  | text-merge        | 999   |
 | structure  | block-structure   | 10    |
 | structure  | list-structure    | 20    |
 | structure  | table-structure   | 30    |
-| structure  | text-merge        | 999   |
 | capability | style-capability  | 10    |
 | capability | layout-capability | 20    |
 | capability | media-capability  | 100   |
 | finalize   | text-normalize-finalize | 10 |
+| finalize   | text-merge        | 20    |
 
 ## 10. 相关文件
 
@@ -617,7 +619,7 @@ const myPlugin: TransformPlugin = {
 
 **内建插件：**
 
-- `src/transform/plugins/normalize/` - html-normalize、text-merge（phase: structure）
+- `src/transform/plugins/normalize/` - html-normalize、text-merge（phase: finalize）
 - `src/transform/plugins/structure/` - block-structure、list-structure、table-structure
 - `src/transform/plugins/capability/` - style-capability、layout-capability、media-capability
 - `src/transform/plugins/finalize/` - text-normalize-finalize
@@ -626,3 +628,29 @@ const myPlugin: TransformPlugin = {
 
 - `src/ast/walkers.ts` - AST 遍历工具
 - `src/lynx/factory.ts` - LynxNode 工厂函数
+
+
+## 插件组合与公共扩展契约
+
+`HTMLRenderer`、`renderHTMLDirect` 和 `transformHTML` 都接收 `plugins`、
+`tagMappings` 与 `unknownTagPolicy`。标签映射负责让自定义标签进入 IR，适配器负责渲染。
+只有注册适配器时，默认的未知标签策略仍会丢弃该标签。
+
+Capability 处理器可以原地修改节点，或返回替换节点。每个后续插件按当前节点的
+标签匹配处理器，并接收前一个插件的结果；`'*'` 匹配所有节点，`'text'` 同时匹配
+文本元素与文本片段，因此处理器需要检查 `node.kind`。连续处理器插件共享一次前序遍历。
+只实现 `apply` 的插件会结束前面的批次，在自身的 `order` 位置执行，再开始后面的批次。
+同时实现两个入口时使用 `registerCapabilityHandlers`。
+
+当前节点的所有处理器完成后，遍历它最终的子节点。返回的替换子树会访问一次，
+被丢弃的原子树不再访问；新子节点从当前批次的第一个插件开始处理。
+处理器应通过返回值替换当前节点，避免修改已经访问的祖先或旁支。
+
+Capability 阶段结束后，引擎自顶向下解析文本继承。显式子样式覆盖父继承值，
+格式化标签的默认字体样式可以被显式 CSS 覆盖。Finalize 应只整理结构与文本，
+样式修改应放在 capability 阶段。文本合并位于 finalize 的 `order: 20`；
+原先在 structure 阶段依赖已合并文本的插件需要调整顺序。
+
+适配器优先级为显式 `registerByTag` → `registerByRole` → 内置原生标签适配器 → fallback。
+`registerDefaultByTag` 可以注册低于语义 role 的原生兜底。`table`、`row`、`cell` role
+随真实 HTML 进入 IR。`rowSpan`、`colSpan` 保留为属性，基础表格尚未实现跨行跨列布局。

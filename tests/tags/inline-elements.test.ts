@@ -11,6 +11,7 @@ describe('Inline Elements', () => {
       {
         kind: 'element',
         tag: 'text',
+        role: 'inline',
         props: { style: { color: 'var(--lhr-text-color)' } },
         children: [
           {
@@ -100,12 +101,22 @@ describe('Inline Elements', () => {
     const html = '<code>Code Text</code>';
     const result = transformHTML(html);
 
-    expect(result).toEqual([
+    expect(result).toMatchObject([
       {
-        kind: 'text',
-        content: 'Code Text',
-        marks: { code: true },
-        meta: { source: 'text' },
+        kind: 'element',
+        tag: 'text',
+        role: 'inline',
+        props: {
+          style: {
+            fontFamily: 'monospace',
+            backgroundColor: '#f0f0f0',
+            padding: '2px 4px',
+            borderRadius: '3px',
+          },
+        },
+        children: [
+          { kind: 'text', content: 'Code Text', marks: { code: true } },
+        ],
       },
     ]);
   });

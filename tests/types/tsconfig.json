@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.typecheck.json",
+  "compilerOptions": { "types": [] },
+  "include": ["public-api.tsx"],
+  "references": []
+}

@@ -2,6 +2,8 @@
  * GlobalProps 类型扩展
  * 定义应用的全局属性
  */
+import '@lynx-js/types';
+
 declare module '@lynx-js/types' {
   interface GlobalProps {
     /**

@@ -49,9 +49,10 @@ function flattenTableChildren(children: LynxNode[]): LynxNode[] {
 
       // 如果是 thead/tbody/tfoot，将子节点统一提升到 table 下一级
       if (
-        sourceTag === 'thead' ||
-        sourceTag === 'tbody' ||
-        sourceTag === 'tfoot'
+        (sourceTag === 'thead' ||
+          sourceTag === 'tbody' ||
+          sourceTag === 'tfoot') &&
+        Object.keys(childElement.meta?.sourceAttrs ?? {}).length === 0
       ) {
         result.push(...childElement.children);
       } else {

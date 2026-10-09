@@ -46,6 +46,11 @@ npm install lynx-html-renderer
 pnpm add lynx-html-renderer
 ```
 
+开发工具链要求 Node 20（≥20.19）或 Node 22.12+，并使用仓库指定的 pnpm 10.26.2。
+当前 peer 基线为 `@lynx-js/react ^0.126.2`、`@lynx-js/types ^4.3.0`。
+示例显式设置 `engineVersion: '3.9'`；npm 包版本与宿主原生 SDK 版本需分别配置。
+升级与验证边界见 [工具链说明](docs/upgrade.md)。
+
 ### 基本使用 | Basic Usage
 
 ```tsx
@@ -84,6 +89,37 @@ function App() {
   - 设置为 `false` 可保留 HTML 中的 class 属性
 - `removeAllStyle?: boolean` - 是否删除所有 HTML 的 style 属性，默认为 `false`
   - 设置为 `true` 可移除所有内联样式
+
+### 自定义标签与插件 | Custom Tags and Plugins
+
+组件与 `renderHTMLDirect` 都支持 `plugins`、`tagMappings`、`unknownTagPolicy`。
+
+```tsx
+import { createDefaultRegistry, HTMLRenderer } from 'lynx-html-renderer';
+
+const registry = createDefaultRegistry();
+registry.registerByTag('custom-card', {
+  render(node, ctx) {
+    return <view {...node.props}>{ctx.renderChildren(node)}</view>;
+  },
+});
+
+<HTMLRenderer
+  html="<custom-card><p>Content</p></custom-card>"
+  adapterRegistry={registry}
+  tagMappings={{
+    'custom-card': {
+      lynxTag: 'custom-card',
+      role: 'card',
+      capabilities: { layout: 'flex' },
+    },
+  }}
+/>
+```
+
+未知标签默认 `drop`（丢弃子树）；`unwrap` 保留子内容；`fallback` 保留标签与属性供适配器处理。
+已知的自定义映射优先于这些策略。`html` / `body` 文档包装支持展开，带 style / class 时保留容器；
+`head`、`script` 和 HTML `style` 内容仍被排除。扩展顺序见 [插件契约](docs/plugin.md)。
 
 ### CSS 类模式 | CSS Class Mode
 

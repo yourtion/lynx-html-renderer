@@ -1,7 +1,10 @@
+import { isInheritableProperty } from '../../../utils/style-schema';
 import type { LynxElementNode, LynxNode, TransformPlugin } from '../../types';
 
 function isTransparentTextWrapper(node: LynxElementNode): boolean {
-  if (node.tag !== 'text') return false;
+  if (node.meta?.customMapping) return false;
+  if (node.tag !== 'text' || (node.role && node.role !== 'inline'))
+    return false;
   const propKeys = Object.keys(node.props);
   return propKeys.length === 0;
 }
@@ -11,6 +14,18 @@ function normalizeTextNode(node: LynxNode): LynxNode {
 
   const element = node as LynxElementNode;
   element.children = element.children.map(normalizeTextNode);
+  // Attribute-free formatting wrappers have already contributed their style to
+  // descendants. Marks preserve their rendering; keep wrappers with attributes.
+  if (
+    ['strong', 'b', 'em', 'i', 'u'].includes(element.meta?.sourceTag ?? '') &&
+    element.role === 'inline' &&
+    !element.meta?.customMapping &&
+    Object.keys(element.meta?.sourceAttrs ?? {}).length === 0 &&
+    Object.keys(element.props).every((key) => key === 'style') &&
+    Object.keys(element.props.style ?? {}).every(isInheritableProperty)
+  ) {
+    element.props = {};
+  }
 
   // Collapse transparent nested <text> wrappers produced by inline mark tags.
   while (

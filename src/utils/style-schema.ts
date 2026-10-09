@@ -1,4 +1,4 @@
-export const TEXT_ONLY_PROPERTIES = new Set([
+export const TEXT_ONLY_PROPERTIES: ReadonlySet<string> = new Set([
   'color',
   'fontFamily',
   'fontSize',
@@ -17,7 +17,7 @@ export const TEXT_ONLY_PROPERTIES = new Set([
   'wordBreak',
 ] as const);
 
-export const INHERITABLE_PROPERTIES = new Set([
+export const INHERITABLE_PROPERTIES: ReadonlySet<string> = new Set([
   'fontFamily',
   'fontSize',
   'fontWeight',
@@ -29,9 +29,14 @@ export const INHERITABLE_PROPERTIES = new Set([
   'letterSpacing',
   'wordSpacing',
   'direction',
+  'textDecoration',
+  'textShadow',
+  'textStroke',
+  'whiteSpace',
+  'wordBreak',
 ] as const);
 
-export const UNITLESS_PROPERTIES = new Set([
+export const UNITLESS_PROPERTIES: ReadonlySet<string> = new Set([
   'flexGrow',
   'flexShrink',
   'flexBasis',

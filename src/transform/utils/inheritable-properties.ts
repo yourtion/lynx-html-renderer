@@ -3,6 +3,8 @@
  *
  * 用于处理从父元素到 text 节点的样式继承
  */
+
+import type { CSSProperties } from '../../lynx/types';
 import { INHERITABLE_PROPERTIES } from '../../utils/style-schema';
 
 /**
@@ -10,11 +12,8 @@ import { INHERITABLE_PROPERTIES } from '../../utils/style-schema';
  *
  * 这些属性会从父元素的 defaultStyle 中提取并应用到子 text 节点上
  */
-export type InheritableProperty = typeof INHERITABLE_PROPERTIES extends Set<
-  infer T
->
-  ? T
-  : never;
+export type InheritableProperty =
+  typeof INHERITABLE_PROPERTIES extends ReadonlySet<infer T> ? T : never;
 
 /**
  * 从样式中提取可继承属性
@@ -34,12 +33,12 @@ export type InheritableProperty = typeof INHERITABLE_PROPERTIES extends Set<
  */
 export function extractInheritableStyles(
   style?: Record<string, unknown>,
-): Record<string, unknown> {
+): CSSProperties {
   if (!style) return {};
 
-  const inheritable: Record<string, unknown> = {};
+  const inheritable: CSSProperties = {};
   for (const prop of INHERITABLE_PROPERTIES) {
-    if (prop in style && style[prop] !== undefined) {
+    if (typeof style[prop] === 'string' || typeof style[prop] === 'number') {
       inheritable[prop] = style[prop];
     }
   }

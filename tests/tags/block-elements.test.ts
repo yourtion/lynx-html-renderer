@@ -10,6 +10,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           { kind: 'text', content: 'Content', meta: { source: 'text' } },
@@ -28,6 +29,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           {
@@ -50,6 +52,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           {
@@ -72,6 +75,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           { kind: 'text', content: 'Header Content', meta: { source: 'text' } },
@@ -90,6 +94,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: { style: { flexDirection: 'column' } },
         children: [
           { kind: 'text', content: 'Footer Content', meta: { source: 'text' } },
@@ -108,6 +113,7 @@ describe('Block Elements', () => {
       {
         kind: 'element',
         tag: 'text',
+        role: 'textContainer',
         props: {
           style: { marginBottom: '1em', color: 'var(--lhr-text-color)' },
         },

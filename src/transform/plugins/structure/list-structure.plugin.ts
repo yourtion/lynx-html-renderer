@@ -5,8 +5,6 @@ import type {
   LynxTextNode,
   TransformPlugin,
 } from '../../types';
-import { extractInheritableStyles } from '../../utils/inheritable-properties';
-import { BLOCK_TAG_MAP } from './tag-config';
 
 /**
  * 列表结构插件
@@ -58,35 +56,21 @@ function addListMarkers(listElement: LynxElementNode): void {
       const marker = isOrdered ? `${counter}. ` : '• ';
       counter++;
 
-      const firstTextIndex = liElement.children.findIndex(
-        (node): node is LynxTextNode => node.kind === 'text',
-      );
+      const firstText = liElement.children.map(findInlineText).find(Boolean);
 
       // 有文本子节点：把标记合并进首个文本，保证标记与内容在同一 <text> 内（同行渲染）
-      if (firstTextIndex >= 0) {
-        const firstText = liElement.children[firstTextIndex] as LynxTextNode;
-        const mergedChildren = [...liElement.children];
-        mergedChildren[firstTextIndex] = {
-          ...firstText,
-          content: marker + firstText.content,
-        };
-        return { ...liElement, children: mergedChildren };
+      if (firstText) {
+        firstText.content = marker + firstText.content;
+        return liElement;
       }
 
       // 无文本子节点：标记作为独立文本节点（携带 li 可继承样式）
-      const fallbackStyles = extractInheritableStyles(
-        BLOCK_TAG_MAP.li.defaultStyle,
-      );
       return {
         ...liElement,
         children: [
           createLynxNode({
             kind: 'text',
             content: marker,
-            inheritableStyles:
-              Object.keys(fallbackStyles).length > 0
-                ? fallbackStyles
-                : undefined,
             meta: { source: 'li-marker' },
           }),
           ...liElement.children,
@@ -96,4 +80,10 @@ function addListMarkers(listElement: LynxElementNode): void {
 
     return child;
   });
+}
+
+function findInlineText(node: LynxNode): LynxTextNode | undefined {
+  if (node.kind === 'text') return node;
+  if (node.tag !== 'text' || node.role !== 'inline') return undefined;
+  return node.children.map(findInlineText).find(Boolean);
 }

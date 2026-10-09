@@ -21,42 +21,41 @@ export function createRootNode(): LynxElementNode {
 export function createLynxNode(
   partial: Partial<LynxElementNode | LynxTextNode>,
 ): LynxNode {
-  if (
-    partial.kind === 'text' ||
-    (!partial.kind && partial.content !== undefined)
-  ) {
+  if (partial.kind === 'text' || (!partial.kind && 'content' in partial)) {
+    const text = partial as Partial<LynxTextNode>;
     // 文本节点
     const textNode: LynxTextNode = {
       kind: 'text',
-      content: partial.content ?? '',
+      content: text.content ?? '',
     };
 
     // 只添加有值的字段
-    if (partial.marks) textNode.marks = partial.marks;
+    if (text.marks) textNode.marks = text.marks;
     if (
-      partial.inheritableStyles &&
-      Object.keys(partial.inheritableStyles).length > 0
+      text.inheritableStyles &&
+      Object.keys(text.inheritableStyles).length > 0
     ) {
-      textNode.inheritableStyles = partial.inheritableStyles;
+      textNode.inheritableStyles = text.inheritableStyles;
     }
-    if (partial.inheritableClasses)
-      textNode.inheritableClasses = partial.inheritableClasses;
-    if (partial.meta) textNode.meta = partial.meta;
+    if (text.inheritableClasses)
+      textNode.inheritableClasses = text.inheritableClasses;
+    if (text.meta) textNode.meta = text.meta;
 
     return textNode;
   } else {
+    const element = partial as Partial<LynxElementNode>;
     // 元素节点
     const elementNode: LynxElementNode = {
       kind: 'element',
-      tag: partial.tag ?? 'view',
-      props: partial.props ?? {},
-      children: partial.children ?? [],
+      tag: element.tag ?? 'view',
+      props: element.props ?? {},
+      children: element.children ?? [],
     };
 
     // 只添加有值的字段
-    if (partial.role) elementNode.role = partial.role;
-    if (partial.capabilities) elementNode.capabilities = partial.capabilities;
-    if (partial.meta) elementNode.meta = partial.meta;
+    if (element.role) elementNode.role = element.role;
+    if (element.capabilities) elementNode.capabilities = element.capabilities;
+    if (element.meta) elementNode.meta = element.meta;
 
     return elementNode;
   }

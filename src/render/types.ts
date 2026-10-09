@@ -4,6 +4,9 @@
  * This file contains all types related to the rendering layer
  */
 
+import type { ReactNode } from '@lynx-js/react';
+import type { LynxElementNode, LynxNode } from '../lynx/types';
+
 // Re-export LynxNode types from the core types module
 export type {
   Capabilities,
@@ -19,7 +22,7 @@ export type {
  * Render result type
  * Represents the Lynx component JSX elements
  */
-export type RenderResult = unknown;
+export type RenderResult = ReactNode;
 
 /**
  * Render adapter interface

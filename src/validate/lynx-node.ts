@@ -16,7 +16,7 @@ export function validateLynxNode(node: LynxNode): void {
     validateTextNode(node);
   } else {
     throw new LynxRenderError(
-      `Invalid node kind: "${node.kind}". Expected "element" or "text".`,
+      `Invalid node kind: "${(node as { kind: unknown }).kind}". Expected "element" or "text".`,
       node,
     );
   }

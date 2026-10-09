@@ -101,7 +101,10 @@ export class HTMLTransformError extends Error {
     this.cause = cause;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
+    if (
+      'captureStackTrace' in Error &&
+      typeof Error.captureStackTrace === 'function'
+    ) {
       Error.captureStackTrace(this, HTMLTransformError);
     }
   }
@@ -140,7 +143,10 @@ export class LynxRenderError extends Error {
     this.cause = cause;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
+    if (
+      'captureStackTrace' in Error &&
+      typeof Error.captureStackTrace === 'function'
+    ) {
       Error.captureStackTrace(this, LynxRenderError);
     }
   }
@@ -191,7 +197,10 @@ export class PluginError extends Error {
     this.cause = cause;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
+    if (
+      'captureStackTrace' in Error &&
+      typeof Error.captureStackTrace === 'function'
+    ) {
       Error.captureStackTrace(this, PluginError);
     }
   }

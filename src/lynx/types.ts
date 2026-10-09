@@ -8,7 +8,8 @@ export type ElementRole =
   | 'image'
   | 'table'
   | 'row'
-  | 'cell';
+  | 'cell'
+  | (string & {});
 
 /**
  * 能力描述接口
@@ -50,6 +51,7 @@ export interface LynxElementNode extends LynxBaseNode {
 
   /** 调试 / 扩展用 */
   meta?: {
+    [key: string]: unknown;
     sourceTag?: string; // 原 HTML tag
     sourceAttrs?: Record<string, string>;
   };
@@ -73,19 +75,13 @@ export interface LynxTextNode extends LynxBaseNode {
   };
 
   /** 从父元素继承的可继承样式（inline 模式） */
-  inheritableStyles?: {
-    fontFamily?: string;
-    fontSize?: string | number;
-    fontWeight?: string | number;
-    fontStyle?: string;
-    lineHeight?: string | number;
-    color?: string;
-  };
+  inheritableStyles?: CSSProperties;
 
   /** 从父元素继承的 class 名称（css-class 模式） */
   inheritableClasses?: string;
 
   meta?: {
+    [key: string]: unknown;
     source?: 'text' | 'br' | 'li-marker';
   };
 }

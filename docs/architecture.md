@@ -357,3 +357,16 @@ function resolveAdapter(node: LynxElementNode): LynxRenderAdapter {
 
 这是一个「可以长期维护」而不是「一次性富文本」的架构。
 
+
+
+## 已实现的语义边界
+
+Structure 保留标签来源、原始属性、role 和 capabilities；格式化标签也进入统一样式路径。
+Capability 合并默认样式和 HTML 内联声明，之后引擎解析文本继承。
+Finalize 仅展开透明包装并合并语义相同的文本。Renderer 保留带 margin、padding、背景、
+边框、class 或交互属性的容器。代码文本的背景和 padding 位于 code 容器，字体 marks 位于片段。
+
+HTML 内联样式与内置文本属性的继承由库处理，无需宿主开启普通 CSS 继承。
+CSS-class 模式同时传递内置 text class。
+业务 stylesheet 的 class 规则由宿主 CSS 引擎处理，库不会解析完整 CSS 级联。
+基础表格通过 role 适配器渲染，`rowSpan` / `colSpan` 仅保留属性，尚无跨行跨列布局。
