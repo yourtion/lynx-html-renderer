@@ -20,6 +20,7 @@ import type {
   LynxProps,
   LynxTextNode,
 } from '../lynx/types';
+import type { TagMapping } from './plugins/structure/tag-config';
 
 // 重新导出类型
 export type {
@@ -37,10 +38,13 @@ export type {
  * 转换元数据接口
  */
 export interface TransformMetadata {
+  [key: string]: unknown;
   removeAllClass: boolean;
   removeAllStyle: boolean;
   styleMode: 'inline' | 'css-class';
   linkStyle?: CSSProperties;
+  tagMappings?: Record<string, TagMapping>;
+  unknownTagPolicy?: 'drop' | 'unwrap' | 'fallback';
 }
 
 /**
@@ -50,7 +54,8 @@ export interface TransformMetadata {
 export type NodeCapabilityHandler = (
   node: LynxNode,
   ctx: TransformContext,
-) => undefined | LynxNode;
+  // biome-ignore lint/suspicious/noConfusingVoidType: mutation handlers return void; replacements return a node.
+) => void | LynxNode;
 
 /**
  * 转换插件接口
@@ -70,8 +75,10 @@ export interface TransformPlugin {
 
   /** 注册能力处理器（capability 阶段必需）
    *
-   * 返回一个 Map，key 是节点类型（kind），value 是对应的处理器
-   * 引擎会在一次遍历中调用所有相关的处理器，提高性能
+   * Map keys match element tags, text leaves ('text'), or '*' for all nodes.
+   * Handlers may mutate in place or return a replacement. Later plugins receive
+   * the current node and match its current tag. Its final children are visited.
+   * Consecutive handler plugins share a traversal; apply plugins end a batch.
    */
   registerCapabilityHandlers?: (
     ctx: TransformContext,
@@ -156,6 +163,12 @@ export interface TransformOptions {
 
   /** 插件配置 */
   plugins?: PluginConfig;
+
+  /** 自定义 HTML 标签映射（也可覆盖内建映射） */
+  tagMappings?: Record<string, TagMapping>;
+
+  /** 未知标签处理策略（默认 drop）；文档包装 html/body 总是展开 */
+  unknownTagPolicy?: 'drop' | 'unwrap' | 'fallback';
 
   /** 启用调试模式（输出插件执行日志和性能指标） */
   debug?: boolean;

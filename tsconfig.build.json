@@ -1,8 +1,7 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.typecheck.json",
   "compilerOptions": {
     "noEmit": false,
-    "noCheck": true,
     "rootDir": "./src",
     "outDir": "./dist",
     "declaration": true,

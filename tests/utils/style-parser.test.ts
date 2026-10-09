@@ -252,7 +252,7 @@ describe('Style Parser', () => {
     });
 
     it('should return true for text-decoration', () => {
-      expect(isInheritableProperty('textDecoration')).toBe(false);
+      expect(isInheritableProperty('textDecoration')).toBe(true);
     });
 
     it('should return true for letter-spacing and word-spacing', () => {

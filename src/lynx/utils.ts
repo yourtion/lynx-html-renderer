@@ -4,14 +4,15 @@ import type { LynxNode, LynxTextNode } from './types';
  * Compare two marks objects for equality
  * Direct comparison without string serialization for better performance
  */
-function compareMarks(
-  a: Record<string, boolean> | undefined,
-  b: Record<string, boolean> | undefined,
+function compareProperties(
+  a: Record<string, unknown> | undefined,
+  b: Record<string, unknown> | undefined,
+  ignoredKey?: string,
 ): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
+  const keysA = Object.keys(a).filter((key) => key !== ignoredKey);
+  const keysB = Object.keys(b).filter((key) => key !== ignoredKey);
   if (keysA.length !== keysB.length) return false;
   return keysA.every((key) => a[key] === b[key]);
 }
@@ -40,7 +41,14 @@ export function mergeAdjacentTextNodes(nodes: LynxNode[]): LynxNode[] {
       const nodeMarks = node.marks || {};
 
       // Check if marks are the same (compare keys and values)
-      const marksAreSame = compareMarks(lastMarks, nodeMarks);
+      const marksAreSame =
+        compareProperties(lastMarks, nodeMarks) &&
+        compareProperties(
+          last.inheritableStyles ?? {},
+          node.inheritableStyles ?? {},
+        ) &&
+        last.inheritableClasses === node.inheritableClasses &&
+        compareProperties(last.meta ?? {}, node.meta ?? {}, 'source');
 
       if (marksAreSame) {
         // Special handling for br tags: clean up whitespace around newlines

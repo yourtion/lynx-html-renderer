@@ -2,241 +2,90 @@ import { describe, expect, it } from 'vitest';
 import { normalizeTextTreeForRender } from '../../src/render/text-normalizer';
 import type { LynxElementNode, LynxNode } from '../../src/render/types';
 
-describe('text normalizer for render', () => {
-  it('should merge text wrapper props into a text node before rendering', () => {
-    const node: LynxElementNode = {
+function wrapper(
+  props: LynxElementNode['props'],
+  role?: string,
+): LynxElementNode {
+  return {
+    kind: 'element',
+    tag: 'text',
+    props,
+    role,
+    children: [
+      { kind: 'text', content: 'T', inheritableStyles: { color: 'blue' } },
+    ],
+  };
+}
+
+describe('Text normalization preserves visible semantics', () => {
+  it('collapses a style-only inline wrapper while preserving child priority', () => {
+    const result = normalizeTextTreeForRender(
+      wrapper({ style: { color: 'red', fontSize: '16px' } }, 'inline'),
+    );
+    expect(result).toMatchObject({
+      kind: 'text',
+      inheritableStyles: { color: 'blue', fontSize: '16px' },
+    });
+  });
+
+  it.each([
+    'marginBottom',
+    'padding',
+    'backgroundColor',
+    'borderWidth',
+    'flexDirection',
+  ])('retains a container with %s', (property) => {
+    const node = wrapper({ style: { [property]: '8px' } });
+    const result = normalizeTextTreeForRender(node);
+    expect(result).toEqual(node);
+  });
+
+  it.each(['textContainer', 'block', 'business'])(
+    'retains semantic %s containers',
+    (role) => {
+      const node = wrapper({ style: { color: 'red' } }, role);
+      expect(normalizeTextTreeForRender(node)).toEqual(node);
+    },
+  );
+
+  it.each([
+    { className: 'business' },
+    { 'data-href': '/next' },
+    { onTap: () => {} },
+  ])('retains class and interaction props %j', (props) => {
+    const node = wrapper(props);
+    expect(normalizeTextTreeForRender(node)).toEqual(node);
+  });
+
+  it('preserves nested independent containers', () => {
+    const child = wrapper(
+      { style: { margin: '20px', color: 'blue' } },
+      'textContainer',
+    );
+    const parent: LynxElementNode = {
       kind: 'element',
       tag: 'text',
-      props: {
-        className: 'heading',
-        style: {
-          fontSize: '16px',
-          marginBottom: '1em',
-        },
-      },
-      children: [
-        {
-          kind: 'text',
-          content: 'hello',
-          inheritableClasses: 'leaf',
-        },
-      ],
+      props: { style: { color: 'red' } },
+      children: [child],
     };
-
-    const result = normalizeTextTreeForRender(node);
-
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.inheritableClasses).toBe('heading leaf');
-      expect(result.inheritableStyles).toEqual({ fontSize: '16px' });
-    }
-  });
-
-  it('should collapse nested text elements before rendering', () => {
-    const node: LynxElementNode = {
+    const result = normalizeTextTreeForRender(parent);
+    expect(result).toMatchObject({
       kind: 'element',
-      tag: 'text',
-      props: { className: 'outer' },
-      children: [
-        {
-          kind: 'element',
-          tag: 'text',
-          props: { className: 'inner' },
-          children: [
-            {
-              kind: 'text',
-              content: 'content',
-            },
-          ],
-        },
-      ],
-    };
-
-    const result = normalizeTextTreeForRender(node);
-
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.inheritableClasses).toBe('outer inner');
-    }
+      role: 'textContainer',
+      props: { style: { margin: '20px', color: 'blue' } },
+    });
   });
 
-  it('should return non-element nodes unchanged', () => {
-    const textNode: LynxNode = { kind: 'text', content: 'plain' };
-    expect(normalizeTextTreeForRender(textNode)).toBe(textNode);
+  it('retains multiple fragments and non-text elements', () => {
+    const node = wrapper({});
+    node.children.push({ kind: 'text', content: 'U' });
+    expect(normalizeTextTreeForRender(node)).toEqual(node);
+    const view: LynxNode = { ...node, tag: 'view' };
+    expect(normalizeTextTreeForRender(view)).toEqual(view);
   });
 
-  it('should return non-text element unchanged', () => {
-    const viewNode: LynxNode = {
-      kind: 'element',
-      tag: 'view',
-      props: {},
-      children: [],
-    };
-    expect(normalizeTextTreeForRender(viewNode)).toEqual(viewNode);
-  });
-
-  it('should return text element without className or style unchanged', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: {},
-      children: [{ kind: 'text', content: 'plain' }],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('element');
-  });
-
-  it('should return text element with multiple children unchanged', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: { className: 'multi' },
-      children: [
-        { kind: 'text', content: 'a' },
-        { kind: 'text', content: 'b' },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('element');
-  });
-
-  it('should handle child that is element but not text tag', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: { className: 'wrap' },
-      children: [
-        {
-          kind: 'element',
-          tag: 'view',
-          props: {},
-          children: [],
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('element');
-  });
-
-  it('should merge text child with parent style only (no parent className)', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: {
-        style: { fontWeight: 'bold' },
-      },
-      children: [
-        {
-          kind: 'text',
-          content: 'styled',
-          inheritableClasses: 'existing',
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.inheritableClasses).toBe('existing');
-      expect(result.inheritableStyles).toEqual({ fontWeight: 'bold' });
-    }
-  });
-
-  it('should preserve child inheritableStyles when parent has no inheritable styles', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: {
-        style: { flexDirection: 'row' },
-        className: 'cls',
-      },
-      children: [
-        {
-          kind: 'text',
-          content: 'text',
-          inheritableStyles: { color: 'red' },
-          inheritableClasses: 'child-cls',
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.inheritableStyles).toEqual({ color: 'red' });
-    }
-  });
-
-  it('should merge nested text element with parent style and className', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: {
-        style: { fontSize: '14px' },
-        className: 'parent-cls',
-      },
-      children: [
-        {
-          kind: 'element',
-          tag: 'text',
-          props: {
-            style: { color: 'blue' },
-            className: 'child-cls',
-          },
-          children: [{ kind: 'text', content: 'deep' }],
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    // After mergeTextElementWithParentProps and recursive normalize:
-    // the inner text element becomes a text node
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.content).toBe('deep');
-    }
-  });
-
-  it('should merge nested text element without parent style', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'text',
-      props: {
-        className: 'outer',
-      },
-      children: [
-        {
-          kind: 'element',
-          tag: 'text',
-          props: {
-            className: 'inner',
-          },
-          children: [{ kind: 'text', content: 'merged' }],
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('text');
-    if (result.kind === 'text') {
-      expect(result.content).toBe('merged');
-    }
-  });
-
-  it('should recursively normalize children of non-text elements', () => {
-    const node: LynxElementNode = {
-      kind: 'element',
-      tag: 'view',
-      props: {},
-      children: [
-        {
-          kind: 'element',
-          tag: 'text',
-          props: { className: 'inner' },
-          children: [{ kind: 'text', content: 'nested' }],
-        },
-      ],
-    };
-    const result = normalizeTextTreeForRender(node);
-    expect(result.kind).toBe('element');
-    if (result.kind === 'element') {
-      expect(result.children[0].kind).toBe('text');
-    }
+  it('returns text leaves unchanged', () => {
+    const text: LynxNode = { kind: 'text', content: 'T' };
+    expect(normalizeTextTreeForRender(text)).toBe(text);
   });
 });

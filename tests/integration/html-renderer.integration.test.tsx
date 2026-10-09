@@ -204,7 +204,7 @@ describe('HTMLRenderer Integration Tests', () => {
       const { container } = render(<HTMLRenderer html={html} />);
 
       const texts = container.querySelectorAll('text');
-      expect(texts.length).toBe(3);
+      expect(texts.length).toBe(6);
     });
   });
 

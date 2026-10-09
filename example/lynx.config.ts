@@ -4,6 +4,8 @@ import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin';
 import { defineConfig } from '@lynx-js/rspeedy';
 import { pluginTypeCheck } from '@rsbuild/plugin-type-check';
 
+const codecovDryRun = process.env.CODECOV_DRY_RUN === 'true';
+
 export default defineConfig({
   source: {
     entry: {
@@ -25,8 +27,10 @@ export default defineConfig({
         return `${url}?fullscreen=true`;
       },
     }),
-    pluginReactLynx(),
-    pluginTypeCheck(),
+    pluginReactLynx({ engineVersion: '3.9' }),
+    pluginTypeCheck({
+      tsCheckerOptions: { typescript: { configFile: './src/tsconfig.json' } },
+    }),
   ],
   tools: {
     rspack(config, { appendPlugins }) {
@@ -39,14 +43,16 @@ export default defineConfig({
 
       appendPlugins(
         codecovRspackPlugin({
-          enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+          enableBundleAnalysis:
+            codecovDryRun || process.env.CODECOV_TOKEN !== undefined,
           bundleName: 'lhr-example',
           uploadToken: process.env.CODECOV_TOKEN,
           debug: true,
           uploadOverrides: {
             sha: process.env.GH_COMMIT_SHA,
           },
-          // dryRun: true,
+          dryRun: codecovDryRun,
+          ...(codecovDryRun && { telemetry: false }),
         }),
       );
       return config;

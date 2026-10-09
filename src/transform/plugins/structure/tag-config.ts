@@ -193,6 +193,9 @@ export const BLOCK_TAG_MAP: Record<string, TagMapping> = {
     defaultStyle: {
       ...INLINE_TEXT_CONFIG.defaultStyle,
       fontFamily: 'monospace',
+      backgroundColor: '#f0f0f0',
+      padding: '2px 4px',
+      borderRadius: '3px',
     },
   },
 

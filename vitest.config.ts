@@ -19,6 +19,7 @@ const config = defineConfig({
       '**/*.snap',
       '**/node_modules/**',
       '**/baselines.config.ts',
+      'tests/types/**',
     ],
   },
 });

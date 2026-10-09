@@ -17,8 +17,17 @@ function processElementStyleAndClass(
     | Record<string, string>
     | undefined;
 
-  // 快速跳过没有 style 和 class 的节点
-  if (!sourceAttrs || (!sourceAttrs.style && !sourceAttrs.class)) return;
+  if (!sourceAttrs) return;
+  for (const [key, value] of Object.entries(sourceAttrs)) {
+    if (
+      key === 'id' ||
+      key === 'title' ||
+      key.startsWith('data-') ||
+      key.startsWith('aria-')
+    ) {
+      element.props[key] = value;
+    }
+  }
 
   // 处理 style 属性
   if (!options.removeAllStyle && sourceAttrs.style) {
@@ -39,7 +48,8 @@ function processElementStyleAndClass(
     const finalStyle = element.props.style as CSSProperties;
     if (
       !hasExplicitFlexDirection &&
-      (finalStyle.display === 'flex' || finalStyle.display === 'inline-flex')
+      (styleFromAttr.display === 'flex' ||
+        styleFromAttr.display === 'inline-flex')
     ) {
       finalStyle.flexDirection = 'row';
     }
@@ -74,29 +84,9 @@ export const styleCapabilityPlugin: TransformPlugin = {
     const removeAllClass = (ctx.metadata.removeAllClass as boolean) ?? true;
     const options = { removeAllStyle, removeAllClass };
 
-    // 为 "view"、"text"、"frame" 节点注册处理器（共享相同逻辑）
-    for (const tag of ['view', 'text', 'frame']) {
-      handlers.set(tag, (node) => {
-        processElementStyleAndClass(node as LynxElementNode, options);
-      });
-    }
-
-    // 为 "image" 节点注册处理器（只处理 style）
-    handlers.set('image', (node) => {
-      const element = node as LynxElementNode;
-      const sourceAttrs = element.meta?.sourceAttrs as
-        | Record<string, string>
-        | undefined;
-
-      if (!sourceAttrs || !sourceAttrs.style) return;
-
-      if (!removeAllStyle && sourceAttrs.style) {
-        const styleFromAttr = parseStyleString(sourceAttrs.style);
-        element.props.style = {
-          ...(element.props.style as CSSProperties),
-          ...styleFromAttr,
-        } as CSSProperties;
-      }
+    handlers.set('*', (node) => {
+      if (node.kind !== 'element') return;
+      processElementStyleAndClass(node, options);
     });
 
     return handlers;

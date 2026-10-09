@@ -24,7 +24,6 @@ export const builtinPlugins: TransformPlugin[] = [
   blockStructurePlugin,
   listStructurePlugin,
   tableStructurePlugin,
-  textMergePlugin, // Moved to structure phase with order 999 to run after all structure plugins
 
   // Capability Phase
   styleCapabilityPlugin,
@@ -33,6 +32,7 @@ export const builtinPlugins: TransformPlugin[] = [
 
   // Finalize Phase
   textNormalizeFinalizePlugin,
+  textMergePlugin,
 ];
 
 // 导出所有插件

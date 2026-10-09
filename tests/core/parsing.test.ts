@@ -29,6 +29,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'element',
           tag: 'text',
+          role: 'inline',
           props: { style: { color: 'var(--lhr-text-color)' } },
           children: [],
           capabilities: {
@@ -54,6 +55,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'element',
           tag: 'view',
+          role: 'block',
           props: { style: { flexDirection: 'column' } },
           children: [
             { kind: 'text', content: 'Text 1', meta: { source: 'text' } },
@@ -64,6 +66,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'element',
           tag: 'view',
+          role: 'block',
           props: { style: { flexDirection: 'column' } },
           children: [
             { kind: 'text', content: 'Text 2', meta: { source: 'text' } },
@@ -106,6 +109,7 @@ describe('Core HTML Parsing', () => {
         {
           kind: 'element',
           tag: 'view',
+          role: 'block',
           props: { style: { flexDirection: 'column' } },
           children: [
             { kind: 'text', content: '  Text 2  ', meta: { source: 'text' } },

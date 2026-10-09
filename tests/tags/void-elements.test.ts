@@ -10,6 +10,7 @@ describe('Void Elements', () => {
       {
         kind: 'element',
         tag: 'image',
+        role: 'image',
         props: {
           src: 'test.jpg',
           style: { width: '100%', height: 'auto' },

@@ -10,6 +10,7 @@ describe('Style Parsing', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: {
           style: {
             flexDirection: 'column',
@@ -18,7 +19,12 @@ describe('Style Parsing', () => {
           },
         },
         children: [
-          { kind: 'text', content: 'Styled Text', meta: { source: 'text' } },
+          {
+            kind: 'text',
+            content: 'Styled Text',
+            inheritableStyles: { color: 'red', fontSize: '16px' },
+            meta: { source: 'text' },
+          },
         ],
         capabilities: { isVoid: false, layout: 'flex' },
         meta: {
@@ -37,6 +43,7 @@ describe('Style Parsing', () => {
       {
         kind: 'element',
         tag: 'text',
+        role: 'textContainer',
         props: {
           style: {
             marginBottom: '1em',
@@ -47,9 +54,7 @@ describe('Style Parsing', () => {
           {
             kind: 'text',
             content: 'Styled Paragraph',
-            // Note: inheritableStyles has the default style color, not the merged color
-            // The actual rendering will use props.style which has the merged value
-            inheritableStyles: { color: 'var(--lhr-text-color)' },
+            inheritableStyles: { color: 'blue' },
             meta: { source: 'text' },
           },
         ],
@@ -68,6 +73,7 @@ describe('Style Parsing', () => {
       {
         kind: 'element',
         tag: 'view',
+        role: 'block',
         props: {
           style: {
             flexDirection: 'column',

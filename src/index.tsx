@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { transformHTML } from './html-parser';
+import { getMarkStyles } from './lynx/text-styles';
 import { AdapterRegistry, setGlobalRegistry } from './render/adapter-registry';
 import { normalizeTextTreeForRender } from './render/text-normalizer';
 import type {
@@ -9,6 +10,7 @@ import type {
   RenderContext,
   RenderResult,
 } from './render/types';
+import type { TransformOptions } from './transform/types';
 import { TEXT_ONLY_PROPERTIES } from './utils/style-schema';
 
 // 内置适配器实现
@@ -36,7 +38,11 @@ class TableAdapter implements LynxRenderAdapter {
       ...node.props.style,
     };
 
-    return <view style={tableStyle}>{ctx.renderChildren(node)}</view>;
+    return (
+      <view {...node.props} style={tableStyle}>
+        {ctx.renderChildren(node)}
+      </view>
+    );
   }
 }
 
@@ -46,7 +52,11 @@ class RowAdapter implements LynxRenderAdapter {
       ...node.props.style,
     };
 
-    return <view style={rowStyle}>{ctx.renderChildren(node)}</view>;
+    return (
+      <view {...node.props} style={rowStyle}>
+        {ctx.renderChildren(node)}
+      </view>
+    );
   }
 }
 
@@ -54,33 +64,21 @@ class CellAdapter implements LynxRenderAdapter {
   render(node: LynxElementNode, ctx: RenderContext) {
     // 分离文本样式和其他样式
     const cellStyle: Record<string, unknown> = {};
-    const textStyles: Record<string, unknown> = {};
 
     if (node.props.style) {
       for (const [key, value] of Object.entries(node.props.style)) {
-        if (TEXT_ONLY_PROPERTIES.has(key)) {
-          textStyles[key] = value;
-        } else {
+        if (!TEXT_ONLY_PROPERTIES.has(key)) {
           cellStyle[key] = value;
         }
       }
     }
 
-    // 渲染子节点，如果子节点是 text，应用文本样式
-    const children = ctx.renderChildren(node).map((child) => {
-      if (React.isValidElement(child) && child.type === 'text') {
-        // 应用文本样式到 text 元素
-        return React.cloneElement(child, {
-          style: {
-            ...(child.props.style as Record<string, unknown> | undefined),
-            ...textStyles,
-          },
-        });
-      }
-      return child;
-    });
-
-    return <view style={cellStyle}>{children}</view>;
+    // Text styles were resolved on the IR before rendering.
+    return (
+      <view {...node.props} style={cellStyle}>
+        {ctx.renderChildren(node)}
+      </view>
+    );
   }
 }
 
@@ -104,9 +102,9 @@ export function createDefaultRegistry(): AdapterRegistry {
   const viewAdapter = new ViewAdapter();
   const registry = new AdapterRegistry(viewAdapter);
 
-  registry.registerByTag('view', viewAdapter);
-  registry.registerByTag('text', new TextAdapter());
-  registry.registerByTag('image', new ImageAdapter());
+  registry.registerDefaultByTag('view', viewAdapter);
+  registry.registerDefaultByTag('text', new TextAdapter());
+  registry.registerDefaultByTag('image', new ImageAdapter());
   registry.registerByRole('table', new TableAdapter());
   registry.registerByRole('row', new RowAdapter());
   registry.registerByRole('cell', new CellAdapter());
@@ -146,21 +144,7 @@ function renderNodeWithRegistry(
   ctx: RenderContext,
 ): RenderResult {
   if (node.kind === 'text') {
-    // 处理继承的样式（inline 模式）
-    const style: Record<string, string | number> = {
-      ...(node.inheritableStyles ?? {}),
-    };
-
-    // Marks 样式覆盖继承样式（更高优先级）
-    if (node.marks?.bold) style.fontWeight = 'bold';
-    if (node.marks?.italic) style.fontStyle = 'italic';
-    if (node.marks?.underline) style.textDecoration = 'underline';
-    if (node.marks?.code) {
-      style.fontFamily = 'monospace';
-      style.backgroundColor = '#f0f0f0';
-      style.padding = '2px 4px';
-      style.borderRadius = '3px';
-    }
+    const style = { ...getMarkStyles(node.marks), ...node.inheritableStyles };
 
     // 处理继承的类名（css-class 模式）
     const className = node.inheritableClasses;
@@ -180,7 +164,11 @@ function renderNodeWithRegistry(
 /**
  * HTMLRenderer 组件属性
  */
-export interface HTMLRendererProps {
+export interface HTMLRendererProps
+  extends Pick<
+    TransformOptions,
+    'plugins' | 'tagMappings' | 'unknownTagPolicy'
+  > {
   /** HTML 字符串输入 */
   html: string;
   /** 是否移除所有 class 属性（默认: true） */
@@ -213,6 +201,9 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     darkMode = false,
     linkStyle,
     debug = false,
+    plugins,
+    tagMappings,
+    unknownTagPolicy,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -225,8 +216,21 @@ export const HTMLRenderer = memo(function HTMLRenderer(
         styleMode,
         linkStyle,
         debug,
+        plugins,
+        tagMappings,
+        unknownTagPolicy,
       }).map(normalizeTextTreeForRender),
-    [html, removeAllClass, removeAllStyle, styleMode, linkStyle, debug],
+    [
+      html,
+      removeAllClass,
+      removeAllStyle,
+      styleMode,
+      linkStyle,
+      debug,
+      plugins,
+      tagMappings,
+      unknownTagPolicy,
+    ],
   );
   const renderCtx = useMemo(
     () => createRenderContext(customAdapterRegistry ?? defaultAdapterRegistry),
@@ -278,6 +282,9 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     darkMode = false,
     linkStyle,
     debug = false,
+    plugins,
+    tagMappings,
+    unknownTagPolicy,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -287,6 +294,9 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     styleMode,
     linkStyle,
     debug,
+    plugins,
+    tagMappings,
+    unknownTagPolicy,
   }).map(normalizeTextTreeForRender);
   const renderCtx = createRenderContext(
     customAdapterRegistry ?? defaultAdapterRegistry,
@@ -324,7 +334,6 @@ type HTMLRendererType = typeof HTMLRenderer & {
 (HTMLRenderer as HTMLRendererType).render = renderHTMLDirect;
 
 // 导出公共类型
-export type { HTMLRendererProps };
 export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
 // 导出适配器扩展 API
 export {
@@ -335,4 +344,9 @@ export {
 } from './render/adapter-registry';
 export type { LynxRenderAdapter, RenderContext } from './render/types';
 export { generateCSS, getClassNameForTag } from './styles';
-export type { TransformOptions } from './transform/types';
+export type { TagMapping } from './transform/plugins/structure/tag-config';
+export type {
+  PluginConfig,
+  TransformOptions,
+  TransformPlugin,
+} from './transform/types';

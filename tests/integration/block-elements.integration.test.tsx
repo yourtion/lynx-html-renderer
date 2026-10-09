@@ -343,8 +343,8 @@ describe('Block Elements Integration Tests', () => {
       const { container } = render(<HTMLRenderer html={html} />);
 
       const texts = container.querySelectorAll('text');
-      // With unwrapping, each heading renders as a single text element (no nested structure)
-      expect(texts.length).toBe(6);
+      // Each heading retains its container and a leaf text element (no nested structure)
+      expect(texts.length).toBe(12);
     });
   });
 });

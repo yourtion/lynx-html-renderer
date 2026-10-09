@@ -19,10 +19,10 @@ const getPerformanceAPI = (): PerformanceAPI => {
   if (typeof lynx !== 'undefined' && lynx.performance) {
     return {
       mark: (name: string) => lynx.performance.profileMark(name),
-      measure: (name: string, start: string, end: string) => {
+      measure: (name: string, start: string, _end: string) => {
         // Lynx doesn't have measure, use profileStart/End
         lynx.performance.profileStart(`${name}-${start}`);
-        lynx.performance.profileEnd(`${name}-${end}`);
+        lynx.performance.profileEnd();
       },
       getEntriesByType: (_type: string) => [],
       clearMarks: () => {},
@@ -77,6 +77,9 @@ export function endMeasure(name: string): number {
  */
 export function profile<T>(name: string, fn: () => T): T {
   startMeasure(name);
+  const runtimeProcess = (
+    globalThis as { process?: { env?: Record<string, string | undefined> } }
+  ).process;
   try {
     return fn();
   } finally {
@@ -84,9 +87,9 @@ export function profile<T>(name: string, fn: () => T): T {
 
     // Only log in development or if profiling is enabled
     if (
-      typeof process !== 'undefined' &&
-      process.env?.NODE_ENV !== 'production' &&
-      process.env?.ENABLE_PROFILING
+      runtimeProcess &&
+      runtimeProcess.env?.NODE_ENV !== 'production' &&
+      runtimeProcess.env?.ENABLE_PROFILING
     ) {
       console.log(`[Perf] ${name}: ${duration.toFixed(3)}ms`);
     }

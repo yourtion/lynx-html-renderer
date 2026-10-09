@@ -7,6 +7,7 @@ import type { LynxElementNode, LynxRenderAdapter } from './types';
  */
 class AdapterRegistry {
   private tagMap = new Map<string, LynxRenderAdapter>();
+  private defaultTagMap = new Map<string, LynxRenderAdapter>();
   private roleMap = new Map<string, LynxRenderAdapter>();
   private fallbackAdapter: LynxRenderAdapter;
 
@@ -23,6 +24,11 @@ class AdapterRegistry {
     this.tagMap.set(tag, adapter);
   }
 
+  /** Register a native-element fallback below semantic role adapters. */
+  registerDefaultByTag(tag: string, adapter: LynxRenderAdapter): void {
+    this.defaultTagMap.set(tag, adapter);
+  }
+
   /**
    * Register an adapter for a specific role
    * @param role - The element role (e.g., 'table', 'row', 'cell')
@@ -34,7 +40,7 @@ class AdapterRegistry {
 
   /**
    * Resolve the appropriate adapter for a node
-   * Priority: tag > role > fallback
+   * Priority: custom tag > role > default native tag > fallback
    */
   resolve(node: LynxElementNode): LynxRenderAdapter {
     // First try to match by tag (O(1))
@@ -52,7 +58,7 @@ class AdapterRegistry {
     }
 
     // Finally, return the fallback adapter
-    return this.fallbackAdapter;
+    return this.defaultTagMap.get(node.tag) ?? this.fallbackAdapter;
   }
 }
 
@@ -122,7 +128,7 @@ export function registerAdapterByTag(
  * Register a custom adapter for a specific element role
  *
  * Use this to extend the renderer with custom role-based handling.
- * Role-based adapters have lower priority than tag-based adapters.
+ * Role adapters take priority over default native adapters; explicit tag adapters take priority over roles.
  *
  * @param role - The role to register (e.g., 'navigation', 'article')
  * @param adapter - The adapter that will render nodes with this role

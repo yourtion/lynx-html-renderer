@@ -122,10 +122,11 @@ describe('CSS Class Mode Integration', () => {
       expect(result).toHaveLength(1);
       expect(result[0].props.className).toBe('lhr-p');
 
-      // Inline formatting tags use marks, not className
-      const textNode = result[0].children[1];
-      expect(textNode.kind).toBe('text');
-      expect(textNode.marks?.bold).toBe(true);
+      // Keep class containers so their CSS can include layout styles.
+      const strong = result[0].children[1];
+      expect(strong.kind).toBe('element');
+      expect(strong.props.className).toBe('lhr-strong');
+      expect(strong.children[0].marks?.bold).toBe(true);
     });
 
     it('should handle blockquote with complex defaultStyle', () => {

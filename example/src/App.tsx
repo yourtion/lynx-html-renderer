@@ -57,7 +57,7 @@ export function App(props: { onRender?: () => void }) {
                 : '#007bff',
             padding: '12px 24px',
             borderRadius: '8px',
-            shadow: '0 4px 12px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
           bindtap={toggleStyle}
         >

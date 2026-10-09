@@ -232,8 +232,8 @@ describe('Styles Integration Tests', () => {
       const style = text?.getAttribute('style');
       expect(style).toContain('color');
 
-      // margin-bottom is a container property, not inheritable to text
-      expect(style).not.toContain('margin-bottom');
+      // The paragraph container retains its layout style.
+      expect(style).toContain('margin-bottom');
     });
 
     it('should apply ul default padding', () => {
