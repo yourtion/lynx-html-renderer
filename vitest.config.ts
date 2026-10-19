@@ -8,7 +8,9 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // Follow the node_modules symlink (e.g. in a Stryker sandbox) to the real
 // project root, so the Vite dev server allows serving Lynx testing-library
 // setup files that resolve outside the current working directory.
-const realProjectRoot = dirname(realpathSync(resolve(__dirname, 'node_modules')));
+const realProjectRoot = dirname(
+  realpathSync(resolve(__dirname, 'node_modules')),
+);
 
 const defaultConfig = await createVitestConfig();
 const config = defineConfig({
