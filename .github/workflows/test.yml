@@ -40,6 +40,9 @@ jobs:
       - name: Run tests with coverage
         run: pnpm run coverage:ci
 
+      - name: Test release safety and retry behavior
+        run: pnpm run test:release
+
       - name: Build example
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
