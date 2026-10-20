@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { transformHTML } from '../../src/html-parser';
-import {
-  listStructurePlugin,
-} from '../../src/transform/plugins/structure/list-structure.plugin';
 import type { LynxNode, LynxTextNode } from '../../src/lynx/types';
+import { listStructurePlugin } from '../../src/transform/plugins/structure/list-structure.plugin';
 
-function collectTexts(node: LynxNode, acc: LynxTextNode[] = []): LynxTextNode[] {
+function collectTexts(
+  node: LynxNode,
+  acc: LynxTextNode[] = [],
+): LynxTextNode[] {
   if (node.kind === 'text') acc.push(node);
-  if (node.kind === 'element') for (const c of node.children) collectTexts(c, acc);
+  if (node.kind === 'element')
+    for (const c of node.children) collectTexts(c, acc);
   return acc;
 }
 
@@ -54,9 +56,7 @@ describe('list-structure plugin (mutation hardening)', () => {
   });
 
   it('processes nested lists independently', () => {
-    const roots = transformHTML(
-      '<ul><li>a<ul><li>b</li></ul></li></ul>',
-    );
+    const roots = transformHTML('<ul><li>a<ul><li>b</li></ul></li></ul>');
     const texts = collectTexts(roots[0]).map((t) => t.content);
     expect(texts).toEqual(['• a', '• b']);
   });

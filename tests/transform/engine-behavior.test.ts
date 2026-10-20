@@ -1,15 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { transformHTML } from '../../src/html-parser';
 import { PluginError } from '../../src/errors';
+import { transformHTML } from '../../src/html-parser';
 import type { TransformPlugin } from '../../src/transform/types';
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function withPlugin(plugin: TransformPlugin, html = '<div><p>a</p><p>b</p></div>') {
-  return () =>
-    transformHTML(html, { plugins: { extra: [plugin] } });
+function withPlugin(
+  plugin: TransformPlugin,
+  html = '<div><p>a</p><p>b</p></div>',
+) {
+  return () => transformHTML(html, { plugins: { extra: [plugin] } });
 }
 
 describe('transformHTML metrics (debug mode)', () => {
@@ -135,11 +137,7 @@ describe('transformHTML capability phase error wrapping', () => {
       phase: 'capability',
       order: 900,
       apply: () => {
-        throw new PluginError(
-          'boom',
-          'inner-plugin',
-          'custom-phase',
-        );
+        throw new PluginError('boom', 'inner-plugin', 'custom-phase');
       },
     };
     try {

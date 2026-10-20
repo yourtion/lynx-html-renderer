@@ -4,9 +4,9 @@ import type {
   LynxNode,
   NodeCapabilityHandler,
 } from '../../src/lynx/types';
-import type { TransformContext } from '../../src/transform/types';
 import { layoutCapabilityPlugin } from '../../src/transform/plugins/capability/layout-capability.plugin';
 import { mediaCapabilityPlugin } from '../../src/transform/plugins/capability/media-capability.plugin';
+import type { TransformContext } from '../../src/transform/types';
 
 const stubCtx = {} as TransformContext;
 
@@ -37,10 +37,9 @@ describe('layout-capability plugin (mutation hardening)', () => {
   });
 
   it('registers exactly one handler per element tag', () => {
-    const handlers = layoutCapabilityPlugin.registerCapabilityHandlers?.(
-      stubCtx,
-    );
-    expect([...handlers?.keys() ?? []].sort()).toEqual([
+    const handlers =
+      layoutCapabilityPlugin.registerCapabilityHandlers?.(stubCtx);
+    expect([...(handlers?.keys() ?? [])].sort()).toEqual([
       'frame',
       'image',
       'text',
@@ -164,7 +163,11 @@ describe('media-capability plugin (mutation hardening)', () => {
 
   it('never lets the style attribute override an explicit width attribute', () => {
     const node = run(
-      imgNode({ src: 'a.png', width: '200', style: 'width: 9px; height: 60px' }),
+      imgNode({
+        src: 'a.png',
+        width: '200',
+        style: 'width: 9px; height: 60px',
+      }),
     );
     expect(node.props.style).toEqual({ width: '200', height: '60px' });
   });

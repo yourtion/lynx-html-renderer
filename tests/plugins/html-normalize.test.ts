@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HtmlAstNode } from '../../src/ast/types';
-import type { TransformContext } from '../../src/transform/types';
 import { htmlNormalizePlugin } from '../../src/transform/plugins/normalize/html-normalize.plugin';
+import type { TransformContext } from '../../src/transform/types';
 
 function runPlugin(nodes: HtmlAstNode[]): void {
   const ctx = {
@@ -28,9 +28,9 @@ describe('html-normalize plugin (mutation hardening)', () => {
     (data) => {
       const node = textNode(data);
       runPlugin([node]);
-      expect(
-        (node as unknown as Record<string, unknown>).isWhitespace,
-      ).toBe(true);
+      expect((node as unknown as Record<string, unknown>).isWhitespace).toBe(
+        true,
+      );
     },
   );
 
