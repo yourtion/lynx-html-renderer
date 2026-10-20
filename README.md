@@ -1,44 +1,18 @@
 # Lynx HTML Renderer
 
-> 一个将 **HTML 渲染到 Lynx 原生组件** 的轻量、可扩展渲染引擎。
->
-> A lightweight and extensible renderer that render HTML string on Lynx.
+将 HTML 字符串转换为 Lynx 原生组件的轻量渲染库，适用于内容详情页、富文本和配置化页面。
 
----
+A lightweight, extensible HTML renderer for Lynx native components.
 
-## ✨ 项目简介 | Introduction
+- 支持常见文本、图片、列表和基础表格。
+- 提供内联样式、CSS 类模式和主题定制。
+- 通过标签映射、Transform 插件和渲染适配器扩展业务组件。
 
-**HTML → Lynx Renderer** 通过解析 HTML 并转换为一棵中间语义树（LynxNode），最终渲染为 Lynx 原生组件。
+处理范围为已支持的 HTML/CSS 子集，不执行 HTML 中的脚本。标签、样式和扩展能力见 [API 文档](docs/api-reference.md)。
 
-该项目并非浏览器实现，而是一个 **面向原生的 HTML 安全集渲染方案**，适用于：
+## 安装 | Installation
 
-- 内容页 / 详情页
-- 富文本展示
-- 配置化页面
-
-
-**HTML → Lynx Renderer** parses HTML into a semantic intermediate representation (LynxNode), then renders it into Lynx native components.
-
-It is **not a browser**, but a **native-oriented, safe HTML rendering solution**, suitable for:
-
-- Content & detail pages
-- Rich text rendering
-- Configuration-driven pages
-
----
-
-## 🎯 设计目标 | Design Goals
-
-- ✅ 渲染大部分真实业务中的 HTML 页面
-- ✅ 支持文本、图片、Flex 布局、基础表格
-- ✅ 支持用户自定义标签与渲染组件
-- ✅ 架构可扩展、可长期维护
-
----
-
-## 🚀 快速开始 | Quick Start
-
-### 安装 | Installation
+在已有的 Lynx React 项目中安装：
 
 ```bash
 npm install lynx-html-renderer
@@ -46,56 +20,47 @@ npm install lynx-html-renderer
 pnpm add lynx-html-renderer
 ```
 
-开发工具链要求 Node 20（≥20.19）或 Node 22.12+，并使用仓库指定的 pnpm 10.26.2。
+当前 peer 依赖为 `@lynx-js/react ^0.126.2`、`@lynx-js/types ^4.3.0`。
+宿主引擎与 npm 包版本的兼容要求见 [工具链说明](docs/upgrade.md)。
 
-当前 peer 基线为 `@lynx-js/react ^0.126.2`、`@lynx-js/types ^4.3.0`。
-示例显式设置 `engineVersion: '3.9'`；npm 包版本与宿主原生 SDK 版本需分别配置。
-升级与验证边界见 [工具链说明](docs/upgrade.md)。
-
-维护者发版、npm Trusted Publisher 配置和失败重跑见[自动发布说明](docs/releasing.md)。
-
-### 基本使用 | Basic Usage
+## 基本使用 | Basic Usage
 
 ```tsx
 import { HTMLRenderer } from 'lynx-html-renderer';
 
 function App() {
-  const html = '<div>Hello <strong>world</strong></div>';
-
-  return <HTMLRenderer html={html} />;
+  return <HTMLRenderer html="<p>Hello <strong>Lynx</strong></p>" />;
 }
 ```
 
-### 转换选项 | Transform Options
+默认使用内联样式，保留 HTML 的 `style` 并移除 `class`。
+可通过 `removeAllStyle` 和 `removeAllClass` 调整；完整属性和直接渲染、HTML 转换接口见 [API 文档](docs/api-reference.md)。
 
-`HTMLRenderer` 组件支持以下可选属性来控制 HTML 转换行为：
+## CSS 类模式 | CSS Class Mode
+
+引入预生成 CSS，用共享类名应用标签的默认样式：
 
 ```tsx
 import { HTMLRenderer } from 'lynx-html-renderer';
+import 'lynx-html-renderer/dist/styles.css';
 
 function App() {
-  const html = '<div class="container" style="color: red;">Hello</div>';
-
   return (
     <HTMLRenderer
-      html={html}
-      removeAllClass={true}  // 删除所有 HTML 的 class 属性（默认：true）
-      removeAllStyle={false} // 删除所有 HTML 的 style 属性（默认：false）
+      html='<p class="article-text" style="color: red">Hello Lynx</p>'
+      styleMode="css-class"
+      removeAllClass={false}
     />
   );
 }
 ```
 
-**选项说明：**
+HTML 的 `style` 仍受 `removeAllStyle` 控制；保留自定义 `class` 时需显式设置 `removeAllClass={false}`。
+主题、`rootClassName`、动态 CSS 生成和样式覆盖见 [CSS 类模式指南](docs/css-class-mode.md)。
 
-- `removeAllClass?: boolean` - 是否删除所有 HTML 的 class 属性，默认为 `true`
-  - 设置为 `false` 可保留 HTML 中的 class 属性
-- `removeAllStyle?: boolean` - 是否删除所有 HTML 的 style 属性，默认为 `false`
-  - 设置为 `true` 可移除所有内联样式
+## 自定义标签与插件 | Custom Tags and Plugins
 
-### 自定义标签与插件 | Custom Tags and Plugins
-
-组件与 `renderHTMLDirect` 都支持 `plugins`、`tagMappings`、`unknownTagPolicy`。
+`tagMappings` 决定自定义标签如何进入节点树，`adapterRegistry` 决定节点如何渲染：
 
 ```tsx
 import { createDefaultRegistry, HTMLRenderer } from 'lynx-html-renderer';
@@ -120,211 +85,25 @@ registry.registerByTag('custom-card', {
 />
 ```
 
-未知标签默认 `drop`（丢弃子树）；`unwrap` 保留子内容；`fallback` 保留标签与属性供适配器处理。
-已知的自定义映射优先于这些策略。`html` / `body` 文档包装支持展开，带 style / class 时保留容器；
-`head`、`script` 和 HTML `style` 内容仍被排除。扩展顺序见 [插件契约](docs/plugin.md)。
+通过 `plugins` 添加、替换或禁用 Transform 插件。未知标签默认丢弃子树，可用 `unknownTagPolicy="unwrap"` 保留子内容，或用 `"fallback"` 保留标签供适配器处理。
+自定义标签映射优先于未知标签策略；执行顺序与扩展契约见 [插件文档](docs/plugin.md)。
 
-### CSS 类模式 | CSS Class Mode
+## 文档 | Documentation
 
-除了默认的内联样式模式，`HTMLRenderer` 还支持 **CSS 类模式**，通过预定义的 CSS 类来应用默认样式：
-
-```tsx
-import { HTMLRenderer } from 'lynx-html-renderer';
-import 'lynx-html-renderer/dist/styles.css';
-
-function App() {
-  const html = '<h1>Title</h1><p>Content</p>';
-
-  return <HTMLRenderer html={html} styleMode="css-class" />;
-}
-```
-
-**CSS 类模式的优势：**
-
-- 🎨 **样式可定制** - 通过覆盖 CSS 类来定制默认样式
-- 🚀 **性能优化** - 减少重复的内联样式定义
-- 🔄 **样式复用** - 多个实例共享同一份 CSS
-- 📦 **主题切换** - 支持动态主题切换
-
-**使用方式：**
-
-```tsx
-// 方式1：使用预生成 CSS（推荐）
-import { HTMLRenderer } from 'lynx-html-renderer';
-import 'lynx-html-renderer/dist/styles.css';
-
-<HTMLRenderer html={html} styleMode="css-class" />
-
-// 方式2：动态生成 CSS
-import { HTMLRenderer } from 'lynx-html-renderer';
-import { generateCSS } from 'lynx-html-renderer/styles';
-
-const css = generateCSS('my-root-class');
-<style>{css}</style>
-<HTMLRenderer html={html} styleMode="css-class" rootClassName="my-root-class" />
-```
-
-**样式优先级（从高到低）：**
-
-1. HTML 的 `style` 属性（内联样式）
-2. HTML 的 `class` 属性
-3. TAG_MAP 的 `defaultStyle`（通过 `.lhr-{tag}` 类应用）
-
-详细的 CSS 类模式文档请参考：[CSS 类模式指南](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/css-class-mode.md)
-
-## 🚫 非目标 | Non-goals
-
-- ❌ 不实现完整 HTML/CSS 规范
-- ❌ 不执行 JavaScript（`script` / inline events）
-- ❌ 不追求浏览器级像素一致
-- ❌ 不做 DOM diff 或 hydration
-
----
-
-## 🧠 核心思想 | Core Concepts
-
-参考 [Architecture](https://github.com/yourtion/lynx-html-renderer/blob/main/docs/architecture.md)
-
-## 📦 功能特性 | Features
-
-- ✅ HTML 标签 → Lynx 组件映射
-- ✅ CSS style 安全集解析（受支持属性集）
-- ✅ 文本语义（strong / em / code）
-- ✅ 基础表格支持（table / tr / td）
-- ✅ 用户自定义渲染组件
-- ✅ 插件化 Transform 机制（可选）
-
----
-
-## 🧩 插件机制 | Plugin System
-
-Transform 阶段支持插件，用于：
-
-- 覆盖某些 HTML 标签的解析方式
-- 插入自定义语义节点
-- 扩展样式或结构处理逻辑
-
-插件以 **pipeline** 形式执行，不影响核心逻辑的稳定性。
-
-## 📖 API 文档 | API Reference
-
-### HTMLRenderer Component
-
-主渲染组件，用于将 HTML 字符串渲染为 Lynx 组件。
-
-```tsx
-interface HTMLRendererProps {
-  html: string;                    // 要渲染的 HTML 字符串（必填）
-  removeAllClass?: boolean;         // 是否删除所有 class 属性（默认：true）
-  removeAllStyle?: boolean;         // 是否删除所有 style 属性（默认：false）
-  styleMode?: 'inline' | 'css-class';  // 样式模式（默认：'inline'）
-  rootClassName?: string;           // CSS类模式下的根容器类名（默认：'lynx-html-renderer'）
-  darkMode?: boolean;               // 是否启用暗色模式（默认：false）
-  linkStyle?: Record<string, string | number>; // 自定义链接样式，仅 inline 模式生效
-  debug?: boolean;                  // 是否启用 transform 调试日志（默认：false）
-  adapterRegistry?: AdapterRegistry; // 可选：组件级适配器注册表（默认使用全局注册表）
-}
-```
-
-**样式模式说明：**
-
-- `'inline'`（默认）- 所有样式作为内联样式应用
-- `'css-class'` - TAG_MAP 的 defaultStyle 通过 CSS 类应用，HTML 的 style 属性仍为内联样式
-
-### TransformOptions
-
-HTML 转换选项，用于控制转换行为。
-
-```tsx
-interface TransformOptions {
-  removeAllClass?: boolean;   // 是否删除所有 HTML 的 class 属性，默认为 true
-  removeAllStyle?: boolean;   // 是否删除所有 HTML 的 style 属性，默认为 false
-  styleMode?: 'inline' | 'css-class';  // 样式模式
-  debug?: boolean;            // 是否启用 transform 调试日志
-}
-```
-
-`rootClassName` 属于渲染层（`HTMLRenderer`）配置，`transformHTML` 会忽略该字段（保留仅为兼容）。
-
-### CSS 工具函数
-
-#### generateCSS
-
-生成完整的 CSS 字符串。
-
-```tsx
-import { generateCSS } from 'lynx-html-renderer/styles';
-
-// 使用默认根类名
-const css = generateCSS();
-
-// 使用自定义根类名
-const customCSS = generateCSS('my-app');
-```
-
-#### getClassNameForTag
-
-获取 HTML 标签对应的 CSS 类名。
-
-```tsx
-import { getClassNameForTag } from 'lynx-html-renderer/styles';
-
-getClassNameForTag('p');    // => 'lhr-p'
-getClassNameForTag('h1');   // => 'lhr-h1'
-getClassNameForTag('div');  // => 'lhr-div'
-getClassNameForTag('img');  // => null (无默认样式)
-```
-
----
-
-## 🛠 使用场景 | Use Cases
-
-- 内容管理系统（CMS）页面渲染
-- 富文本展示（不依赖 WebView）
-- 多端统一内容渲染
-
----
-
-## 🙌 贡献 | Contributing
-
-### 变异测试 | Mutation Testing
-
-使用 Stryker 检查测试能否识别代码行为变化：
-
-```bash
-pnpm mutation       # 增量执行；没有本地基线时全量运行
-pnpm mutation:full  # 强制全量运行并重建本地基线
-```
-
-基线保存在 `reports/stryker-incremental.json`，HTML 报告位于
-`reports/mutation/mutation.html`；`reports/` 不提交到 Git。
-
-独立的 `CI - Mutation Testing` 工作流采用以下策略：
-
-| 场景 | 执行策略 |
+| 文档 | 内容 |
 | --- | --- |
-| 首次接入 / 基线缓存丢失 | 全量运行；在 main 成功后保存基线 |
-| 每次面向 main 的 PR | 读取 main 基线，增量执行，不更新共享基线 |
-| 合并到 main / 直接推送 main | 增量执行，成功后保存新基线 |
-| 手动运行 | 默认增量；勾选 `full` 强制全量，在 main 运行可重建共享基线 |
+| [使用指南与示例](docs/index.md) | 使用选项、示例页面及 Lynx 示例 bundle |
+| [API 参考](docs/api-reference.md) | 组件属性、转换接口、类型与支持范围 |
+| [CSS 类模式](docs/css-class-mode.md) | 默认样式、主题、自定义 CSS 与样式工具 |
+| [插件系统](docs/plugin.md) | Transform 阶段、标签映射和渲染适配器 |
+| [架构设计](docs/architecture.md) | Parser、Transform、Renderer 分层 |
+| [工具链说明](docs/upgrade.md) | 依赖、宿主引擎和兼容验证范围 |
 
-首次合并前还没有 main 基线，PR 会先全量运行。工作流合并到 main 后，
-首次 main 运行会自动建立共享基线，无需额外服务或 Secret。
-首次全量或基线重建可能超过 90 分钟，变异测试任务的总时限为 180 分钟。
-每次运行的报告可在 GitHub Actions 的 `mutation-reports-*` artifact 中下载。
-main 任务串行执行，PR 新提交会取消该 PR 的旧任务。
+## 贡献 | Contributing
 
-Stryker 比较源码与测试内容，复用未受影响的变异结果；每次仍会先运行原始测试。
-依赖、配置、快照及测试辅助文件变化会使 CI 基线缓存失效并全量重建。
-Stryker 对静态变异的测试变化检测存在限制，必要时用 `full` 重新验证。
-当前保留 Stryker 默认评分阈值，不额外设置最低分门禁；测试失败或执行错误会使 CI 失败。
+欢迎提交 issue、讨论和 PR。开发环境、检查命令与提交说明见 [贡献指南](CONTRIBUTING.md)。
+变异测试和维护者发版流程分别见 [变异测试说明](docs/mutation-testing.md) 与 [发布说明](docs/releasing.md)。
 
-欢迎 issue、讨论与 PR。
+## 许可 | License
 
-本项目更关注 **架构正确性与可维护性**，而非一次性功能堆叠。
-
-Contributions, issues, and discussions are welcome.
-
----
-
-> This project is designed as a **long-term maintainable HTML-to-Native rendering pipeline**, not a one-off rich text solution.
+[MIT](LICENSE)
