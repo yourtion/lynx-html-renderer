@@ -10,6 +10,8 @@
   },
   "mutate": ["src/**/*.ts", "src/**/*.tsx", "!src/**/*.d.ts"],
   "reporters": ["clear-text", "progress", "html", "json"],
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json",
   "concurrency": 4,
   "timeoutMS": 10000,
   "tempDirName": ".stryker-tmp"

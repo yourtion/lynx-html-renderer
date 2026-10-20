@@ -284,6 +284,37 @@ getClassNameForTag('img');  // => null (无默认样式)
 
 ## 🙌 贡献 | Contributing
 
+### 变异测试 | Mutation Testing
+
+使用 Stryker 检查测试能否识别代码行为变化：
+
+```bash
+pnpm mutation       # 增量执行；没有本地基线时全量运行
+pnpm mutation:full  # 强制全量运行并重建本地基线
+```
+
+基线保存在 `reports/stryker-incremental.json`，HTML 报告位于
+`reports/mutation/mutation.html`；`reports/` 不提交到 Git。
+
+独立的 `CI - Mutation Testing` 工作流采用以下策略：
+
+| 场景 | 执行策略 |
+| --- | --- |
+| 首次接入 / 基线缓存丢失 | 全量运行；在 main 成功后保存基线 |
+| 每次面向 main 的 PR | 读取 main 基线，增量执行，不更新共享基线 |
+| 合并到 main / 直接推送 main | 增量执行，成功后保存新基线 |
+| 手动运行 | 默认增量；勾选 `full` 强制全量，在 main 运行可重建共享基线 |
+
+首次合并前还没有 main 基线，PR 会先全量运行。工作流合并到 main 后，
+首次 main 运行会自动建立共享基线，无需额外服务或 Secret。
+每次运行的报告可在 GitHub Actions 的 `mutation-reports-*` artifact 中下载。
+main 任务串行执行，PR 新提交会取消该 PR 的旧任务。
+
+Stryker 比较源码与测试内容，复用未受影响的变异结果；每次仍会先运行原始测试。
+依赖、配置、快照及测试辅助文件变化会使 CI 基线缓存失效并全量重建。
+Stryker 对静态变异的测试变化检测存在限制，必要时用 `full` 重新验证。
+当前保留 Stryker 默认评分阈值，不额外设置最低分门禁；测试失败或执行错误会使 CI 失败。
+
 欢迎 issue、讨论与 PR。
 
 本项目更关注 **架构正确性与可维护性**，而非一次性功能堆叠。

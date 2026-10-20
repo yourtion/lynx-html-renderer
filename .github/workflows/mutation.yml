@@ -1,0 +1,89 @@
+name: CI - Mutation Testing
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Force a full mutation run and rebuild the baseline"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Only main saves these caches. PRs can read the default branch's cache,
+      # but never publish their own results as a shared baseline.
+      # Stryker detects source/test changes; invalidate for other inputs too.
+      - name: Compute baseline compatibility key
+        id: baseline-key
+        env:
+          INPUTS_HASH: >-
+            ${{ hashFiles('pnpm-lock.yaml', 'package.json', 'pnpm-workspace.yaml',
+            '.npmrc', 'stryker.config.json', 'vitest.config.*', 'tsconfig*.json',
+            'tests/**', 'example/src/**', '!tests/**/*.test.ts', '!tests/**/*.test.tsx',
+            '!example/src/**/*.test.ts', '!example/src/**/*.test.tsx') }}
+        run: echo "prefix=mutation-main-v1-${RUNNER_OS}-node22-${INPUTS_HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore main mutation baseline
+        id: baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: reports/stryker-incremental.json
+          key: ${{ steps.baseline-key.outputs.prefix }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ${{ steps.baseline-key.outputs.prefix }}-
+
+      - name: Run mutation tests
+        env:
+          FORCE_FULL: ${{ inputs.full == true }}
+        run: |
+          if [ "$FORCE_FULL" = "true" ]; then
+            pnpm mutation:full
+          else
+            # With no baseline (first run or cache eviction), Stryker runs all mutants.
+            pnpm mutation
+          fi
+
+      - name: Save main mutation baseline
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/cache/save@v4
+        with:
+          path: reports/stryker-incremental.json
+          key: ${{ steps.baseline.outputs.cache-primary-key }}
+
+      - name: Upload mutation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 14

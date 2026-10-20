@@ -77,6 +77,8 @@
     "preview": "cd example && rspeedy preview",
     "test": "vitest run",
     "test:perf": "vitest run tests/performance",
+    "mutation": "stryker run",
+    "mutation:full": "stryker run --force",
     "typecheck": "tsc -p tsconfig.typecheck.json && tsc -p tests/types/tsconfig.json",
     "coverage": "vitest run --coverage --coverage.include='src/**'",
     "coverage:ci": "vitest run --coverage --coverage.include='src/**' --reporter=junit --outputFile=test-report.junit.xml",
