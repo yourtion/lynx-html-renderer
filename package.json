@@ -76,6 +76,7 @@
     "format": "biome format --write",
     "preview": "cd example && rspeedy preview",
     "test": "vitest run",
+    "test:release": "node --test scripts/npm-release.test.mjs",
     "test:perf": "vitest run tests/performance",
     "typecheck": "tsc -p tsconfig.typecheck.json && tsc -p tests/types/tsconfig.json",
     "coverage": "vitest run --coverage --coverage.include='src/**'",

@@ -3,49 +3,57 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
+
+permissions:
+  contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  # Serialize versions too, so overlapping stable releases cannot race on latest.
+  group: npm-release
   cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       id-token: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          # Node 24 includes npm >=11.5.1, required for Trusted Publishing.
+          # Omit registry-url so setup-node does not add token authentication.
+          node-version: '24'
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+      - name: Validate release tag and commit
+        run: |
+          node scripts/npm-release.mjs check "$RELEASE_TAG"
+          git merge-base --is-ancestor HEAD origin/main
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm test:release
       - run: pnpm build
-      - name: Create GitHub Release
+      - name: Pack and validate public entry points
+        id: pack
+        run: node scripts/npm-release.mjs pack "$RELEASE_TAG" "$RUNNER_TEMP/npm-release"
+      # npm Trusted Publisher: yourtion / lynx-html-renderer / release.yml.
+      # No GitHub environment, no NPM_TOKEN. Public OIDC publish adds provenance.
+      - name: Publish validated tarball to npm
+        env:
+          RELEASE_TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: node scripts/npm-release.mjs publish "$RELEASE_TAG" "$RELEASE_TARBALL"
+      - name: Complete GitHub Release after npm succeeds
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          if [ "$(jq -r .version package.json)" != "${tag#v}" ]; then
-            echo "tag $tag does not match package.json version" && exit 1
-          fi
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "release $tag already exists, skip create"
-          else
-            gh release create "$tag" --verify-tag --title "$tag" --generate-notes
-          fi
-      - name: Publish to npm
-        run: |
-          version="${GITHUB_REF#refs/tags/v}"
-          if [ "$(npm view "lynx-html-renderer@$version" version 2>/dev/null)" = "$version" ]; then
-            echo "lynx-html-renderer@$version already on npm, skip publish"
-            exit 0
-          fi
-          npm publish --access public
+        run: node scripts/npm-release.mjs release "$RELEASE_TAG"

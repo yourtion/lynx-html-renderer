@@ -47,9 +47,12 @@ pnpm add lynx-html-renderer
 ```
 
 开发工具链要求 Node 20（≥20.19）或 Node 22.12+，并使用仓库指定的 pnpm 10.26.2。
+
 当前 peer 基线为 `@lynx-js/react ^0.126.2`、`@lynx-js/types ^4.3.0`。
 示例显式设置 `engineVersion: '3.9'`；npm 包版本与宿主原生 SDK 版本需分别配置。
 升级与验证边界见 [工具链说明](docs/upgrade.md)。
+
+维护者发版、npm Trusted Publisher 配置和失败重跑见[自动发布说明](docs/releasing.md)。
 
 ### 基本使用 | Basic Usage
 
