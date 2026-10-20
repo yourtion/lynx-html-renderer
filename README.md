@@ -307,6 +307,7 @@ pnpm mutation:full  # 强制全量运行并重建本地基线
 
 首次合并前还没有 main 基线，PR 会先全量运行。工作流合并到 main 后，
 首次 main 运行会自动建立共享基线，无需额外服务或 Secret。
+首次全量或基线重建可能超过 90 分钟，变异测试任务的总时限为 180 分钟。
 每次运行的报告可在 GitHub Actions 的 `mutation-reports-*` artifact 中下载。
 main 任务串行执行，PR 新提交会取消该 PR 的旧任务。
 

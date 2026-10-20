@@ -22,7 +22,8 @@ concurrency:
 jobs:
   mutation:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # The first full run exceeded 90 minutes; allow headroom for cold baselines.
+    timeout-minutes: 180
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
