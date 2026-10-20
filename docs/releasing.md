@@ -12,8 +12,13 @@
 | Repository | `lynx-html-renderer` |
 | Workflow filename | `release.yml` |
 | Environment | 留空 |
+| Allowed actions | 勾选允许 `npm publish` 直接发布 |
 
 这些字段大小写敏感。workflow 使用 Node 24 自带的 npm（需 ≥11.5.1）和 `id-token: write`，通过 OIDC 发布，无需配置 `NPM_TOKEN`。公开仓库的 Trusted Publishing 自动生成 npm provenance。改 workflow 文件名或添加 GitHub environment 时，必须同步 npm 设置。
+
+OIDC 校验 workflow 身份，Allowed actions 授予该身份可执行的动作。当前流程使用 `npm publish`，因此必须允许直接发布；这项授权只授予匹配的 Trusted Publisher，不是开放本地任意用户发布。若只允许 `npm stage publish`，CI 只能暂存包，需维护者审批后才公开，不能原样使用当前自动直发流程。
+
+包级 Publishing access 中的 “Require two-factor authentication and disallow tokens” 是另一项设置，限制的是传统 token 认证，可以与允许 Trusted Publisher 执行 `npm publish` 同时启用。
 
 npm Trusted Publisher 是 npm 侧配置，提交 workflow 不代表已经绑定。首次发布新包时需先按 npm 官方支持的方式创建包，再绑定 Trusted Publisher；本包已存在。详见 [npm 官方文档](https://docs.npmjs.com/trusted-publishers/)。
 
