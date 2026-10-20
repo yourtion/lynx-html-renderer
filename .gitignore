@@ -27,3 +27,6 @@ site
 
 # Vercel
 .vercel
+# Mutation testing
+.stryker-tmp/
+reports/

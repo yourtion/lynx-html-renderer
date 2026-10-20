@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { generateCSS, getClassNameForTag } from '../../src/utils/css-generator';
+import {
+  generateCSS,
+  getClassNameForTag,
+  getTextClassNameForTag,
+} from '../../src/utils/css-generator';
 
 describe('CSS Generator', () => {
   describe('generateCSS', () => {
@@ -183,5 +187,105 @@ describe('CSS Generator', () => {
       expect(css).toContain(`.${customRoot}.lhr-dark {`);
       expect(css).toContain(`.${customRoot} .lhr-`);
     });
+  });
+});
+
+describe('Mutation hardening: exact rule output', () => {
+  it('renders the div rule exactly (single property)', () => {
+    const css = generateCSS();
+
+    expect(css).toContain(
+      '.lynx-html-renderer .lhr-div {\n  flex-direction: column;\n}',
+    );
+  });
+
+  it('renders the p rules exactly with a text-only companion rule', () => {
+    const css = generateCSS();
+
+    // container rule carries the full style
+    expect(css).toContain(
+      '.lynx-html-renderer .lhr-p {\n  color: var(--lhr-text-color);\n  margin-bottom: 1em;\n}',
+    );
+    // text companion rule carries only text-only properties
+    expect(css).toContain(
+      '.lynx-html-renderer .lhr-p-text {\n  color: var(--lhr-text-color);\n}',
+    );
+  });
+
+  it('renders the blockquote rule exactly (multi-property join)', () => {
+    const css = generateCSS();
+
+    expect(css).toContain(
+      '.lynx-html-renderer .lhr-blockquote {\n  flex-direction: column;\n  margin-left: 40px;\n  margin-right: 40px;\n  padding-left: 16px;\n  border-left: 4px solid var(--lhr-blockquote-border);\n}',
+    );
+    // blockquote has no text-only properties, so no companion text rule
+    expect(css).not.toContain('.lhr-blockquote-text');
+  });
+
+  it('renders dark-mode rules only for tags using CSS variables', () => {
+    const css = generateCSS();
+
+    expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-p {');
+    expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-p-text {');
+    expect(css).toContain('.lynx-html-renderer.lhr-dark .lhr-blockquote {');
+    // div has no CSS variable in its defaultStyle, so no dark rule
+    expect(css).not.toContain('lhr-dark .lhr-div {');
+  });
+
+  it('renders the dark-mode text rule with text-only properties only', () => {
+    const css = generateCSS();
+
+    expect(css).toContain(
+      '.lynx-html-renderer.lhr-dark .lhr-h1-text {\n  color: var(--lhr-text-color);\n  font-size: 32px;\n  font-weight: bold;\n}',
+    );
+  });
+
+  it('assembles the header and rule blocks with exact separation', () => {
+    const css = generateCSS();
+
+    expect(css.startsWith('/*\n * Lynx HTML Renderer - Default Styles')).toBe(
+      true,
+    );
+    expect(css.endsWith('\n')).toBe(true);
+    expect(css).not.toContain('\n\n\n');
+  });
+
+  it('separates rule blocks with exactly one blank line and no stray content', () => {
+    const css = generateCSS();
+
+    // a closing brace is followed by exactly one blank line before the next rule
+    expect(css).toContain('}\n\n.');
+    // every top-level block is either the header comment or a selector rule
+    for (const block of css.split('\n\n')) {
+      const isHeader = block.startsWith('/*');
+      const isRule = block.startsWith('.');
+      expect(isHeader || isRule).toBe(true);
+    }
+  });
+
+  it('never leaks camelCase property names', () => {
+    const css = generateCSS();
+
+    expect(css).not.toContain('marginBottom');
+    expect(css).not.toContain('flexDirection');
+    expect(css).not.toContain('borderLeft');
+  });
+});
+
+describe('Mutation hardening: text class name helper', () => {
+  it('returns the text class for tags with text-only styles', () => {
+    expect(getTextClassNameForTag('p')).toBe('lhr-p-text');
+    expect(getTextClassNameForTag('h1')).toBe('lhr-h1-text');
+  });
+
+  it('returns null when defaultStyle has no text-only properties', () => {
+    expect(getTextClassNameForTag('div')).toBeNull();
+    expect(getTextClassNameForTag('blockquote')).toBeNull();
+  });
+
+  it('returns null for tags without defaultStyle or unknown tags', () => {
+    expect(getTextClassNameForTag('img')).toBeNull();
+    expect(getTextClassNameForTag('br')).toBeNull();
+    expect(getTextClassNameForTag('nope')).toBeNull();
   });
 });

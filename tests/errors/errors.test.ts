@@ -551,3 +551,243 @@ describe('Error Classes', () => {
     });
   });
 });
+
+describe('Mutation hardening: constructor argument matrix', () => {
+  type CtorArgs = Parameters<typeof HTMLTransformError>;
+
+  const cases: Array<{
+    name: string;
+    args: CtorArgs;
+    expected: {
+      message: string;
+      html?: string;
+      cause?: Error;
+      code: string;
+    };
+  }> = [
+    {
+      name: 'legacy html + null 4th arg yields no cause',
+      args: ['m', 'parse', '<p>x</p>', null],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        html: '<p>x</p>',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'legacy html + non-object 4th arg yields no cause',
+      args: ['m', 'parse', '<p>x</p>', 'not-an-error'],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        html: '<p>x</p>',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'undefined options + Error 4th arg',
+      args: ['m', 'parse', undefined, new Error('c1')],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        cause: new Error('c1'),
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'undefined options + null 4th arg yields no cause',
+      args: ['m', 'parse', undefined, null],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'undefined options + string 4th arg yields no cause',
+      args: ['m', 'parse', undefined, 'oops'],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'options as Error (legacy cause)',
+      args: ['m', 'parse', new Error('c2')],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        cause: new Error('c2'),
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'options object + string 4th arg',
+      args: ['m', 'parse', { code: 'STYLE_ERROR' }, '<i>i</i>'],
+      expected: {
+        message: '[STYLE_ERROR] [parse] m',
+        html: '<i>i</i>',
+        cause: undefined,
+        code: 'STYLE_ERROR',
+      },
+    },
+    {
+      name: 'options object + Error 4th arg',
+      args: [
+        'm',
+        'parse',
+        { html: '<u>u</u>', code: 'UNSUPPORTED_TAG' },
+        new Error('c3'),
+      ],
+      expected: {
+        message: '[UNSUPPORTED_TAG] [parse] m',
+        html: '<u>u</u>',
+        cause: new Error('c3'),
+        code: 'UNSUPPORTED_TAG',
+      },
+    },
+    {
+      name: 'options object + null 4th arg falls through to options-only path',
+      args: ['m', 'parse', { html: '<u>u</u>' }, null],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        html: '<u>u</u>',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'empty options object defaults',
+      args: ['m', 'parse', {}],
+      expected: {
+        message: '[PARSE_ERROR] [parse] m',
+        cause: undefined,
+        code: 'PARSE_ERROR',
+      },
+    },
+    {
+      name: 'options object with all fields',
+      args: [
+        'm',
+        'parse',
+        {
+          html: '<em>e</em>',
+          code: 'RENDER_ERROR',
+          cause: new Error('c4'),
+        },
+      ],
+      expected: {
+        message: '[RENDER_ERROR] [parse] m',
+        html: '<em>e</em>',
+        cause: new Error('c4'),
+        code: 'RENDER_ERROR',
+      },
+    },
+  ];
+
+  for (const { name, args, expected } of cases) {
+    it(name, () => {
+      const error = new HTMLTransformError(...args);
+
+      expect(error.message).toBe(expected.message);
+      expect(error.html).toBe(expected.html);
+      expect(error.code).toBe(expected.code);
+      if (expected.cause === undefined) {
+        expect(error.cause).toBeUndefined();
+      } else {
+        expect(error.cause?.message).toBe(expected.cause.message);
+      }
+    });
+  }
+});
+
+describe('Mutation hardening: getDetails exact output', () => {
+  it('renders exactly 200-char html without ellipsis', () => {
+    const html = 'a'.repeat(200);
+    const error = new HTMLTransformError('m', 'parse', html);
+
+    expect(error.getDetails()).toBe(
+      `[PARSE_ERROR] [parse] m\nPhase: parse\nCode: PARSE_ERROR\nHTML (first 200 chars): ${html}\n`,
+    );
+  });
+
+  it('renders short html verbatim without ellipsis', () => {
+    const error = new HTMLTransformError('m', 'parse', 'short');
+
+    expect(error.getDetails()).toBe(
+      '[PARSE_ERROR] [parse] m\nPhase: parse\nCode: PARSE_ERROR\nHTML (first 200 chars): short\n',
+    );
+  });
+
+  it('truncates 201-char html to exactly 200 chars plus ellipsis', () => {
+    const error = new HTMLTransformError('m', 'parse', 'a'.repeat(201));
+
+    expect(error.getDetails()).toBe(
+      `[PARSE_ERROR] [parse] m\nPhase: parse\nCode: PARSE_ERROR\nHTML (first 200 chars): ${'a'.repeat(200)}...\n`,
+    );
+  });
+
+  it('renders position and cause sections when present', () => {
+    const cause = new Error('boom');
+    const error = new HTMLTransformError('m', 'parse', 'short', cause);
+    // position has no constructor path yet; inject it to lock the format
+    Object.assign(error, { position: { line: 3, column: 7 } });
+
+    expect(error.getDetails()).toBe(
+      '[PARSE_ERROR] [parse] m\nPhase: parse\nCode: PARSE_ERROR\nPosition: line 3, column 7\nCaused by: boom\nHTML (first 200 chars): short\n',
+    );
+  });
+
+  it('renders exactly 50-char text node without ellipsis', () => {
+    const error = new LynxRenderError('m', {
+      kind: 'text',
+      content: 't'.repeat(50),
+    });
+
+    expect(error.getDetails()).toBe(
+      `[Lynx Render Error] m\nNode kind: text\nText content (first 50 chars): ${'t'.repeat(50)}\n`,
+    );
+  });
+
+  it('truncates 51-char text node to 50 chars plus ellipsis', () => {
+    const error = new LynxRenderError('m', {
+      kind: 'text',
+      content: 't'.repeat(51),
+    });
+
+    expect(error.getDetails()).toBe(
+      `[Lynx Render Error] m\nNode kind: text\nText content (first 50 chars): ${'t'.repeat(50)}...\n`,
+    );
+  });
+
+  it('renders short text node verbatim without ellipsis', () => {
+    const error = new LynxRenderError('m', {
+      kind: 'text',
+      content: 'tiny',
+    });
+
+    expect(error.getDetails()).toBe(
+      '[Lynx Render Error] m\nNode kind: text\nText content (first 50 chars): tiny\n',
+    );
+  });
+});
+
+describe('Mutation hardening: stack trace hygiene', () => {
+  it('HTMLTransformError stack hides constructor frames', () => {
+    const error = new HTMLTransformError('m', 'parse');
+    expect(error.stack ?? '').not.toMatch(/at (new )?HTMLTransformError\b/);
+  });
+
+  it('LynxRenderError stack hides constructor frames', () => {
+    const error = new LynxRenderError('m', {
+      kind: 'text',
+      content: 'x',
+    });
+    expect(error.stack ?? '').not.toMatch(/at (new )?LynxRenderError\b/);
+  });
+
+  it('PluginError stack hides constructor frames', () => {
+    const error = new PluginError('m', 'p', 'phase');
+    expect(error.stack ?? '').not.toMatch(/at (new )?PluginError\b/);
+  });
+});
