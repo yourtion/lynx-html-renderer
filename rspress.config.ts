@@ -18,6 +18,14 @@ export default {
         link: '/',
       },
       {
+        text: 'Guides',
+        items: [
+          { text: 'API Reference', link: '/api-reference' },
+          { text: 'CSS Class Mode', link: '/css-class-mode' },
+          { text: 'Toolchain', link: '/upgrade' },
+        ],
+      },
+      {
         text: 'Design',
         items: [
           {
@@ -30,6 +38,17 @@ export default {
           },
         ],
         position: 'right',
+      },
+      {
+        text: 'Development',
+        items: [
+          { text: 'Mutation Testing', link: '/mutation-testing' },
+          { text: 'Releases', link: '/releasing' },
+          {
+            text: 'Contributing',
+            link: 'https://github.com/yourtion/lynx-html-renderer/blob/main/CONTRIBUTING.md',
+          },
+        ],
       },
     ],
   },

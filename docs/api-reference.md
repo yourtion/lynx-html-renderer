@@ -11,9 +11,15 @@
 | `removeAllStyle` | `boolean` | `false` | 删除所有 style 属性 |
 | `styleMode` | `'inline' \| 'css-class'` | `'inline'` | 样式模式 |
 | `rootClassName` | `string` | `'lynx-html-renderer'` | 根容器类名 |
-| `darkMode` | `boolean` | `false` | 启用暗色模式 |
-| `linkStyle` | `Record<string, string \| number>` | - | 自定义链接样式 |
+| `darkMode` | `boolean` | `false` | CSS 类模式下启用暗色主题类名 |
+| `linkStyle` | `Record<string, string \| number>` | - | 自定义链接样式，仅 inline 模式生效 |
 | `debug` | `boolean` | `false` | 启用 transform 调试日志 |
+| `adapterRegistry` | `AdapterRegistry` | 全局默认注册表 | 为该组件指定独立的渲染适配器 |
+| `plugins` | `PluginConfig` | - | 添加、替换或禁用 Transform 插件 |
+| `tagMappings` | `TransformOptions['tagMappings']` | - | 自定义或覆盖 HTML 标签映射 |
+| `unknownTagPolicy` | `'drop' \| 'unwrap' \| 'fallback'` | `'drop'` | 未知标签的处理策略 |
+
+`HTMLRenderer` 与 `renderHTMLDirect` 接受相同的属性。扩展方式及未知标签策略见 [插件文档](./plugin.md)。
 
 ## Supported HTML Tags
 
