@@ -67,20 +67,26 @@ jobs:
             }
             const prNumber = context.payload.pull_request.number;
 
-            // 生成二维码指向实际的 bundle 文件（用于 LynxExplorer 扫码预览）
-            const bundle = new URL('/index.lynx.bundle', previewUrl);
-            bundle.searchParams.set('fullscreen', 'true');
-            const bundleUrl = bundle.href;
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bundleUrl)}`;
+            // Keep the regression fixture directly scannable alongside the showcase.
+            const bundles = [
+              ['Content correctness · 本次修复真机验收', '/correctness.lynx.bundle'],
+              ['Original showcase · 原示例', '/index.lynx.bundle'],
+            ];
+            const previews = bundles.map(([title, path]) => {
+              const bundle = new URL(path, previewUrl);
+              bundle.searchParams.set('fullscreen', 'true');
+              const bundleUrl = bundle.href;
+              const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bundleUrl)}`;
+              return `### ${title}\n\n![QR Code](${qrCodeUrl})\n\n**Bundle URL:** \`${bundleUrl}\``;
+            }).join('\n\n');
 
             const comment = `## 🚀 Preview Deployment Ready!
 
             **Preview URL:** ${previewUrl}
 
-            ### 📱 Scan to preview on mobile:
-            ![QR Code](${qrCodeUrl})
+            ${previews}
 
-            **Bundle URL:** \`${bundleUrl}\`
+            在验收页切换 inline / css-class，运行 12 项转换检查，并测量图片和文本的原生尺寸。
 
             <sub>This preview will be automatically updated when you push new commits to this PR.</sub>
             <sub>Deployment will be automatically removed when the PR is closed.</sub>`;

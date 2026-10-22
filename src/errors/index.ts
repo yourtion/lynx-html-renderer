@@ -9,6 +9,8 @@ import type { LynxNode } from '../lynx/types';
  * Error codes for transformation errors
  */
 export type TransformErrorCode =
+  /** HTML input exceeds the configured resource limits */
+  | 'LIMIT_EXCEEDED'
   /** HTML parsing failed */
   | 'PARSE_ERROR'
   /** Unsupported HTML tag encountered */

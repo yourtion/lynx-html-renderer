@@ -10,6 +10,7 @@ export default defineConfig({
   source: {
     entry: {
       index: './src/index.tsx',
+      correctness: './src/correctness.tsx',
     },
   },
   output: {

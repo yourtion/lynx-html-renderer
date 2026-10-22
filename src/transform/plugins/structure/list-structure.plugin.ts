@@ -45,16 +45,26 @@ function processListMarkers(node: LynxNode): void {
  */
 function addListMarkers(listElement: LynxElementNode): void {
   const isOrdered = listElement.meta?.sourceTag === 'ol';
-  let counter = 1;
+  const attrs = listElement.meta?.sourceAttrs;
+  const reversed = isOrdered && attrs?.reversed !== undefined;
+  const step = reversed ? -1 : 1;
+  const itemCount = listElement.children.filter(
+    (child) => child.kind === 'element' && child.meta?.sourceTag === 'li',
+  ).length;
+  let counter = parseOrdinal(attrs?.start) ?? (reversed ? itemCount : 1);
 
   listElement.children = listElement.children.map((child) => {
     // 只处理 li 元素
     if (child.kind === 'element' && child.meta?.sourceTag === 'li') {
       const liElement = child as LynxElementNode;
 
+      if (isOrdered) {
+        counter = parseOrdinal(liElement.meta?.sourceAttrs?.value) ?? counter;
+      }
+
       // 生成列表标记
       const marker = isOrdered ? `${counter}. ` : '• ';
-      counter++;
+      counter += step;
 
       const firstText = liElement.children.map(findInlineText).find(Boolean);
 
@@ -80,6 +90,12 @@ function addListMarkers(listElement: LynxElementNode): void {
 
     return child;
   });
+}
+
+function parseOrdinal(value: string | undefined): number | undefined {
+  if (value === undefined || !/^[+-]?\d+$/.test(value.trim())) return;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
 }
 
 function findInlineText(node: LynxNode): LynxTextNode | undefined {

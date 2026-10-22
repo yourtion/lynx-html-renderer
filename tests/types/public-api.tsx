@@ -40,6 +40,7 @@ const props: HTMLRendererProps = {
     },
   },
   unknownTagPolicy: 'unwrap',
+  limits: { maxDepth: 100, maxNodes: 5000, maxInputLength: 100_000 },
 };
 export const component = <HTMLRenderer {...props} />;
 export const direct = renderHTMLDirect(props);

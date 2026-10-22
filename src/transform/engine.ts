@@ -3,6 +3,7 @@ import { createParseError, createPluginError, PluginError } from '../errors';
 import { createRootNode } from '../lynx/factory';
 import { validateLynxNodes } from '../validate/lynx-node';
 import { createTransformContext, type TransformContextImpl } from './context';
+import { checkLimit, resolveLimits, validateInputTree } from './limits';
 import { TransformPluginResolver } from './resolver';
 import type {
   HtmlAstNode,
@@ -174,6 +175,8 @@ export function transformHTML(
   html: string,
   options?: TransformOptions,
 ): LynxNode[] {
+  const limits = resolveLimits(options?.limits);
+  checkLimit('maxInputLength', html?.length ?? 0, limits.maxInputLength);
   // 1. 解析 HTML 为 AST
   let ast: HtmlAstNode;
   try {
@@ -185,6 +188,8 @@ export function transformHTML(
       error instanceof Error ? error : undefined,
     );
   }
+
+  validateInputTree(ast, limits);
 
   // 2. 创建初始根节点（容器）
   const root = createRootNode();

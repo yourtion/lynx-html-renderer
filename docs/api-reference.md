@@ -18,8 +18,35 @@
 | `plugins` | `PluginConfig` | - | 添加、替换或禁用 Transform 插件 |
 | `tagMappings` | `TransformOptions['tagMappings']` | - | 自定义或覆盖 HTML 标签映射 |
 | `unknownTagPolicy` | `'drop' \| 'unwrap' \| 'fallback'` | `'drop'` | 未知标签的处理策略 |
+| `limits` | `TransformLimits` | 见下表 | HTML 输入长度、解析节点数和嵌套深度限制 |
 
 `HTMLRenderer` 与 `renderHTMLDirect` 接受相同的属性。扩展方式及未知标签策略见 [插件文档](./plugin.md)。
+
+### 输入限制
+
+`transformHTML`、`HTMLRenderer`、`renderHTMLDirect` 共用 `limits`：
+
+| 字段 | 默认值 | 计数方式 |
+| --- | --- | --- |
+| `maxInputLength` | 1,000,000 | HTML 字符串的 UTF-16 code unit 长度，在解析前检查 |
+| `maxNodes` | 50,000 | 解析后的节点数，不含文档根节点；含文本、注释和将被忽略的子树 |
+| `maxDepth` | 256 | 嵌套元素层数，顶层元素为 1；html/body 也计数，文本不增加层数 |
+
+值必须是非负安全整数。超限抛出 `HTMLTransformError`（`code: 'LIMIT_EXCEEDED'`），
+非法配置为 `VALIDATION_ERROR`。节点数和深度在 AST 生成后、任何递归插件执行前检查。
+边界针对 HTML 输入，不限制可信自定义插件自行创建的树，也不提供自动截断或 UI 错误占位。
+提高深度上限前需在目标宿主验证调用栈与布局能力。
+
+```tsx
+<HTMLRenderer html={html} limits={{ maxInputLength: 200_000, maxNodes: 10_000, maxDepth: 128 }} />
+```
+
+### 内容语义与原生验证
+
+`pre` 保留实际空白字符；图片内联尺寸优先于 HTML 尺寸属性，数字属性转换成 `px`；
+有序列表支持 `start`、`reversed` 和 `li value`。`removeAllStyle` 仍保留图片尺寸。
+CSS 解析保留自定义属性名称及完整声明值，具体属性和变量是否生效取决于 Lynx 宿主。
+行为变化、原生对照入口和验收步骤见 [内容正确性与原生验收](./native-validation.md)。
 
 ## Supported HTML Tags
 
@@ -234,6 +261,7 @@ Note: `rootClassName` is a renderer-only option (`HTMLRenderer`) and is ignored 
 | Code | Description |
 |------|-------------|
 | `PARSE_ERROR` | HTML parsing failed |
+| `LIMIT_EXCEEDED` | HTML input exceeds configured length, node count or depth |
 | `UNSUPPORTED_TAG` | Unsupported HTML tag |
 | `STYLE_ERROR` | Style parsing failed |
 | `PLUGIN_ERROR` | Plugin execution failed |
