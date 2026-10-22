@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from '@lynx-js/react';
 import { HTMLRenderer } from 'lynx-html-renderer';
-import reactLogo from './assets/react-logo.png';
+import reactLogo from './assets/react-logo.png?inline';
 import { runConversionChecks } from './correctness-checks';
 import './App.css';
 
@@ -126,6 +126,9 @@ export function CorrectnessCases() {
           styleMode={styleMode}
         />
       </Pair>
+      <text style={{ padding: '12px', color: '#555' }}>
+        验收 PNG 已内嵌，无需网络加载图片；请确认两侧都显示图片，再比较尺寸。
+      </text>
       <Pair
         title="3. 倒序和条目重置：5、9、8"
         expected={

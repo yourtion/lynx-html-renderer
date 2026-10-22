@@ -58,7 +58,9 @@ pnpm build-example
 ## 在 LynxExplorer 或自有宿主上验收
 
 示例新增独立入口 `example/src/correctness.tsx`，与现有 showcase 一起构建，产物为
-`example/dist/correctness.lynx.bundle`。入口不需要在线图片，使用项目已有 PNG 资源。
+`example/dist/correctness.lynx.bundle`。项目已有 PNG 通过 `?inline` 编译为 base64 Data URI，
+直接内嵌在 bundle 中；HTMLRenderer 和手写 `<image>` 使用同一份图片，不请求 HTTP/HTTPS 图片资源，
+也不依赖宿主解析相对图片路径。Lynx `image.src` 支持 base64，设备仍需验证实际解码和显示。
 
 PR 预览部署完成后，机器人评论会同时给出“本次修复真机验收”和“原示例”的二维码。
 优先在 LynxExplorer 扫描验收二维码，地址为 `<preview-url>/correctness.lynx.bundle?fullscreen=true`。
@@ -66,10 +68,13 @@ PR 预览部署完成后，机器人评论会同时给出“本次修复真机�
 
 1. 也可在本地 `pnpm build-example` 后运行 `pnpm dev`，从开发服务器取得 `correctness.lynx.bundle` 的地址。
    手机需能访问该地址；使用 LynxExplorer 打开，或由自有宿主加载。
-   如通过静态服务器加载生产 bundle，应同时提供 `example/dist` 中的图片资源。
+   iOS 宿主的 ATS 配置可能阻止 HTTP 请求，真机验收优先使用 PR 的 HTTPS 预览。
+   本地开发服务器若使用 HTTP，需确认宿主允许该开发地址，或配置设备信任的 HTTPS 服务；
+   图片内嵌只消除了图片网络请求，不改变 bundle 本身的加载要求。
 2. 分别切换 `inline`、`css-class` 两种模式。每组上方是 HTMLRenderer，下方是手写 Lynx 组件。
 3. 第一组检查文字顺序、两空格缩进、换行、空行和 Tab。两侧应一致；Tab 的实际宽度由宿主决定。
-4. 第二组等待图片加载后点击“测量原生尺寸”。通过原生 `boundingClientRect` 返回尺寸，并写入页面和日志。
+4. 第二组确认两侧 PNG 均实际显示，再点击“测量原生尺寸”；固定尺寸相等不代表图片解码成功。
+   通过原生 `boundingClientRect` 返回尺寸，并写入页面和日志。
    `actual-image` 与 `native-image` 应相等；在相同宿主缩放设置下对应 `200px × 50px`。
    `actual-pre` 与 `native-pre` 的尺寸及可见换行应相符；数值容差可按设备取整设为 1 像素。
 5. 第三组检查编号为 `5、9、8`。这里验收编号，不要求两侧所有默认字体与边距逐像素相同。
