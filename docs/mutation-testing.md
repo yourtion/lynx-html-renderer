@@ -4,10 +4,10 @@
 
 ## 本地运行
 
-使用 Node 22+，先按仓库要求安装依赖，再执行：
+使用 Node >=22.20（推荐 Node 24），先按仓库要求安装依赖，再执行：
 
 ```bash
-pnpm mutation       # 增量执行；没有本地基线时全量运行
+pnpm mutation       # 校验语义输入；兼容时复用，否则全量运行
 pnpm mutation:full  # 强制全量运行并重建本地基线
 ```
 
@@ -41,10 +41,22 @@ main 不主动取消运行中的任务；同一 PR 的新提交会取消该 PR �
 
 首次全量或基线重建可能超过 90 分钟，工作流总时限为 180 分钟。该时限与 Stryker 对单个变异执行设置的超时不同。
 
-Stryker 比较源码与测试内容，复用未受影响的变异结果；每次仍会先运行原始测试，收集测试与覆盖信息。
-依赖、配置、快照及测试辅助文件等兼容性输入变化时，CI 会重新建立基线。当前缓存键的输入范围见 `.github/workflows/mutation.yml`。
+本地和 CI 都先校验语义输入与基线元数据。源码、测试、依赖、锁文件、配置、fixture、快照、
+辅助文件或运行时变化时，保守全量运行当前配置范围。不能仅凭 Stryker 的原生差异检测，
+认定任意源码修改后旧结果都可安全复用；跨函数依赖可能导致遗漏。
 
-Stryker 对静态变异的测试变化检测存在限制，必要时使用 `pnpm mutation:full`，或在 main 手动运行工作流并勾选 `full`。
+缓存采用 `v3` 命名空间，旧缓存不迁入。报告必须和兼容性元数据一起保存和恢复；
+缺少元数据、报告被修改或上次运行未成功时，下一次运行重建基线。
+`pnpm mutation:full` 显式强制重建；只有成功运行才写入有效元数据。
+
+输入默认保守纳入；仅经审核的精确文档路径可排除。维护缓存策略时，不要将全部 Markdown、
+源码、测试或整个 package.json 排除：Markdown 也可能是测试 fixture，依赖声明必须入键。
+策略见 `.github/mutation-cache-inputs.json`，可用
+`node .github/scripts/baseline-inputs.mjs .github/mutation-cache-inputs.json --list` 检查输入清单。
+常规入口仅接受 `--force`；局部实验需通过 `run-mutation.mjs` 使用独立配置与报告。
+根包 `package.json` 的 version 经审核不被当前源码与测试消费，因此仅规范化这一字段，
+其余 manifest 字段、依赖声明和锁文件仍进入摘要。
+外部服务和无法自动确定的环境状态发生变化时，仍应显式全量重跑。
 
 ## 评分与门禁
 
