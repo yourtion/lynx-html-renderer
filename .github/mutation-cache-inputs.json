@@ -1,0 +1,35 @@
+{
+  "schema": 3,
+  "trackedByStryker": [],
+  "alwaysHash": [],
+  "nonSemanticFiles": [
+    {
+      "path": "README.md",
+      "reason": "Reviewed maintainer documentation; not consumed by mutation tests or runtime."
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "reason": "Reviewed maintainer documentation; not consumed by mutation tests or runtime."
+    },
+    {
+      "path": "docs/mutation-testing.md",
+      "reason": "Reviewed maintainer documentation; not consumed by mutation tests or runtime."
+    },
+    {
+      "path": ".trae/rules/project_rules.md",
+      "reason": "Tracked editor-agent instruction symlink; not used by runtime, build or mutation tests."
+    },
+    {
+      "path": "CLAUDE.md",
+      "reason": "Agent instruction symlink to AGENTS.md; not consumed by runtime, build or mutation tests."
+    }
+  ],
+  "packageVersionFiles": [
+    {
+      "path": "package.json",
+      "reason": "Reviewed mutation source and Vitest test/config imports do not consume root package version; source aliases bypass published metadata. Only root version is normalized; dependency declarations and lockfiles remain semantic."
+    }
+  ],
+  "npmLockVersionFiles": [],
+  "environment": []
+}
