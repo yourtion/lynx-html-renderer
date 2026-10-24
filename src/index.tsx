@@ -167,7 +167,7 @@ function renderNodeWithRegistry(
 export interface HTMLRendererProps
   extends Pick<
     TransformOptions,
-    'plugins' | 'tagMappings' | 'unknownTagPolicy'
+    'plugins' | 'tagMappings' | 'unknownTagPolicy' | 'limits'
   > {
   /** HTML 字符串输入 */
   html: string;
@@ -204,6 +204,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
     plugins,
     tagMappings,
     unknownTagPolicy,
+    limits,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -219,6 +220,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
         plugins,
         tagMappings,
         unknownTagPolicy,
+        limits,
       }).map(normalizeTextTreeForRender),
     [
       html,
@@ -230,6 +232,7 @@ export const HTMLRenderer = memo(function HTMLRenderer(
       plugins,
       tagMappings,
       unknownTagPolicy,
+      limits,
     ],
   );
   const renderCtx = useMemo(
@@ -285,6 +288,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     plugins,
     tagMappings,
     unknownTagPolicy,
+    limits,
     adapterRegistry: customAdapterRegistry,
   } = props;
 
@@ -297,6 +301,7 @@ export function renderHTMLDirect(props: HTMLRendererProps) {
     plugins,
     tagMappings,
     unknownTagPolicy,
+    limits,
   }).map(normalizeTextTreeForRender);
   const renderCtx = createRenderContext(
     customAdapterRegistry ?? defaultAdapterRegistry,
@@ -347,6 +352,7 @@ export { generateCSS, getClassNameForTag } from './styles';
 export type { TagMapping } from './transform/plugins/structure/tag-config';
 export type {
   PluginConfig,
+  TransformLimits,
   TransformOptions,
   TransformPlugin,
 } from './transform/types';

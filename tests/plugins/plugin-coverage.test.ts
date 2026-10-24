@@ -23,8 +23,8 @@ describe('Plugin branch coverage', () => {
       const html = '<img src="test.jpg" width="200" height="150" />';
       const result = transformHTML(html);
       const img = result[0] as LynxElementNode;
-      expect(img.props.style?.width).toBe('200');
-      expect(img.props.style?.height).toBe('150');
+      expect(img.props.style?.width).toBe('200px');
+      expect(img.props.style?.height).toBe('150px');
     });
 
     it('should extract width from inline style as fallback', () => {

@@ -191,10 +191,9 @@ describe('Style Parser', () => {
         '--custom-color: #fff; --another-var: value;',
       );
 
-      // The regex converts -X to X, so --custom-color becomes -CustomColor
       expect(result).toEqual({
-        '-CustomColor': '#fff',
-        '-AnotherVar': 'value',
+        '--custom-color': '#fff',
+        '--another-var': 'value',
       });
     });
 
@@ -228,6 +227,55 @@ describe('Style Parser', () => {
       expect(Object.keys(result).length).toBe(100);
       expect(result.prop0).toBe('value0');
       expect(result.prop99).toBe('value99');
+    });
+  });
+
+  describe('declaration boundaries', () => {
+    it.each([
+      ['font-family: "A;B"; color: red', { fontFamily: '"A;B"', color: 'red' }],
+      [
+        'background-image: url("data:image/svg+xml;base64,AAAA"); color:red',
+        {
+          backgroundImage: 'url("data:image/svg+xml;base64,AAAA")',
+          color: 'red',
+        },
+      ],
+      [
+        'background-image: url(data:image/png;base64,AAAA); width:20px',
+        { backgroundImage: 'url(data:image/png;base64,AAAA)', width: '20px' },
+      ],
+      [
+        String.raw`font-family: "A\";B"; color:red`,
+        { fontFamily: String.raw`"A\";B"`, color: 'red' },
+      ],
+      [
+        String.raw`--token: A\;B; color:red`,
+        { '--token': String.raw`A\;B`, color: 'red' },
+      ],
+      [
+        '/* ignored: x;y */ color: red; width: calc(100% - var(--gap, 8px));',
+        { color: 'red', width: 'calc(100% - var(--gap, 8px))' },
+      ],
+      [
+        '--Theme: red; --theme: blue; COLOR: green',
+        { '--Theme': 'red', '--theme': 'blue', color: 'green' },
+      ],
+      ['color:red; font-family:"unfinished', { color: 'red' }],
+      ['color:red; width:calc(100% - 2px', { color: 'red' }],
+    ])('preserves complete values for %s', (input, expected) => {
+      expect(parseStyleString(input)).toEqual(expected);
+    });
+
+    it('resolves duplicate declarations without dropping important priority', () => {
+      expect(parseStyleString('color:red !important; color:blue')).toEqual({
+        color: 'red !important',
+      });
+      expect(
+        parseStyleString('color:red !important; color:blue !important'),
+      ).toEqual({ color: 'blue !important' });
+      expect(parseStyleString('color:red; color:blue')).toEqual({
+        color: 'blue',
+      });
     });
   });
 

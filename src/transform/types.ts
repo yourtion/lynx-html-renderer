@@ -143,9 +143,21 @@ export interface PluginConfig {
 }
 
 /**
- * 转换选项（向后兼容）
+ * HTML 输入资源限制
  */
+export interface TransformLimits {
+  /** Maximum HTML string length in UTF-16 code units (default: 1,000,000). */
+  maxInputLength?: number;
+  /** Maximum parsed nodes, excluding the document root (default: 50,000). */
+  maxNodes?: number;
+  /** Maximum nested HTML elements, including document wrappers (default: 256). */
+  maxDepth?: number;
+}
+
+/** HTML 转换选项。 */
 export interface TransformOptions {
+  /** Bounds on input before recursive transforms. Throws LIMIT_EXCEEDED. */
+  limits?: TransformLimits;
   /** 删除所有 HTML class 属性 */
   removeAllClass?: boolean;
 
