@@ -42,8 +42,8 @@ describe('Void Elements', () => {
       const html = '<img src="test.jpg" width="200" height="150" />';
       const result = transformHTML(html);
 
-      expect(result[0].props?.style?.width).toBe('200');
-      expect(result[0].props?.style?.height).toBe('150');
+      expect(result[0].props?.style?.width).toBe('200px');
+      expect(result[0].props?.style?.height).toBe('150px');
     });
 
     it('should use width/height from style attribute when HTML attrs missing', () => {
@@ -54,13 +54,12 @@ describe('Void Elements', () => {
       expect(result[0].props?.style?.height).toBe('200px');
     });
 
-    it('should prefer HTML attributes over style for dimensions', () => {
+    it('should prefer inline style over HTML attributes for dimensions', () => {
       const html =
         '<img src="test.jpg" width="100" style="width: 200px; height: 150px" />';
       const result = transformHTML(html);
 
-      // HTML attr width takes precedence, but height comes from style
-      expect(result[0].props?.style?.width).toBe('100');
+      expect(result[0].props?.style?.width).toBe('200px');
       expect(result[0].props?.style?.height).toBe('150px');
     });
 
@@ -77,8 +76,8 @@ describe('Void Elements', () => {
       const result = transformHTML(html, { removeAllStyle: true });
 
       expect(result[0].props?.src).toBe('test.jpg');
-      expect(result[0].props?.style?.width).toBe('200');
-      expect(result[0].props?.style?.height).toBe('150');
+      expect(result[0].props?.style?.width).toBe('200px');
+      expect(result[0].props?.style?.height).toBe('150px');
     });
 
     it('should not process non-img elements', () => {

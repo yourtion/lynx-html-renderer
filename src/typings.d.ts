@@ -22,6 +22,7 @@ export type {
   TransformPlugin,
   TransformContext,
   TransformOptions,
+  TransformLimits,
   PluginConfig,
   TransformPhase,
 } from './transform/types';

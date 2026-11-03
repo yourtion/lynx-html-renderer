@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx -y pnpm@latest run build-example",
+  "buildCommand": "npx -y pnpm@10.26.2 run build-example",
   "outputDirectory": "example/dist",
   "framework": null,
   "rewrites": [
@@ -10,7 +10,7 @@
   ],
   "headers": [
     {
-      "source": "/index.lynx.bundle",
+      "source": "/:bundle.lynx.bundle",
       "headers": [
         {
           "key": "Content-Type",

@@ -124,7 +124,7 @@ describe('media-capability plugin (mutation hardening)', () => {
     expect(node.props.style).toEqual({ width: '100%', height: 'auto' });
   });
 
-  it('prefers width/height HTML attributes over the style attribute', () => {
+  it('prefers style dimensions over HTML width/height attributes', () => {
     const node = run(
       imgNode({
         src: 'a.png',
@@ -133,7 +133,7 @@ describe('media-capability plugin (mutation hardening)', () => {
         style: 'width: 9px; height: 9px',
       }),
     );
-    expect(node.props.style).toEqual({ width: '200', height: '100' });
+    expect(node.props.style).toEqual({ width: '9px', height: '9px' });
   });
 
   it('extracts both dimensions from the style attribute when absent as attributes', () => {
@@ -147,7 +147,7 @@ describe('media-capability plugin (mutation hardening)', () => {
     const node = run(
       imgNode({ src: 'a.png', height: '100', style: 'width: 50px' }),
     );
-    expect(node.props.style).toEqual({ width: '50px', height: '100' });
+    expect(node.props.style).toEqual({ width: '50px', height: '100px' });
   });
 
   it('keeps pre-existing styles and only adds dimensions', () => {
@@ -161,7 +161,7 @@ describe('media-capability plugin (mutation hardening)', () => {
     });
   });
 
-  it('never lets the style attribute override an explicit width attribute', () => {
+  it('uses inline width even when an HTML width attribute is present', () => {
     const node = run(
       imgNode({
         src: 'a.png',
@@ -169,11 +169,21 @@ describe('media-capability plugin (mutation hardening)', () => {
         style: 'width: 9px; height: 60px',
       }),
     );
-    expect(node.props.style).toEqual({ width: '200', height: '60px' });
+    expect(node.props.style).toEqual({ width: '9px', height: '60px' });
   });
 
   it('falls back to defaults for the dimension missing everywhere', () => {
     const node = run(imgNode({ src: 'a.png', width: '200' }));
-    expect(node.props.style).toEqual({ width: '200', height: 'auto' });
+    expect(node.props.style).toEqual({ width: '200px', height: 'auto' });
+  });
+
+  it('preserves a zero dimension and explicit styles set by an earlier plugin', () => {
+    const node = imgNode({
+      src: 'a.png',
+      width: '200',
+      style: 'width:9px;height:20px',
+    });
+    node.props.style = { width: 0, height: '30px' };
+    expect(run(node).props.style).toEqual({ width: 0, height: '30px' });
   });
 });

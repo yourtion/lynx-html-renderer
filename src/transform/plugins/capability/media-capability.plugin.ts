@@ -5,6 +5,15 @@ import type {
   TransformPlugin,
 } from '../../types';
 
+/** HTML numeric dimensions are CSS pixels, not unitless Lynx CSS strings. */
+function dimension(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  if (/^\d+(?:\.\d+)?$/.test(trimmed)) return `${trimmed}px`;
+  // Keep existing explicit units/percentages for backwards compatibility.
+  return trimmed;
+}
+
 /**
  * 媒体能力插件
  * 职责：处理媒体元素（img），提取 src 属性
@@ -43,37 +52,22 @@ export const mediaCapabilityPlugin: TransformPlugin = {
 
       const style = element.props.style as Record<string, string | number>;
 
-      // 优先级 1: 使用 HTML 属性中的 width/height
-      if (sourceAttrs.width) {
-        style.width = sourceAttrs.width;
-      }
-      if (sourceAttrs.height) {
-        style.height = sourceAttrs.height;
-      }
-
-      // 优先级 2: 如果 HTML 属性中没有，从 style 属性中提取 width/height
-      // 即使 removeAllStyle = true，也要保留图片的原始尺寸
-      if (!style.width || !style.height) {
-        // 使用共享的 parseStyleString，正确处理 kebab-case → camelCase 转换
-        const styleFromAttr = sourceAttrs.style
+      // Resolved styles (including custom plugin styles) win over HTML attrs.
+      // Preserve the existing removeAllStyle exception for image dimensions.
+      const sourceStyle =
+        sourceAttrs.style && (style.width == null || style.height == null)
           ? parseStyleString(sourceAttrs.style)
           : {};
-
-        if (!style.width && styleFromAttr.width) {
-          style.width = styleFromAttr.width;
-        }
-        if (!style.height && styleFromAttr.height) {
-          style.height = styleFromAttr.height;
-        }
-      }
-
-      // 优先级 3: 如果还是没有，设置默认值
-      if (!style.width) {
-        style.width = '100%';
-      }
-      if (!style.height) {
-        style.height = 'auto';
-      }
+      style.width =
+        style.width ??
+        sourceStyle.width ??
+        dimension(sourceAttrs.width) ??
+        '100%';
+      style.height =
+        style.height ??
+        sourceStyle.height ??
+        dimension(sourceAttrs.height) ??
+        'auto';
 
       // 确保图片的 style 始终包含 width 和 height
       // 这样即使 removeAllStyle = true，图片也能正常显示

@@ -14,6 +14,39 @@ function collectTexts(
 }
 
 describe('list-structure plugin (mutation hardening)', () => {
+  it.each([
+    ['<ol start="5"><li>a</li><li>b</li></ol>', ['5. a', '6. b']],
+    [
+      '<ol reversed><li>a</li><li>b</li><li>c</li></ol>',
+      ['3. a', '2. b', '1. c'],
+    ],
+    [
+      '<ol start="5" reversed><li>a</li><li value="9">b</li><li>c</li></ol>',
+      ['5. a', '9. b', '8. c'],
+    ],
+    [
+      '<ol start="0"><li>a</li><li value="-2">b</li><li>c</li></ol>',
+      ['0. a', '-2. b', '-1. c'],
+    ],
+    ['<ol start="bad"><li>a</li><li value="2.5">b</li></ol>', ['1. a', '2. b']],
+    [
+      '<ol reversed><li>a<ol start="7"><li>b</li></ol></li><li>c</li></ol>',
+      ['2. a', '7. b', '1. c'],
+    ],
+    [
+      '<ol reversed><div>x</div><li>a</li><li>b</li></ol>',
+      ['x', '2. a', '1. b'],
+    ],
+    [
+      '<ul start="5" reversed><li value="9">a</li><li>b</li></ul>',
+      ['• a', '• b'],
+    ],
+  ])('honors list numbering for %s', (html, expected) => {
+    expect(collectTexts(transformHTML(html)[0]).map((t) => t.content)).toEqual(
+      expected,
+    );
+  });
+
   it('exposes the expected plugin metadata', () => {
     expect(listStructurePlugin.name).toBe('list-structure');
     expect(listStructurePlugin.phase).toBe('structure');

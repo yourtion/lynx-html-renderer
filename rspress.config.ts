@@ -23,6 +23,7 @@ export default {
           { text: 'API Reference', link: '/api-reference' },
           { text: 'CSS Class Mode', link: '/css-class-mode' },
           { text: 'Toolchain', link: '/upgrade' },
+          { text: 'Native Validation', link: '/native-validation' },
         ],
       },
       {

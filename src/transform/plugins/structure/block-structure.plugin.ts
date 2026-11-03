@@ -33,6 +33,7 @@ function convertChildren(
   children: HtmlAstNode[],
   ctx: TransformContext,
   marks?: LynxTextNode['marks'],
+  preserveWhitespace = false,
 ): LynxNode[] {
   const nodes: LynxNode[] = [];
   for (let index = 0; index < children.length; index++) {
@@ -42,6 +43,7 @@ function convertChildren(
       marks,
       children,
       index,
+      preserveWhitespace,
     ))
       nodes.push(node);
   }
@@ -54,10 +56,12 @@ function convertAstNode(
   parentMarks?: LynxTextNode['marks'],
   siblings: HtmlAstNode[] = [],
   siblingIndex = -1,
+  preserveWhitespace = false,
 ): LynxNode[] {
   if (isTextNode(astNode)) {
     const content = astNode.data ?? '';
     if (
+      !preserveWhitespace &&
       (isWhitespaceNode(astNode) || content.trim().length === 0) &&
       !shouldPreserveInlineWhitespace(siblings, siblingIndex, ctx)
     )
@@ -65,7 +69,8 @@ function convertAstNode(
     return [
       createLynxNode({
         kind: 'text',
-        content: content.trim().length === 0 ? ' ' : content,
+        content:
+          !preserveWhitespace && content.trim().length === 0 ? ' ' : content,
         marks: parentMarks,
         meta: { source: 'text' },
       }),
@@ -79,7 +84,12 @@ function convertAstNode(
   if (tag === 'head' || tag === 'script' || tag === 'style') return [];
   const isDocumentWrapper = tag === 'html' || tag === 'body';
   if (isDocumentWrapper && !astNode.attribs?.style && !astNode.attribs?.class) {
-    return convertChildren(astNode.children ?? [], ctx, parentMarks);
+    return convertChildren(
+      astNode.children ?? [],
+      ctx,
+      parentMarks,
+      preserveWhitespace,
+    );
   }
 
   const customMappings = ctx.metadata.tagMappings;
@@ -93,7 +103,12 @@ function convertAstNode(
         : undefined;
   if (!mapping) {
     if (ctx.metadata.unknownTagPolicy === 'unwrap') {
-      return convertChildren(astNode.children ?? [], ctx, parentMarks);
+      return convertChildren(
+        astNode.children ?? [],
+        ctx,
+        parentMarks,
+        preserveWhitespace,
+      );
     }
     if (ctx.metadata.unknownTagPolicy !== 'fallback') return [];
     mapping = {
@@ -125,6 +140,7 @@ function convertAstNode(
       astNode.children ?? [],
       ctx,
       marks && Object.keys(marks).length ? marks : undefined,
+      preserveWhitespace || tag === 'pre',
     ),
     meta: {
       sourceTag: tag,

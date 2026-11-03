@@ -1,70 +1,82 @@
 import type { CSSProperties } from '../transform/types';
 import { isInheritableProperty } from './style-schema';
 
-/**
- * Pre-compiled regex for kebab-case to camelCase conversion
- * Compiled once at module load for better performance
- */
 const KEBAB_REGEX = /-([a-z])/g;
+const IMPORTANT_REGEX = /!\s*important\s*$/i;
 
 /**
- * Parse CSS style string into CSSProperties object
- * Optimized version that minimizes string allocations
- *
- * @example
- * parseStyleString("font-size: 14px; color: red;")
- * // Returns: { fontSize: "14px", color: "red" }
- *
- * Performance optimizations:
- * - Manual string iteration instead of split/forEach
- * - Single pass through the string
- * - Minimized substring allocations
- * - Pre-compiled regex
+ * Read inline declarations without splitting strings, escapes or functions.
+ * Values remain Lynx CSS values: this does not implement browser CSS layout,
+ * shorthand expansion, variable resolution or property support detection.
  */
 export function parseStyleString(style: string): CSSProperties {
   const result: CSSProperties = {};
-  let start = 0;
-  const length = style.length;
+  const importantKeys = new Set<string>();
+  const closing: string[] = [];
+  let declaration = '';
+  let colon = -1;
+  let quote = '';
+  let invalid = false;
 
-  while (start < length) {
-    // Find next semicolon (end of declaration)
-    let end = style.indexOf(';', start);
-    if (end === -1) end = length;
-
-    // Find colon (separator between key and value)
-    const colonIndex = style.indexOf(':', start);
-    if (colonIndex === -1 || colonIndex > end) {
-      start = end + 1;
-      continue;
+  function commit() {
+    if (!invalid && colon !== -1) {
+      const rawKey = declaration.slice(0, colon).trim();
+      const value = declaration.slice(colon + 1).trim();
+      if (rawKey && value && !/\s/.test(rawKey)) {
+        // Custom properties are case sensitive and must keep their -- prefix.
+        const key = rawKey.startsWith('--')
+          ? rawKey
+          : rawKey
+              .toLowerCase()
+              .replace(KEBAB_REGEX, (_, c: string) => c.toUpperCase());
+        const important = IMPORTANT_REGEX.test(value);
+        if (important || !importantKeys.has(key)) {
+          result[key] = value;
+          if (important) importantKeys.add(key);
+        }
+      }
     }
-
-    // Extract key (manual trim by skipping whitespace)
-    let keyStart = start;
-    while (keyStart < colonIndex && style.charCodeAt(keyStart) <= 32)
-      keyStart++;
-    let keyEnd = colonIndex;
-    while (keyEnd > keyStart && style.charCodeAt(keyEnd - 1) <= 32) keyEnd--;
-
-    const rawKey = style.substring(keyStart, keyEnd);
-
-    // Extract value (manual trim)
-    let valueStart = colonIndex + 1;
-    while (valueStart < end && style.charCodeAt(valueStart) <= 32) valueStart++;
-    let valueEnd = end;
-    while (valueEnd > valueStart && style.charCodeAt(valueEnd - 1) <= 32)
-      valueEnd--;
-
-    const rawValue = style.substring(valueStart, valueEnd);
-
-    if (rawKey && rawValue) {
-      // Convert kebab-case to camelCase using pre-compiled regex
-      const key = rawKey.replace(KEBAB_REGEX, (_, c) => c.toUpperCase());
-      result[key] = rawValue;
-    }
-
-    start = end + 1;
+    declaration = '';
+    colon = -1;
+    invalid = false;
   }
 
+  for (let i = 0; i < style.length; i++) {
+    const char = style[i];
+    if (char === '\\') {
+      declaration += char;
+      if (i + 1 < style.length) declaration += style[++i];
+      continue;
+    }
+    if (quote) {
+      declaration += char;
+      if (char === quote) quote = '';
+      continue;
+    }
+    if (char === '/' && style[i + 1] === '*') {
+      const end = style.indexOf('*/', i + 2);
+      declaration += ' ';
+      if (end === -1) break;
+      i = end + 1;
+      continue;
+    }
+    if (char === '"' || char === "'") quote = char;
+    else if (char === '(') closing.push(')');
+    else if (char === '[') closing.push(']');
+    else if (char === '{') closing.push('}');
+    else if (char === ')' || char === ']' || char === '}') {
+      if (closing.pop() !== char) invalid = true;
+    } else if (closing.length === 0) {
+      if (char === ';') {
+        commit();
+        continue;
+      }
+      if (char === ':' && colon === -1) colon = declaration.length;
+    }
+    declaration += char;
+  }
+  // Discard an unterminated string/function rather than emitting a partial value.
+  if (!quote && closing.length === 0) commit();
   return result;
 }
 
