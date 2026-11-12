@@ -30,3 +30,4 @@ site
 # Mutation testing
 .stryker-tmp/
 reports/
+example/dist-release/

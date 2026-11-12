@@ -50,21 +50,37 @@ function Article({ html }: { html: string }) {
 
 未使用 `PapiHTMLRenderer` 时，其代码随库的 `sideEffects` 声明被构建工具裁剪，不进入产物。
 
-与默认的 `HTMLRenderer` 共享同一 HTML 转换管道，区别在渲染层：跳过 React 协调，
-把编码后的指令流发送到主线程直接构建原生元素树。
+与默认的 `HTMLRenderer` 共享同一 HTML 转换管道与样式系统（`styleMode` inline /
+css-class、`darkMode`、`removeAllClass/Style` 等语义一致），区别只在渲染层：跳过
+React 协调，把序列化树发送到主线程直接构建原生元素树。
 
-**何时选择**：内容大且基本静态（文章 / 详情页）且引擎 ≥ 4.2 —— 真机全量渲染快 ~1.4x，
-跨线程传输体积约为 1/6，且不触发引擎对大文档的跨线程调用限流。
+**何时选择**：内容大且基本静态（文章 / 详情页）且引擎 ≥ 4.2 —— 真机全量渲染
+快 ~1.4x（Android 模拟器 1.7~1.9x），且不触发引擎对大文档的跨线程调用限流。
 
-**限制**：仅支持内联样式（无 css-class / darkMode），元素不经 React 树（无自定义适配器），
-更新为全量重建；引擎过旧时自动降级渲染 `fallback` 节点：
+**注入构建器（推荐用法）**：当前 ReactLynx 工具链（react-rsbuild-plugin ≤ 0.22.x）
+只对项目自身源码做 `'main thread'` worklet 提取，第三方库源码中的 worklet 不会被
+正确编译。因此在你的项目源码中定义构建器并注入：
 
 ```tsx
-import { HTMLRenderer } from 'lynx-html-renderer';
 import { PapiHTMLRenderer } from 'lynx-html-renderer/papi';
 
-<PapiHTMLRenderer html={html} fallback={<HTMLRenderer html={html} />} />;
+// 复制自 lynx-html-renderer 的 buildPapiTree（example/src/App.tsx 有完整示例）
+function myPapiBuilder(hostRef, roots) {
+  'main thread';
+  /* __CreateView 等 Element API 构建 */
+}
+
+<PapiHTMLRenderer
+  html={html}
+  builder={myPapiBuilder}          // 注入构建器
+  styleMode="css-class"            // 可选：CSS 类模式（页面需引入样式表）
+  darkMode={isDark}                // 可选：暗色模式（css-class 模式）
+  fallback={<HTMLRenderer html={html} />}  // 引擎过旧时降级
+/>;
 ```
+
+**限制**：元素不经 React 树，自定义适配器（AdapterRegistry 的 React 组件）不适用
+于 PAPI 渲染的内容区（页面其余部分不受影响，可混合使用）；更新为全量重建。
 
 类型包 `@lynx-js/type-element-api` 为可选 peer 依赖（仅使用 `/papi` 入口且需要元素类型时安装）。
 真机验证与性能测试见 [docs/native-verification.md](docs/native-verification.md)。

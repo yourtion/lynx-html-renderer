@@ -111,6 +111,21 @@ describe('serializeNodes', () => {
   });
 });
 
+describe('PapiHTMLRenderer props parity', () => {
+  it('passes styleMode/darkMode/rootClassName through (source contract)', () => {
+    const src = readFileSync(
+      resolve(__dirname, '../src/papi/PapiHTMLRenderer.tsx'),
+      'utf-8',
+    );
+    // styleMode 透传 transformHTML（不再硬编码 inline）
+    expect(src).toContain('styleMode,');
+    expect(src).not.toContain("styleMode: 'inline',");
+    // css-class 模式下 darkMode 组合根类名（与 HTMLRenderer 行为一致）
+    expect(src).toContain('lhr-dark');
+    expect(src).toContain('rootClassName');
+  });
+});
+
 describe('buildPapiTree source contract', () => {
   // buildPapiTree 是 worklet（'main thread' 指令），在 vitest 中被编译为
   // worklet 对象无法直调；行为验证由双线程集成测试与真机完成。这里锁定
