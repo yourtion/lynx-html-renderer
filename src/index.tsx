@@ -335,6 +335,21 @@ type HTMLRendererType = typeof HTMLRenderer & {
 
 // 导出公共类型
 export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
+export type {
+  PapiElementNode,
+  PapiHTMLRendererProps,
+  PapiNode,
+  PapiTextNode,
+  PapiTree,
+} from './papi';
+// Element PAPI 直绘路线（engine 4.2+，未使用时随 sideEffects 声明被裁剪；
+// 也可从 'lynx-html-renderer/papi' 子路径引入）
+export {
+  buildPapiTree,
+  PapiHTMLRenderer,
+  serializeNodes,
+  styleToCssString,
+} from './papi';
 // 导出适配器扩展 API
 export {
   AdapterRegistry,

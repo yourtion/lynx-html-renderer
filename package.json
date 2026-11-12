@@ -38,6 +38,11 @@
       "import": "./src/html-parser.ts",
       "default": "./src/html-parser.ts"
     },
+    "./papi": {
+      "types": "./src/papi/index.ts",
+      "import": "./src/papi/index.ts",
+      "default": "./src/papi/index.ts"
+    },
     "./transform": {
       "types": "./src/transform/types.ts",
       "import": "./src/transform/types.ts",
@@ -95,17 +100,21 @@
   ],
   "peerDependencies": {
     "@lynx-js/react": "^0.126.2",
-    "@lynx-js/types": "^4.3.0"
+    "@lynx-js/types": "^4.3.0",
+    "@lynx-js/type-element-api": "*"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
     "@codecov/rspack-plugin": "file:pkg/codecov-rspack-plugin-1.0.0.tgz",
     "@lynx-js/preact-devtools": "^5.0.1-cf9aef5",
     "@lynx-js/qrcode-rsbuild-plugin": "0.7.3",
-    "@lynx-js/react": "0.126.2",
-    "@lynx-js/react-rsbuild-plugin": "0.20.3",
-    "@lynx-js/rspeedy": "0.18.0",
+    "@lynx-js/react": "0.129.2",
+    "@lynx-js/react-rsbuild-plugin": "0.22.2",
+    "@lynx-js/rspeedy": "0.18.5",
+    "@lynx-js/type-element-api": "0.0.12",
     "@lynx-js/types": "4.3.0",
+    "@lynx-js/web-core": "0.26.7",
+    "@lynx-js/web-platform-rsbuild-plugin": "^0.1.2",
     "@rsbuild/core": "2.2.11",
     "@rsbuild/plugin-type-check": "1.6.0",
     "@rspack/core": "2.2.8",
@@ -133,6 +142,11 @@
       "@rsbuild/core@^2": "2.2.11",
       "@rspack/core@^2": "2.2.8",
       "postcss": "8.5.29"
+    }
+  },
+  "peerDependenciesMeta": {
+    "@lynx-js/type-element-api": {
+      "optional": true
     }
   }
 }
