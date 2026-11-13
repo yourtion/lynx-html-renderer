@@ -22,28 +22,63 @@ describe('PapiHTMLRenderer integration', () => {
     expect(container.children.length).toBeGreaterThan(0);
   });
 
-  it('renders fallback when engine lacks Element API', async () => {
-    const g = globalThis as unknown as Record<string, unknown>;
-    const saved = g.__CreateView;
-    // 模拟引擎不支持：testing-library 环境可能内置 stub（tests/setup/papi-globals.ts），
-    // 删除后 builder 返回 false，组件切换到 fallback
-    const hadStub = typeof saved !== 'undefined';
-    if (hadStub) delete g.__CreateView;
+  it('renders the fallback node when the builder resolves false', async () => {
+    // builder 注入返回 false（引擎缺 Element API 等场景）→ 组件降级渲染 fallback
+    const rejectingBuilder = (): boolean => false;
+    const { container } = render(
+      <PapiHTMLRenderer
+        html="<p>Fallback Target</p>"
+        fallback={<view>FALLBACK-NODE</view>}
+        builder={rejectingBuilder}
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(container.textContent).toContain('FALLBACK-NODE');
+  });
 
-    try {
-      const { container } = render(
-        <PapiHTMLRenderer
-          html="<p>Fallback Target</p>"
-          fallback={<view>FALLBACK-NODE</view>}
-        />,
-      );
-      // 等 useEffect + Promise 微任务完成
-      await new Promise((r) => setTimeout(r, 20));
-      // 无 __CreateView 时要么显示 fallback，要么宿主为空 —— 不应崩溃
-      expect(container).toBeDefined();
-    } finally {
-      if (hadStub) g.__CreateView = saved;
-    }
+  it('renders the fallback node when the dispatch rejects', async () => {
+    const throwingBuilder = (): boolean => {
+      throw new Error('engine missing');
+    };
+    const { container } = render(
+      <PapiHTMLRenderer
+        html="<p>Reject Target</p>"
+        fallback={<view>REJECT-FALLBACK</view>}
+        builder={throwingBuilder}
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(container.textContent).toContain('REJECT-FALLBACK');
+  });
+
+  it('applies css-class root classes for dark mode and honors hostClassName', async () => {
+    const { container: light } = render(
+      <PapiHTMLRenderer html="<p>css-class light</p>" styleMode="css-class" />,
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(light.innerHTML).toContain('class="lynx-html-renderer"');
+
+    const { container: dark } = render(
+      <PapiHTMLRenderer
+        html="<p>css-class dark</p>"
+        styleMode="css-class"
+        darkMode
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(dark.innerHTML).toContain('lynx-html-renderer lhr-dark');
+
+    const { container: custom } = render(
+      <PapiHTMLRenderer
+        html="<p>custom host</p>"
+        styleMode="css-class"
+        darkMode
+        hostClassName="my-host"
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(custom.innerHTML).toContain('my-host');
+    expect(custom.innerHTML).not.toContain('lhr-dark');
   });
 
   it('builds native element tree with visible content', async () => {

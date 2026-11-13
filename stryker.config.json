@@ -12,7 +12,7 @@
   "reporters": ["clear-text", "progress", "html", "json"],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
-  "concurrency": 4,
+  "concurrency": "50%",
   "timeoutMS": 10000,
   "tempDirName": ".stryker-tmp"
 }

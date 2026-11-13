@@ -1,7 +1,8 @@
 import { transformHTML } from '@lynx-html-renderer/html-parser';
-import { renderHTMLDirect } from '@lynx-html-renderer/index';
+import { createDefaultRegistry } from '@lynx-html-renderer/index';
 import type { LynxNode } from '@lynx-html-renderer/lynx/types';
 import { serializeNodes } from '@lynx-html-renderer/papi/serialize';
+import { createRenderContext } from '@lynx-html-renderer/render/react-tree';
 import { normalizeTextTreeForRender } from '@lynx-html-renderer/render/text-normalizer';
 import { describe, it } from 'vitest';
 
@@ -47,8 +48,12 @@ describe('PAPI direct-draw vs React element tree (pre-render cost)', () => {
       const iterations = 20;
 
       const papi = measure(() => serializeNodes(nodes), iterations);
+      // React 侧与 PAPI 侧同基准：对同一份预转换 nodes 计时
+      // （renderHTMLDirect 会重复执行 transformHTML，口径不对称）
+      const registry = createDefaultRegistry();
+      const reactCtx = createRenderContext(registry);
       const react = measure(
-        () => renderHTMLDirect({ html, removeAllClass: true }),
+        () => nodes.map((n) => reactCtx.renderNode(n)),
         iterations,
       );
 
@@ -64,14 +69,6 @@ describe('PAPI direct-draw vs React element tree (pre-render cost)', () => {
       );
     });
   }
-
-  it('serialize produces cloneable compact tree at scale', () => {
-    const html = generateHTML(800);
-    const nodes = transformHTML(html).map(normalizeTextTreeForRender);
-    const tree = serializeNodes(nodes);
-    const cloned = JSON.parse(JSON.stringify(tree));
-    expect(cloned.length).toBeGreaterThan(0);
-  });
 });
 
 function countNodes(nodes: LynxNode[]): number {

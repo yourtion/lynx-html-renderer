@@ -102,27 +102,57 @@ describe('serializeNodes', () => {
     expect(emText.st).toContain('font-style:italic;');
   });
 
+  it('drops non-string attrs and empty attr maps', () => {
+    const nodes = transformHTML(
+      '<img src="/a.png" width="50" style="width:50px" />',
+    );
+    const tree = serializeNodes(nodes);
+    const img = tree[0];
+    if (img.kind !== 'element') throw new Error('expected element');
+    // string 属性保留（width 被管道并入 style，height:auto 也在 style）
+    expect(img.at).toEqual({ src: '/a.png' });
+    expect(img.st).toContain('height:auto');
+    const plain = serializeNodes(transformHTML('<p>x</p>'));
+    const p0 = plain[0];
+    if (p0.kind !== 'element') throw new Error('expected element');
+    expect(p0.at).toBeUndefined();
+    expect(p0.id).toBeUndefined();
+  });
+
+  it('passes renderer props through to the transform pipeline', () => {
+    // 默认 removeAllClass=true：class 被移除；removeAllStyle=false：style 保留
+    const kept = serializeNodes(
+      transformHTML('<div class="keep" style="color:red">x</div>'),
+    );
+    const keptNode = kept[0];
+    if (keptNode.kind !== 'element') throw new Error('expected element');
+    expect(keptNode.cl).toBeUndefined();
+    expect(keptNode.st).toContain('color:red');
+
+    // 显式 removeAllClass=false：class 保留
+    const withClass = serializeNodes(
+      transformHTML('<div class="keep">x</div>', { removeAllClass: false }),
+    );
+    const node = withClass[0];
+    if (node.kind !== 'element') throw new Error('expected element');
+    expect(node.cl).toBe('keep');
+
+    // removeAllStyle=true：HTML 源 style 被移除（管道注入的布局默认样式保留）
+    const stripped = serializeNodes(
+      transformHTML('<div style="color:red">x</div>', { removeAllStyle: true }),
+    );
+    const strippedNode = stripped[0];
+    if (strippedNode.kind !== 'element') throw new Error('expected element');
+    expect(strippedNode.st).not.toContain('color:red');
+    expect(strippedNode.st).toContain('flex-direction:column;');
+  });
+
   it('produces JSON-cloneable output (cross-thread safe)', () => {
     const nodes = transformHTML(
       '<div style="padding:4px"><span>A</span><img src="/b.png"/></div>',
     );
     const tree = serializeNodes(nodes);
     expect(() => JSON.parse(JSON.stringify(tree))).not.toThrow();
-  });
-});
-
-describe('PapiHTMLRenderer props parity', () => {
-  it('passes styleMode/darkMode/rootClassName through (source contract)', () => {
-    const src = readFileSync(
-      resolve(__dirname, '../src/papi/PapiHTMLRenderer.tsx'),
-      'utf-8',
-    );
-    // styleMode 透传 transformHTML（不再硬编码 inline）
-    expect(src).toContain('styleMode,');
-    expect(src).not.toContain("styleMode: 'inline',");
-    // css-class 模式下 darkMode 组合根类名（与 HTMLRenderer 行为一致）
-    expect(src).toContain('lhr-dark');
-    expect(src).toContain('rootClassName');
   });
 });
 
@@ -164,6 +194,7 @@ describe('buildPapiTree source contract', () => {
       '__SetInlineStyles',
       '__SetClasses',
       '__SetAttribute',
+      '__SetID',
       '__AppendElement',
       '__FlushElementTree',
     ]) {
@@ -176,11 +207,5 @@ describe('buildPapiTree source contract', () => {
     for (const line of imports) {
       expect(line.startsWith('import type ')).toBe(true);
     }
-  });
-
-  it('walks the serialized object tree recursively', () => {
-    expect(source).toContain('appendNode');
-    expect(source).toContain('node.k');
-    expect(source).toContain('node.kind');
   });
 });

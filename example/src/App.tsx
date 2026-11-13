@@ -1,15 +1,29 @@
 import { useEffect, useMemo, useState } from '@lynx-js/react';
 import './App.css';
-import { HTMLRenderer, PapiHTMLRenderer } from 'lynx-html-renderer';
+import {
+  HTMLRenderer,
+  PapiHTMLRenderer,
+  registerAdapterByRole,
+} from 'lynx-html-renderer';
 import htmlContent from '../html/showcase.html';
 
 type EngineMode = 'react' | 'papi';
+
+// 自定义标签映射：<my-banner> 以 view 存活并携带 banner role
+const customTagMappings = {
+  'my-banner': {
+    lynxTag: 'view',
+    role: 'banner',
+    capabilities: { layout: 'flex', isVoid: false },
+  },
+};
 
 interface InlinePapiNode {
   kind: 'text' | 'element';
   v?: string;
   st?: string;
   cl?: string;
+  id?: string;
   tg?: string;
   at?: Record<string, string>;
   k?: InlinePapiNode[];
@@ -69,13 +83,20 @@ function papiBuilder(
     if (node.cl) {
       (g.__SetClasses as (n: unknown, c: string) => void)(element, node.cl);
     }
+    if (node.id !== undefined) {
+      (g.__SetID as (n: unknown, v: string) => void)(element, node.id);
+    }
     if (node.at) {
       for (const key in node.at) {
-        (g.__SetAttribute as (n: unknown, k: string, v: string) => void)(
-          element,
-          key,
-          node.at[key],
-        );
+        try {
+          (g.__SetAttribute as (n: unknown, k: string, v: string) => void)(
+            element,
+            key,
+            node.at[key],
+          );
+        } catch {
+          // 引擎属性白名单外的属性（如 data-*）跳过
+        }
       }
     }
     (g.__AppendElement as (p: unknown, c: unknown) => unknown)(parent, element);
@@ -128,6 +149,38 @@ export function App(props: { onRender?: () => void }) {
     lynx.__globalProps?.engine === 'papi' ? 'papi' : 'react',
   );
   const [renderCount, setRenderCount] = useState(0);
+
+  // 一次性注册自定义适配器（组件内运行时注册——含 worklet 的模块中
+  // 顶层语句会触发 ReactLynx 编译切分问题）
+  useMemo(() => {
+    registerAdapterByRole('banner', {
+      render(node) {
+        const title = String(node.meta?.sourceAttrs?.title ?? '');
+        const message = String(node.meta?.sourceAttrs?.message ?? '');
+        return (
+          <view
+            style={{
+              margin: '10px 0',
+              padding: '12px 16px',
+              backgroundColor: '#fff3e0',
+              borderLeft: '4px solid #ff9800',
+              borderRadius: '4px',
+            }}
+          >
+            <text
+              style={{ fontSize: '15px', fontWeight: 'bold', color: '#e65100' }}
+            >
+              {title}
+            </text>
+            <text style={{ fontSize: '13px', color: '#795548' }}>
+              {message}
+            </text>
+          </view>
+        );
+      },
+    });
+    return true;
+  }, []);
 
   // 基准测试状态
   const [benchRound, setBenchRound] = useState<{
@@ -230,6 +283,7 @@ export function App(props: { onRender?: () => void }) {
         removeAllStyle={removeAllStyle}
         darkMode={useDarkMode}
         builder={papiBuilder}
+        tagMappings={customTagMappings}
       />
     ) : (
       <HTMLRenderer
@@ -238,6 +292,7 @@ export function App(props: { onRender?: () => void }) {
         styleMode="css-class"
         removeAllStyle={removeAllStyle}
         darkMode={useDarkMode}
+        tagMappings={customTagMappings}
       />
     );
 

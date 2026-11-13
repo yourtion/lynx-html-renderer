@@ -4,7 +4,7 @@
  * 在 background 线程完成所有样式合并与 CSS 字符串化，
  * 使主线程 builder 拿到的数据可以直接下发，无需任何转换。
  */
-import { getMarkStyles } from '../lynx/text-styles';
+import { getMergedTextStyle } from '../lynx/text-styles';
 import type { CSSProperties, LynxNode } from '../lynx/types';
 import type { PapiNode, PapiTree } from './types';
 
@@ -28,20 +28,17 @@ export function styleToCssString(
 
 function serializeNode(node: LynxNode): PapiNode {
   if (node.kind === 'text') {
-    // 与 ReactLynx 渲染路径（renderNodeWithRegistry）保持一致的样式合并顺序
-    const style: CSSProperties = {
-      ...getMarkStyles(node.marks),
-      ...node.inheritableStyles,
-    };
+    // 与 React 渲染路径（render/react-tree）共用同一合并函数，避免漂移
+    const { style, className } = getMergedTextStyle(node);
     return {
       kind: 'text',
       v: node.content,
       st: styleToCssString(style),
-      cl: node.inheritableClasses,
+      cl: className,
     };
   }
 
-  const { style, className, ...rest } = node.props;
+  const { style, className, id, ...rest } = node.props;
   const at: Record<string, string> = {};
   for (const key in rest) {
     const value = rest[key];
@@ -55,6 +52,8 @@ function serializeNode(node: LynxNode): PapiNode {
     tg: node.tag,
     st: styleToCssString(style),
     cl: className,
+    // id 走 __SetID 专用通道（引擎不允许经 __SetAttribute 设置）
+    id: typeof id === 'string' ? id : undefined,
     at: Object.keys(at).length > 0 ? at : undefined,
     k: node.children.length > 0 ? serializeNodes(node.children) : undefined,
   };

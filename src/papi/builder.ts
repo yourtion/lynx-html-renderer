@@ -63,6 +63,7 @@ export function buildPapiTree(
   ) => void;
   const flushElementTree = g.__FlushElementTree as () => void;
   const getUniqueID = g.__GetElementUniqueID as (node: ElementRef) => number;
+  const setId = g.__SetID as (node: ElementRef, id: string) => void;
 
   const uniId = getUniqueID(host);
 
@@ -102,9 +103,16 @@ export function buildPapiTree(
     if (node.cl) {
       setClasses(element, node.cl);
     }
+    if (node.id !== undefined) {
+      setId(element, node.id);
+    }
     if (node.at) {
       for (const key in node.at) {
-        setAttribute(element, key, node.at[key]);
+        try {
+          setAttribute(element, key, node.at[key]);
+        } catch {
+          // 引擎属性白名单外的属性（如 data-*）跳过，不影响其余构建
+        }
       }
     }
     appendElement(parent, element);

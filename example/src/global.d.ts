@@ -12,5 +12,7 @@ declare module '@lynx-js/types' {
      * 'dark' - 暗黑模式
      */
     theme: 'Light' | 'Dark';
+    /** 初始渲染引擎（native-verification 基准用） */
+    engine?: 'react' | 'papi';
   }
 }

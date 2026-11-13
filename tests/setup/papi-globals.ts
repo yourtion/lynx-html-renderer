@@ -3,8 +3,8 @@
  *
  * `src/papi/builder.ts` 的 worklet 在 testing-library 编译器转换后，
  * 模块加载阶段即可能引用主线程全局（`__CreateView` 等）。
- * 此 setup 在任何测试模块 import 之前装上 stub，避免 ReferenceError；
- * 具体行为由各测试（tests/papi.test.ts）安装的 mock 覆盖。
+ * 此 setup 在任何测试模块 import 之前装上 stub，避免模块加载期的
+ * ReferenceError（worklet 编译产物在顶层即可能触碰全局）。
  */
 
 const stubs: Record<string, unknown> = {

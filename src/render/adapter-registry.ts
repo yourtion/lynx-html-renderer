@@ -39,6 +39,16 @@ class AdapterRegistry {
   }
 
   /**
+   * Whether a user-registered (custom) adapter matches this node.
+   * Built-in default/native adapters are excluded — used to decide
+   * which subtrees must stay on the React rendering path.
+   */
+  hasCustomAdapter(node: LynxElementNode): boolean {
+    if (this.tagMap.has(node.tag)) return true;
+    return node.role !== undefined && this.roleMap.has(node.role);
+  }
+
+  /**
    * Resolve the appropriate adapter for a node
    * Priority: custom tag > role > default native tag > fallback
    */

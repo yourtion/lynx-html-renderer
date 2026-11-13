@@ -9,14 +9,23 @@
  * 引擎不支持时自动降级到 `fallback` 节点。
  */
 
-import { runOnMainThread, useMainThreadRef } from '@lynx-js/react';
+import {
+  createPortal,
+  runOnMainThread,
+  useMainThreadRef,
+} from '@lynx-js/react';
 import type { MainThread } from '@lynx-js/types';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { transformHTML } from '../html-parser';
 import type { LynxNode } from '../lynx/types';
+import type { AdapterRegistry } from '../render/adapter-registry';
+import { createRenderContext } from '../render/react-tree';
 import { normalizeTextTreeForRender } from '../render/text-normalizer';
 import type { TransformOptions } from '../transform/types';
 import { buildPapiTree } from './builder';
+import { serializeNodes } from './serialize';
+import type { PapiSlot } from './slots';
+import { extractSlots } from './slots';
 import type { PapiTree } from './types';
 
 /**
@@ -30,8 +39,6 @@ export type PapiBuilder = (
   hostRef: { current: unknown },
   roots: PapiTree,
 ) => boolean;
-
-import { serializeNodes } from './serialize';
 
 export interface PapiHTMLRendererProps
   extends Pick<
@@ -69,6 +76,12 @@ export interface PapiHTMLRendererProps
    * 缺省使用库内 buildPapiTree（要求消费方工具链能编译库源码 worklet）。
    */
   builder?: PapiBuilder;
+  /**
+   * 适配器注册表：命中的自定义适配器（registerByTag/ByRole）子树不进
+   * PAPI 直绘，而是经 createPortal 渲染进原位置的占位元素——React 组件
+   * 保持完整生命周期与更新能力（portal 子树仅 background 线程渲染）。
+   */
+  adapterRegistry?: AdapterRegistry;
 }
 
 export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
@@ -90,6 +103,7 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
     hostStyle,
     fallback,
     builder,
+    adapterRegistry,
   } = props;
 
   const nodes = useMemo<LynxNode[]>(
@@ -117,13 +131,22 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
     ],
   );
 
-  // background 线程完成全部序列化，主线程只做元素构建
-  const tree = useMemo(() => serializeNodes(nodes), [nodes]);
+  // 自定义适配器子树摘出：PAPI 树中留占位（带 id），React 侧 Portal 渲染
+  // useId 含 Lynx 选择器不支持的字符（如「:」），规范化为安全前缀
+  const slotIdPrefix = useId().replace(/[^a-zA-Z0-9-]/g, '');
+  const { tree, slots } = useMemo(() => {
+    if (!adapterRegistry) return { tree: serializeNodes(nodes), slots: [] };
+    const extracted = extractSlots(nodes, adapterRegistry, `x${slotIdPrefix}`);
+    return { tree: serializeNodes(extracted.tree), slots: extracted.slots };
+  }, [nodes, adapterRegistry, slotIdPrefix]);
+  const hasSlots = slots.length > 0;
 
   const hostRef = useMainThreadRef<MainThread.Element>(null);
 
   // 引擎不支持 Element API 时置 true，切换降级渲染
   const [unsupported, setUnsupported] = useState(false);
+  // 占位元素由主线程 builder 创建，就绪后才能 Portal（selector 需元素已挂载）
+  const [slotsReady, setSlotsReady] = useState(false);
   // 强制 flush tick：部分运行时把 runOnMainThread 排队到下一次 commit
   // 才派发；追加一次空渲染把队列冲出去（不列入 effect 依赖，避免循环）
   const [, setFlushTick] = useState(0);
@@ -131,8 +154,11 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
   useEffect(() => {
     if (unsupported) return;
     let cancelled = false;
+    setSlotsReady(false);
+    // builder 不列入依赖：换新 builder 引用无需重建（tree 变更才需要）
     runOnMainThread(builder ?? buildPapiTree)(hostRef, tree)
       .then((ok: unknown) => {
+        if (ok === true && !cancelled) setSlotsReady(true);
         if (ok !== true && !cancelled) setUnsupported(true);
       })
       .catch((err: unknown) => {
@@ -165,11 +191,43 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
         : rootClassName
       : undefined);
 
+  if (!hasSlots) {
+    return (
+      <view
+        main-thread:ref={hostRef}
+        class={resolvedClassName}
+        style={hostStyle}
+      />
+    );
+  }
+
   return (
-    <view
-      main-thread:ref={hostRef}
-      class={resolvedClassName}
-      style={hostStyle}
-    />
+    <view class={resolvedClassName} style={hostStyle}>
+      <view main-thread:ref={hostRef} />
+      {slotsReady &&
+        adapterRegistry !== undefined &&
+        slots.map((slot) => (
+          <SlotPortal key={slot.id} slot={slot} registry={adapterRegistry} />
+        ))}
+    </view>
   );
 });
+
+/**
+ * 适配器 Portal 桥接：把命中自定义适配器的子树渲染进 PAPI 占位元素。
+ *
+ * 占位元素由主线程 builder 创建（slotsReady 后才渲染本组件，selector
+ * 必然可命中）；createPortal 的 container 接受 CSS-selector NodesRef，
+ * portal 子树保留完整 React 生命周期（仅 background 线程渲染）。
+ */
+function SlotPortal({
+  slot,
+  registry,
+}: {
+  slot: PapiSlot;
+  registry: AdapterRegistry;
+}) {
+  const ctx = useMemo(() => createRenderContext(registry), [registry]);
+  const nodesRef = lynx.createSelectorQuery().select(`#${slot.id}`) as never;
+  return createPortal(ctx.renderNode(slot.node) as never, nodesRef);
+}

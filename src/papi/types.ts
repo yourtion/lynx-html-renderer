@@ -14,6 +14,8 @@ export interface PapiElementNode {
   st?: string;
   /** class 列表（空格分隔） */
   cl?: string;
+  /** 元素 id（CSS 选择器锚点，走引擎 __SetID 专用通道） */
+  id?: string;
   /** 除 style/class 外的属性（如 image 的 src） */
   at?: Record<string, string>;
   /** 子节点 */

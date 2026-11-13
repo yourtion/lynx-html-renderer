@@ -5,7 +5,7 @@
  *   → runOnMainThread → buildPapiTree（主线程直接构建原生元素树）
  */
 export { buildPapiTree } from './builder';
-export type { PapiHTMLRendererProps } from './PapiHTMLRenderer';
+export type { PapiBuilder, PapiHTMLRendererProps } from './PapiHTMLRenderer';
 export { PapiHTMLRenderer } from './PapiHTMLRenderer';
 export { serializeNodes, styleToCssString } from './serialize';
 export type {
