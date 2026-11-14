@@ -18,7 +18,10 @@ import type { MainThread } from '@lynx-js/types';
 import React, { useEffect, useId, useMemo, useState } from 'react';
 import { transformHTML } from '../html-parser';
 import type { LynxNode } from '../lynx/types';
-import type { AdapterRegistry } from '../render/adapter-registry';
+import {
+  type AdapterRegistry,
+  getAdapterRegistry,
+} from '../render/adapter-registry';
 import { createRenderContext } from '../render/react-tree';
 import { normalizeTextTreeForRender } from '../render/text-normalizer';
 import type { TransformOptions } from '../transform/types';
@@ -76,6 +79,8 @@ export interface PapiHTMLRendererProps
    * 缺省使用库内 buildPapiTree（要求消费方工具链能编译库源码 worklet）。
    */
   builder?: PapiBuilder;
+  /** 主线程构建成功回调（builder resolve true 且未被更新作废时触发） */
+  onBuildComplete?: () => void;
   /**
    * 适配器注册表：命中的自定义适配器（registerByTag/ByRole）子树不进
    * PAPI 直绘，而是经 createPortal 渲染进原位置的占位元素——React 组件
@@ -104,7 +109,20 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
     fallback,
     builder,
     adapterRegistry,
+    onBuildComplete,
   } = props;
+
+  // 适配器注册表解析：显式传入 > 全局注册表（与 HTMLRenderer 行为一致，
+  // registerAdapterByTag/ByRole 的全局注册对 PAPI 路线同样生效）；
+  // 全局未初始化时按无适配器处理（纯直绘）
+  const registry = useMemo(() => {
+    if (adapterRegistry) return adapterRegistry;
+    try {
+      return getAdapterRegistry();
+    } catch {
+      return undefined;
+    }
+  }, [adapterRegistry]);
 
   const nodes = useMemo<LynxNode[]>(
     () =>
@@ -135,35 +153,65 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
   // useId 含 Lynx 选择器不支持的字符（如「:」），规范化为安全前缀
   const slotIdPrefix = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const { tree, slots } = useMemo(() => {
-    if (!adapterRegistry) return { tree: serializeNodes(nodes), slots: [] };
-    const extracted = extractSlots(nodes, adapterRegistry, `x${slotIdPrefix}`);
+    if (!registry) return { tree: serializeNodes(nodes), slots: [] };
+    const extracted = extractSlots(nodes, registry, `x${slotIdPrefix}`);
     return { tree: serializeNodes(extracted.tree), slots: extracted.slots };
-  }, [nodes, adapterRegistry, slotIdPrefix]);
+  }, [nodes, registry, slotIdPrefix]);
   const hasSlots = slots.length > 0;
 
   const hostRef = useMainThreadRef<MainThread.Element>(null);
 
   // 引擎不支持 Element API 时置 true，切换降级渲染
   const [unsupported, setUnsupported] = useState(false);
-  // 占位元素由主线程 builder 创建，就绪后才能 Portal（selector 需元素已挂载）
-  const [slotsReady, setSlotsReady] = useState(false);
+  // 构建阶段：building = portal 已卸载、原生树可安全重建；ready = 可挂 portal
+  const [phase, setPhase] = useState<'building' | 'ready'>('building');
+  // Portal 桥接能力探测失败（占位无法被 selector 寻址）→ 整体 React 渲染兜底
+  const [bridgeDown, setBridgeDown] = useState(false);
+  // 构建代次：tree 变化时递增，作废在途 builder 的回调
+  const buildGenRef = React.useRef(0);
+  // 上次派发构建的 tree 引用：区分「tree 变化需先卸载 portal」与
+  // 「phase 自身推进」（避免 phase 变化重跑 effect 时误触发再卸载循环）
+  const lastBuiltTreeRef = React.useRef<typeof tree | null>(null);
+  // onBuildComplete 回调用 ref 存（内联函数引用每渲染变，列入依赖会导致
+  // effect 级联重派发 + gen 递增作废全部在途回调）
+  const onBuildCompleteRef = React.useRef(onBuildComplete);
+  onBuildCompleteRef.current = onBuildComplete;
   // 强制 flush tick：部分运行时把 runOnMainThread 排队到下一次 commit
   // 才派发；追加一次空渲染把队列冲出去（不列入 effect 依赖，避免循环）
   const [, setFlushTick] = useState(0);
 
   useEffect(() => {
     if (unsupported) return;
+    // 两段式更新（P1 时序）：tree 变化时若 portal 仍挂载，先切回 building
+    // 卸载 portal（React 子树节点须先移除，否则主线程清空占位会导致
+    // "child is not in parent" 删除错误），本 commit 不派发 builder；
+    // phase 回到 building 后 effect 重跑才执行重建。
+    if (phase !== 'building') {
+      if (lastBuiltTreeRef.current !== tree) {
+        buildGenRef.current += 1;
+        lastBuiltTreeRef.current = tree;
+        setPhase('building');
+      }
+      return;
+    }
     let cancelled = false;
-    setSlotsReady(false);
+    lastBuiltTreeRef.current = tree;
+    const gen = ++buildGenRef.current;
     // builder 不列入依赖：换新 builder 引用无需重建（tree 变更才需要）
     runOnMainThread(builder ?? buildPapiTree)(hostRef, tree)
       .then((ok: unknown) => {
-        if (ok === true && !cancelled) setSlotsReady(true);
-        if (ok !== true && !cancelled) setUnsupported(true);
+        if (cancelled || gen !== buildGenRef.current) return;
+        if (ok === true) {
+          setPhase('ready');
+          onBuildCompleteRef.current?.();
+        } else {
+          setUnsupported(true);
+        }
       })
       .catch((err: unknown) => {
+        if (cancelled || gen !== buildGenRef.current) return;
         console.error('[PapiHTMLRenderer] dispatch error:', err);
-        if (!cancelled) setUnsupported(true);
+        setUnsupported(true);
       });
     // 宏任务触发空渲染 flush 被排队的主线程派发（native snapshot 模式）：
     // - 0ms：脱离当前渲染周期，保证产生独立 commit 冲出队列
@@ -177,7 +225,36 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
     return () => {
       cancelled = true;
     };
-  }, [tree, unsupported]);
+  }, [tree, phase, unsupported]);
+
+  // registry / tree 变化后重置桥接探测结论，并重新探测
+  useEffect(() => {
+    setBridgeDown(false);
+    // 桥接能力探测（组件层执行，不依赖 portal 子树挂载成功）：
+    // native 引擎当前无法通过 selector 寻址运行时创建的占位（上游
+    // lynx#10989）——fields 回调 data 为 null 即不可达 → 整体 React 兜底，
+    // 避免适配器内容静默缺失。探测 API 缺失（模拟层）时保持乐观。
+    if (!hasSlots || phase !== 'ready') return;
+    try {
+      const firstSlot = slots[0];
+      if (firstSlot === undefined) return;
+      const ref = lynx.createSelectorQuery().select(`#${firstSlot.id}`) as {
+        fields?: (
+          f: { id: boolean },
+          cb: (data: unknown) => void,
+        ) => { exec?: () => void };
+      };
+      if (typeof ref.fields === 'function') {
+        ref
+          .fields({ id: true }, (data: unknown) => {
+            if (data === null) setBridgeDown(true);
+          })
+          .exec?.();
+      }
+    } catch {
+      // select 即失败或探测通道缺失：保持乐观，继续 portal 尝试
+    }
+  }, [tree, registry, phase, hasSlots, slots]);
 
   if (unsupported) {
     return <>{fallback}</>;
@@ -190,6 +267,17 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
         ? `${rootClassName} lhr-dark`
         : rootClassName
       : undefined);
+
+  // 桥接不可用且有适配器子树：整体走 React 渲染兜底（内容不缺失），
+  // 放弃本轮直绘（上游修复 selector 寻址后自动恢复）
+  if (bridgeDown && hasSlots && registry !== undefined) {
+    const ctx = createRenderContext(registry);
+    return (
+      <view class={resolvedClassName} style={hostStyle}>
+        {nodes.map((node) => ctx.renderNode(node))}
+      </view>
+    );
+  }
 
   if (!hasSlots) {
     return (
@@ -204,10 +292,15 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
   return (
     <view class={resolvedClassName} style={hostStyle}>
       <view main-thread:ref={hostRef} />
-      {slotsReady &&
-        adapterRegistry !== undefined &&
+      {phase === 'ready' &&
+        registry !== undefined &&
         slots.map((slot) => (
-          <SlotPortal key={slot.id} slot={slot} registry={adapterRegistry} />
+          <SlotPortal
+            key={slot.id}
+            slot={slot}
+            registry={registry}
+            onUnreachable={() => setBridgeDown(true)}
+          />
         ))}
     </view>
   );
@@ -223,11 +316,27 @@ export const PapiHTMLRenderer = React.memo(function PapiHTMLRenderer(
 function SlotPortal({
   slot,
   registry,
+  onUnreachable,
 }: {
   slot: PapiSlot;
   registry: AdapterRegistry;
+  onUnreachable: () => void;
 }) {
   const ctx = useMemo(() => createRenderContext(registry), [registry]);
-  const nodesRef = lynx.createSelectorQuery().select(`#${slot.id}`) as never;
+  // select 若抛（占位元素不存在 / 运行时不支持）即视为桥接不可达，
+  // 由上层走整体 React 兜底——不创建 Portal，避免 teardown 崩溃
+  let nodesRef: Parameters<typeof createPortal>[1];
+  let unreachable = false;
+  try {
+    nodesRef = lynx.createSelectorQuery().select(`#${slot.id}`) as never;
+  } catch {
+    unreachable = true;
+    nodesRef = undefined as never;
+  }
+  // onUnreachable 在 effect 中触发（渲染期 setState 会导致组件树重建异常）
+  useEffect(() => {
+    if (unreachable) onUnreachable();
+  }, [unreachable, onUnreachable]);
+  if (unreachable) return null;
   return createPortal(ctx.renderNode(slot.node) as never, nodesRef);
 }

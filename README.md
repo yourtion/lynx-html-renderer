@@ -79,13 +79,11 @@ function myPapiBuilder(hostRef, roots) {
 />;
 ```
 
-**自定义适配器（Portal 桥接）**：传入 `adapterRegistry` 后，命中的自定义适配器
-子树不进直绘，而是经 `createPortal` 渲染进原位置的占位元素——React 组件保留
-完整生命周期（portal 子树仅 background 线程渲染）。模拟/测试环境已全链路验证；
-**native 引擎当前限制**：运行时创建的元素不在 selector 索引中（编译期建立），
-Portal 占位无法被 `createSelectorQuery` 命中——已反馈上游（`NodeSelectType.UniqueID`
-类型已存在，等待 `serializeNodesRef` 放开）。native 落地前的过渡：适配器内容
-在 PAPI 模式按默认块渲染，或使用 `fallback` 整体降级。
+**自定义适配器（Portal 桥接）**：命中自定义适配器（含 `registerAdapterByTag/ByRole`
+全局注册）的子树不进直绘，而是经 `createPortal` 渲染进原位置的占位元素——React
+组件保留完整生命周期（portal 子树仅 background 线程渲染）。组件会探测占位的
+可寻址性：**native 引擎当前无法通过 selector 寻址运行时创建的元素**（上游
+lynx#10989）——探测不可达时自动整体降级为 React 渲染，适配器内容不会缺失。
 
 **其余限制**：更新为全量重建。
 

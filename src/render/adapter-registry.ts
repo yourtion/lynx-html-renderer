@@ -9,6 +9,8 @@ class AdapterRegistry {
   private tagMap = new Map<string, LynxRenderAdapter>();
   private defaultTagMap = new Map<string, LynxRenderAdapter>();
   private roleMap = new Map<string, LynxRenderAdapter>();
+  /** 内置 role 适配器（如 table/row/cell）：参与 resolve，不算自定义注册 */
+  private builtinRoleMap = new Map<string, LynxRenderAdapter>();
   private fallbackAdapter: LynxRenderAdapter;
 
   constructor(fallbackAdapter: LynxRenderAdapter) {
@@ -36,6 +38,21 @@ class AdapterRegistry {
    */
   registerByRole(role: string, adapter: LynxRenderAdapter): void {
     this.roleMap.set(role, adapter);
+    // 用户覆盖内置 role 时清除标记，使 hasCustomAdapter 视为自定义
+    this.builtinRoleMap.delete(role);
+  }
+
+  /**
+   * Register a built-in role adapter (library defaults like table/row/cell).
+   * Same resolution priority as user role adapters but is not treated as a
+   * custom registration by {@link hasCustomAdapter}.
+   * @internal
+   */
+  registerBuiltinRole(role: string, adapter: LynxRenderAdapter): void {
+    if (!this.roleMap.has(role)) {
+      this.builtinRoleMap.set(role, adapter);
+      this.roleMap.set(role, adapter);
+    }
   }
 
   /**
@@ -45,7 +62,12 @@ class AdapterRegistry {
    */
   hasCustomAdapter(node: LynxElementNode): boolean {
     if (this.tagMap.has(node.tag)) return true;
-    return node.role !== undefined && this.roleMap.has(node.role);
+    // 内置 role（builtinRoleMap）不算自定义；用户可用 registerByRole 覆盖
+    return (
+      node.role !== undefined &&
+      this.roleMap.has(node.role) &&
+      !this.builtinRoleMap.has(node.role)
+    );
   }
 
   /**

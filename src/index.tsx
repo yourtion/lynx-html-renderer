@@ -103,9 +103,9 @@ export function createDefaultRegistry(): AdapterRegistry {
   registry.registerDefaultByTag('view', viewAdapter);
   registry.registerDefaultByTag('text', new TextAdapter());
   registry.registerDefaultByTag('image', new ImageAdapter());
-  registry.registerByRole('table', new TableAdapter());
-  registry.registerByRole('row', new RowAdapter());
-  registry.registerByRole('cell', new CellAdapter());
+  registry.registerBuiltinRole('table', new TableAdapter());
+  registry.registerBuiltinRole('row', new RowAdapter());
+  registry.registerBuiltinRole('cell', new CellAdapter());
 
   return registry;
 }

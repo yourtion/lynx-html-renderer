@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from '@lynx-js/react';
+import { useEffect, useMemo, useRef, useState } from '@lynx-js/react';
 import './App.css';
 import {
   HTMLRenderer,
@@ -189,6 +189,10 @@ export function App(props: { onRender?: () => void }) {
     n: number;
   } | null>(null);
   const [benchStatus, setBenchStatus] = useState('');
+  // PAPI 轮构建完成信号（基准口径：双帧 rAF 且主线程 builder 完成）
+  const papiSignalRef = useRef<{ done: boolean; rafDone: boolean } | null>(
+    null,
+  );
   const [benchResults, setBenchResults] = useState<BenchResult[]>([]);
   const benchRunning = benchRound !== null || benchStatus.startsWith('运行中');
 
@@ -236,12 +240,48 @@ export function App(props: { onRender?: () => void }) {
           );
           const times: number[] = [];
           for (let i = 0; i < iters; i++) {
-            const t = await new Promise<number>((res) => {
-              const t0 = Date.now();
-              setBenchRound({ engine: eng, html, n: i });
-              raf2(() => res(Date.now() - t0));
-            });
-            times.push(t);
+            if (eng === 'papi') {
+              // PAPI 口径：双帧 rAF 且主线程 builder 完成（onBuildComplete）
+              const t = await new Promise<number>((res) => {
+                const t0 = Date.now();
+                const sig: {
+                  done: boolean;
+                  rafDone: boolean;
+                  settle?: () => void;
+                } = { done: false, rafDone: false };
+                sig.settle = () => {
+                  if (sig.done && sig.rafDone) {
+                    papiSignalRef.current = null;
+                    res(Date.now() - t0);
+                  }
+                };
+                papiSignalRef.current = sig;
+                setBenchRound({ engine: eng, html, n: i });
+                raf2(() => {
+                  sig.rafDone = true;
+                  sig.settle?.();
+                });
+                // 诊断+兜底：信号 8s 未齐时超时放行，避免挂死掩盖问题
+                setTimeout(() => {
+                  if (papiSignalRef.current === sig) {
+                    console.warn(
+                      '[BENCH] papi round timeout:',
+                      JSON.stringify({ done: sig.done, rafDone: sig.rafDone }),
+                    );
+                    sig.done = true;
+                    sig.settle?.();
+                  }
+                }, 8000);
+              });
+              times.push(t);
+            } else {
+              const t = await new Promise<number>((res) => {
+                const t0 = Date.now();
+                setBenchRound({ engine: eng, html, n: i });
+                raf2(() => res(Date.now() - t0));
+              });
+              times.push(t);
+            }
           }
           medians[eng] = Math.round(median(times));
         }
@@ -304,6 +344,13 @@ export function App(props: { onRender?: () => void }) {
         key={`b-p-${benchRound.n}`}
         html={benchRound.html}
         builder={papiBuilder}
+        onBuildComplete={() => {
+          const sig = papiSignalRef.current;
+          if (sig) {
+            sig.done = true;
+            sig.settle?.();
+          }
+        }}
       />
     )
   ) : null;

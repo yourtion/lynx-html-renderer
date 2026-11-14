@@ -1,8 +1,14 @@
 import '@testing-library/jest-dom';
 import { transformHTML } from '@lynx-html-renderer/html-parser';
+import { createDefaultRegistry } from '@lynx-html-renderer/index';
+import '@lynx-html-renderer/index';
 import { PapiHTMLRenderer } from '@lynx-html-renderer/papi/PapiHTMLRenderer';
 import { extractSlots } from '@lynx-html-renderer/papi/slots';
-import { AdapterRegistry } from '@lynx-html-renderer/render/adapter-registry';
+import {
+  AdapterRegistry,
+  getAdapterRegistry,
+  registerAdapterByRole,
+} from '@lynx-html-renderer/render/adapter-registry';
 import { normalizeTextTreeForRender } from '@lynx-html-renderer/render/text-normalizer';
 import { render } from '@lynx-js/react/testing-library';
 import { describe, expect, it } from 'vitest';
@@ -140,6 +146,87 @@ describe('PapiHTMLRenderer adapter portal bridge', () => {
       },
     }).map(normalizeTextTreeForRender);
     const { slots } = extractSlots(nodes, registry);
+    expect(slots).toHaveLength(1);
+  });
+});
+
+describe('review regressions', () => {
+  it('updates slot content without node-removal errors (P1: portal unmount before rebuild)', async () => {
+    const registry = makeRegistry();
+    registry.registerByRole('promo', {
+      render: (node, ctx) => (
+        <view class="promo">
+          <text>{`PROMO:${String(node.meta?.sourceAttrs?.title ?? '')}`}</text>
+          {ctx.renderChildren(node)}
+        </view>
+      ),
+    });
+    const tagMappings = {
+      promo: {
+        lynxTag: 'view',
+        role: 'promo',
+        capabilities: { layout: 'flex', isVoid: false },
+      },
+    };
+
+    const { container, rerender } = render(
+      <PapiHTMLRenderer
+        html='<p>a</p><promo title="first">v1</promo><p>b</p>'
+        adapterRegistry={registry}
+        tagMappings={tagMappings}
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 40));
+    expect(container.textContent).toContain('PROMO:first');
+
+    // HTML 更新：旧 portal 必须先卸载，主线程才清空重建占位
+    rerender(
+      <PapiHTMLRenderer
+        html='<p>a</p><promo title="second">v2</promo><p>b</p>'
+        adapterRegistry={registry}
+        tagMappings={tagMappings}
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 60));
+    expect(container.textContent).toContain('PROMO:second');
+    expect(container.textContent).not.toContain('PROMO:first');
+  });
+
+  it('promotes overridden built-in roles to custom (P2: registerByRole clears builtin mark)', () => {
+    // 用户 registerByRole 覆盖内置 table → 应视为自定义适配器（进 slot 路径）
+    const registry = createDefaultRegistry();
+    registry.registerByRole('table', {
+      render: () => <text>CUSTOM-TABLE</text>,
+    });
+    const nodes = transformHTML('<table><tr><td>Cell</td></tr></table>');
+    const { slots } = extractSlots(nodes, registry);
+    expect(slots).toHaveLength(1);
+  });
+
+  it('keeps built-in table roles out of the slot path (P2: builtin vs custom)', () => {
+    // 默认 registry 的 table/row/cell 是内置 role，不应视为自定义适配器
+    const nodes = transformHTML('<table><tr><td>Cell</td></tr></table>');
+    const { slots } = extractSlots(nodes, createDefaultRegistry());
+    expect(slots).toHaveLength(0);
+  });
+
+  it('global registry registrations apply when adapterRegistry is omitted (P2: parity)', async () => {
+    // HTMLRenderer 主入口导入即初始化全局 registry；registerAdapterByRole
+    // 的全局注册对 PAPI 路线同样生效（无需显式传 adapterRegistry）
+    registerAdapterByRole('banner-global', {
+      render: () => <text>GLOBAL-BANNER</text>,
+    });
+    const html = '<div><span>lead</span></div>';
+    const nodes = transformHTML(html, {
+      tagMappings: {
+        div: {
+          lynxTag: 'view',
+          role: 'banner-global',
+          capabilities: { layout: 'flex', isVoid: false },
+        },
+      },
+    });
+    const { slots } = extractSlots(nodes, getAdapterRegistry());
     expect(slots).toHaveLength(1);
   });
 });
