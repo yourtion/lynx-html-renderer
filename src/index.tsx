@@ -1,14 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { transformHTML } from './html-parser';
-import { getMarkStyles } from './lynx/text-styles';
 import { AdapterRegistry, setGlobalRegistry } from './render/adapter-registry';
+import { createRenderContext } from './render/react-tree';
 import { normalizeTextTreeForRender } from './render/text-normalizer';
 import type {
   LynxElementNode,
-  LynxNode,
   LynxRenderAdapter,
   RenderContext,
-  RenderResult,
 } from './render/types';
 import type { TransformOptions } from './transform/types';
 import { TEXT_ONLY_PROPERTIES } from './utils/style-schema';
@@ -105,9 +103,9 @@ export function createDefaultRegistry(): AdapterRegistry {
   registry.registerDefaultByTag('view', viewAdapter);
   registry.registerDefaultByTag('text', new TextAdapter());
   registry.registerDefaultByTag('image', new ImageAdapter());
-  registry.registerByRole('table', new TableAdapter());
-  registry.registerByRole('row', new RowAdapter());
-  registry.registerByRole('cell', new CellAdapter());
+  registry.registerBuiltinRole('table', new TableAdapter());
+  registry.registerBuiltinRole('row', new RowAdapter());
+  registry.registerBuiltinRole('cell', new CellAdapter());
 
   return registry;
 }
@@ -117,49 +115,6 @@ const defaultAdapterRegistry = createDefaultRegistry();
 
 // 设置全局注册表实例，供外部扩展使用
 setGlobalRegistry(defaultAdapterRegistry);
-
-function createRenderContext(registry: AdapterRegistry): RenderContext {
-  const renderContext: RenderContext = {
-    renderChildren(node: LynxElementNode) {
-      return node.children.map((child, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: HTML 节点顺序固定，使用 index 作为 key 是安全的
-        <React.Fragment key={index}>
-          {renderContext.renderNode(child)}
-        </React.Fragment>
-      ));
-    },
-
-    renderNode(node: LynxNode) {
-      return renderNodeWithRegistry(node, registry, renderContext);
-    },
-  };
-
-  return renderContext;
-}
-
-// 主渲染函数
-function renderNodeWithRegistry(
-  node: LynxNode,
-  registry: AdapterRegistry,
-  ctx: RenderContext,
-): RenderResult {
-  if (node.kind === 'text') {
-    const style = { ...getMarkStyles(node.marks), ...node.inheritableStyles };
-
-    // 处理继承的类名（css-class 模式）
-    const className = node.inheritableClasses;
-
-    return (
-      <text style={style} {...(className && { className })}>
-        {node.content}
-      </text>
-    );
-  }
-
-  // 处理元素节点
-  const adapter: LynxRenderAdapter = registry.resolve(node);
-  return adapter.render(node, ctx);
-}
 
 /**
  * HTMLRenderer 组件属性
@@ -335,6 +290,22 @@ type HTMLRendererType = typeof HTMLRenderer & {
 
 // 导出公共类型
 export type { LynxElementNode, LynxNode, LynxTextNode } from './lynx/types';
+export type {
+  PapiBuilder,
+  PapiElementNode,
+  PapiHTMLRendererProps,
+  PapiNode,
+  PapiTextNode,
+  PapiTree,
+} from './papi';
+// Element PAPI 直绘路线（engine 4.2+，未使用时随 sideEffects 声明被裁剪；
+// 也可从 'lynx-html-renderer/papi' 子路径引入）
+export {
+  buildPapiTree,
+  PapiHTMLRenderer,
+  serializeNodes,
+  styleToCssString,
+} from './papi';
 // 导出适配器扩展 API
 export {
   AdapterRegistry,

@@ -25,6 +25,7 @@ const config = defineConfig({
     },
   },
   test: {
+    setupFiles: ['./tests/setup/papi-globals.ts'],
     include: ['tests/**/*', 'example/src/__tests__/**/*'],
     exclude: [
       '**/__snapshots__/**/*',
@@ -32,6 +33,7 @@ const config = defineConfig({
       '**/node_modules/**',
       '**/baselines.config.ts',
       'tests/types/**',
+      'tests/setup/**',
     ],
   },
 });
